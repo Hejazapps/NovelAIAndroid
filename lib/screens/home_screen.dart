@@ -1,3 +1,4 @@
+```
 import 'package:flutter/material.dart';
 
 import 'story_screen.dart';
@@ -9,6 +10,7 @@ import 'create_character_screen.dart';
 import 'letter_screen.dart';
 import 'speech_screen.dart';
 import 'article_screen.dart';
+import 'info_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -334,31 +336,40 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
 
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(
-                12,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(
-                    alpha: 0.06,
-                  ),
-                  blurRadius: 10,
-                  offset: const Offset(
-                    0,
-                    3,
-                  ),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const InfoScreen(),
                 ),
-              ],
-            ),
-            child: const Icon(
-              Icons.info_outline,
-              size: 22,
-              color: Colors.black,
+              );
+            },
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(
+                  12,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(
+                      alpha: 0.06,
+                    ),
+                    blurRadius: 10,
+                    offset: const Offset(
+                      0,
+                      3,
+                    ),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.info_outline,
+                size: 22,
+                color: Colors.black,
+              ),
             ),
           ),
         ],
@@ -593,3 +604,4 @@ class HomeFeature {
     required this.iconImage,
   });
 }
+```
