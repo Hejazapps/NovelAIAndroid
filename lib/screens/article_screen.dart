@@ -56,38 +56,216 @@ class _ArticleScreenState extends State<ArticleScreen> {
 
   final List<String> languageOptions = const [
     'English',
-    'Bengali',
+    'Afrikaans',
+    'Albanian',
+    'Amharic',
     'Arabic',
+    'Armenian',
+    'Assamese',
+    'Aymara',
+    'Azerbaijani',
+    'Bambara',
+    'Basque',
+    'Belarusian',
+    'Bengali',
+    'Bhojpuri',
+    'Bosnian',
+    'Bulgarian',
+    'Burmese',
     'Catalan',
+    'Cebuano',
+    'Chichewa',
     'Chinese Simplified',
     'Chinese Traditional',
+    'Corsican',
     'Croatian',
     'Czech',
     'Danish',
+    'Dhivehi',
+    'Dogri',
     'Dutch',
+    'Esperanto',
+    'Estonian',
+    'Ewe',
+    'Filipino',
     'Finnish',
     'French',
+    'Frisian',
+    'Galician',
+    'Georgian',
     'German',
     'Greek',
+    'Guarani',
+    'Gujarati',
+    'Haitian Creole',
+    'Hausa',
+    'Hawaiian',
     'Hebrew',
     'Hindi',
+    'Hmong',
     'Hungarian',
+    'Icelandic',
+    'Igbo',
+    'Ilocano',
     'Indonesian',
+    'Irish',
     'Italian',
     'Japanese',
+    'Javanese',
+    'Kannada',
+    'Kazakh',
+    'Khmer',
+    'Kinyarwanda',
+    'Konkani',
     'Korean',
+    'Kurdish',
+    'Kurdish (Sorani)',
+    'Kyrgyz',
+    'Lao',
+    'Latin',
+    'Latvian',
+    'Lingala',
+    'Lithuanian',
+    'Luganda',
+    'Luxembourgish',
+    'Macedonian',
+    'Maithili',
+    'Malagasy',
     'Malay',
+    'Malayalam',
+    'Maltese',
+    'Maori',
+    'Marathi',
+    'Meiteilon (Manipuri)',
+    'Mizo',
+    'Mongolian',
+    'Nepali',
+    'Norwegian',
+    'Norwegian Bokmål',
+    'Odia (Oriya)',
+    'Oromo',
+    'Pashto',
+    'Persian',
     'Polish',
     'Portuguese',
+    'Portuguese (Brazil)',
+    'Portuguese (Portugal)',
+    'Punjabi',
+    'Quechua',
     'Romanian',
     'Russian',
+    'Samoan',
+    'Sanskrit',
+    'Scots Gaelic',
+    'Sepedi',
+    'Serbian',
+    'Sesotho',
+    'Shona',
+    'Sindhi',
+    'Sinhala',
     'Slovak',
+    'Slovenian',
+    'Somali',
     'Spanish',
+    'Sundanese',
+    'Swahili',
     'Swedish',
+    'Tagalog',
+    'Tajik',
+    'Tamil',
+    'Tatar',
+    'Telugu',
     'Thai',
+    'Tigrinya',
+    'Tsonga',
     'Turkish',
+    'Turkmen',
+    'Twi',
     'Ukrainian',
+    'Urdu',
+    'Uyghur',
+    'Uzbek',
     'Vietnamese',
+    'Welsh',
+    'Xhosa',
+    'Yiddish',
+    'Yoruba',
+    'Zulu',
+    'Acehnese',
+    'Acholi',
+    'Afar',
+    'Alur',
+    'Awadhi',
+    'Balinese',
+    'Baluchi',
+    'Batak Karo',
+    'Batak Simalungun',
+    'Batak Toba',
+    'Bemba',
+    'Betawi',
+    'Bikol',
+    'Breton',
+    'Buryat',
+    'Cantonese',
+    'Chamorro',
+    'Chechen',
+    'Chuukese',
+    'Chuvash',
+    'Crimean Tatar',
+    'Dari',
+    'Dinka',
+    'Dombe',
+    'Dzongkha',
+    'Faroese',
+    'Fijian',
+    'Fon',
+    'Friulian',
+    'Ga',
+    'Greenlandic',
+    'Hakha Chin',
+    'Herero',
+    'Hiligaynon',
+    'Iban',
+    'Jingpo',
+    'Kalaallisut',
+    'Kanuri',
+    'Kapampangan',
+    'Khasi',
+    'Kituba',
+    'Kokborok',
+    'Komering',
+    'Krio',
+    'Limburgish',
+    'Lombard',
+    'Madurese',
+    'Makassar',
+    'Marshallese',
+    'Minangkabau',
+    'Ndebele (South)',
+    'NKo',
+    'Occitan',
+    'Ossetian',
+    'Pangasinan',
+    'Papiamento',
+    'Romani',
+    'Rundi',
+    'Sango',
+    'Santali',
+    'Seychellois Creole',
+    'Sicilian',
+    'Silesian',
+    'Swati',
+    'Tahitian',
+    'Tiv',
+    'Tok Pisin',
+    'Tshiluba',
+    'Tswana',
+    'Tulu',
+    'Venda',
+    'Waray',
+    'Wolof',
+    'Yakut',
+    'Zapotec',
   ];
 
   @override
@@ -184,7 +362,6 @@ class _ArticleScreenState extends State<ArticleScreen> {
                           title: 'Tone',
                           values: toneOptions,
                           selectedValue: selectedTone,
-                          searchable: true,
                           onSelected: (value) {
                             setState(() {
                               selectedTone = value;
@@ -245,7 +422,6 @@ class _ArticleScreenState extends State<ArticleScreen> {
                           title: 'Output Language',
                           values: languageOptions,
                           selectedValue: selectedLanguage,
-                          searchable: true,
                           onSelected: (value) {
                             setState(() {
                               selectedLanguage = value;
@@ -612,14 +788,9 @@ class _ArticleScreenState extends State<ArticleScreen> {
   }
 
   void _createArticle() {
-    final articleIdea =
-    _articleIdeaController.text.trim();
-
-    final targetReader =
-    _targetReaderController.text.trim();
-
-    final keywords =
-    _keywordsController.text.trim();
+    final articleIdea = _articleIdeaController.text.trim();
+    final targetReader = _targetReaderController.text.trim();
+    final keywords = _keywordsController.text.trim();
 
     if (articleIdea.isEmpty) {
       _showAlert(
@@ -628,6 +799,13 @@ class _ArticleScreenState extends State<ArticleScreen> {
       );
       return;
     }
+
+    final prompt = _buildArticlePrompt(
+      idea: articleIdea,
+      targetReader: targetReader,
+      keywords: keywords,
+      sections: sectionValue,
+    );
 
     debugPrint('========== ARTICLE ==========');
     debugPrint('Idea: $articleIdea');
@@ -638,9 +816,223 @@ class _ArticleScreenState extends State<ArticleScreen> {
     debugPrint('Point of View: $selectedPointOfView');
     debugPrint('Keywords: $keywords');
     debugPrint('Language: $selectedLanguage');
-    debugPrint('=============================');
+    debugPrint('========== GENERATED PROMPT ==========');
+    debugPrint(prompt);
+    debugPrint('======================================');
 
     // API / generation logic later.
+    // Send `prompt` to your generation screen/API when connected.
+  }
+
+  String _buildArticlePrompt({
+    required String idea,
+    required String targetReader,
+    required String keywords,
+    required int sections,
+  }) {
+    final audience = targetReader.isEmpty
+        ? 'Intelligent general readers'
+        : targetReader;
+
+    final keywordValue = keywords.isEmpty
+        ? 'No required keywords'
+        : keywords;
+
+    late final String depthInstruction;
+
+    switch (selectedDepth) {
+      case 'Short':
+        depthInstruction = """
+Keep the article concise, focused, and useful.
+Cover only the essential information.
+Avoid padding, repetition, unnecessary background, and over-explanation.
+""";
+        break;
+      case 'In-Depth':
+        depthInstruction = """
+Make the article genuinely comprehensive and substantial.
+Develop important concepts with context, explanation, nuance, implications, and useful examples where appropriate.
+Depth must come from meaningful substance, never repetition or filler.
+""";
+        break;
+      default:
+        depthInstruction = """
+Use a balanced level of detail.
+Explain important concepts clearly and thoroughly while keeping the article focused, readable, and efficient.
+""";
+    }
+
+    return """
+You are an elite professional article writer and editor with exceptional skill in clarity, structure, factual discipline, audience awareness, natural language, and publication-quality prose.
+
+Write one original, polished, publication-ready article based on the brief below.
+
+The article must feel deliberately written by a skilled human writer for this exact subject and audience. It must not sound like a generic AI template.
+
+ARTICLE BRIEF
+
+Topic or idea: $idea
+Target reader: $audience
+Main sections requested: $sections
+Depth: $selectedDepth
+Tone: $selectedTone
+Point of view: $selectedPointOfView
+Keywords: $keywordValue
+Language: $selectedLanguage
+
+PRIMARY OBJECTIVE
+
+Identify the article's real central idea and purpose before writing.
+Build the entire article around that central idea.
+Every paragraph must contribute useful information, reasoning, context, explanation, or insight.
+Remove filler, repetition, generic commentary, and sentences that do not advance the article.
+
+AUDIENCE
+
+Write specifically for $audience.
+Adapt vocabulary, terminology, assumed knowledge, explanation depth, examples, pacing, and formality to this audience.
+Never invent demographic traits, beliefs, experiences, education, profession, age, or background not provided by the user.
+
+DEPTH
+
+$depthInstruction
+
+STRUCTURE
+
+Organize the article into approximately $sections meaningful main sections.
+Quality is more important than mechanically forcing the exact section count.
+Every section must have a distinct purpose.
+Arrange sections in a natural logical progression.
+Do not repeat the same idea under different headings.
+Do not divide one simple point into multiple artificial sections.
+
+TITLE
+
+Begin directly with one clear, natural, specific, publication-ready title.
+Avoid formulaic AI titles, exaggerated claims, and generic clickbait.
+
+INTRODUCTION
+
+Write a concise and engaging introduction.
+Establish the subject, context, or importance quickly.
+Never begin with generic AI phrases such as:
+"In today's fast-paced world"
+"In the ever-evolving landscape"
+"In this comprehensive guide"
+"It is important to note"
+"Nowadays, more than ever"
+
+HEADINGS
+
+Use short, informative headings when they improve readability.
+Headings must be plain text.
+Do not use #, ##, ###, #### or any Markdown heading symbols.
+Do not use horizontal rules.
+Do not use code blocks.
+
+PARAGRAPH FORMATTING
+
+Keep the visual layout compact and professional.
+Write substantial, coherent paragraphs rather than many tiny paragraphs.
+Keep closely related sentences together.
+Do not place every sentence on a new line.
+Do not add unnecessary blank lines.
+Use one normal paragraph break only when the idea genuinely changes.
+Never insert multiple consecutive blank lines.
+
+LISTS
+
+Prefer natural prose when prose is clearer.
+Use bullet lists only when the information is naturally list-like and a list materially improves readability.
+
+TABLES
+
+Do not output Markdown tables.
+Never output raw vertical-bar table syntax.
+If information would normally be shown in a table, present it as clear prose or a concise list instead.
+
+TONE
+
+Write in a genuinely $selectedTone tone.
+Express the tone through vocabulary, rhythm, pacing, directness, formality, warmth, restraint, and sentence structure.
+
+POINT OF VIEW
+
+Write primarily in $selectedPointOfView.
+Maintain the selected perspective consistently.
+
+KEYWORDS
+
+Requested keywords: $keywordValue
+If keywords were supplied, integrate them naturally and only where relevant.
+Never keyword-stuff or damage readability merely to include them.
+
+FACTUAL INTEGRITY
+
+Never fabricate facts.
+Do not invent statistics, percentages, prevalence rates, quotations, studies, research findings, experts, organizations, dates, historical claims, medical claims, scientific claims, URLs, references, or citations.
+If a precise claim cannot be confidently supported, express it cautiously without false precision or omit it.
+For medical, scientific, legal, financial, technical, or historical subjects, prioritize accuracy over sounding authoritative.
+Never invent references merely to make the article appear researched.
+
+LANGUAGE
+
+Write the complete article in $selectedLanguage.
+It must read as though originally composed by a fluent native writer in $selectedLanguage, not mechanically translated from English.
+Use natural grammar, punctuation, vocabulary, idioms, sentence rhythm, honorifics, and culturally appropriate conventions.
+Do not mix languages unnecessarily.
+Preserve proper nouns and established technical terms only where appropriate.
+
+NATURAL HUMAN WRITING
+
+Vary sentence length naturally.
+Use smooth transitions without overusing transition phrases.
+Avoid repetitive sentence openings.
+Avoid excessive rhetorical questions.
+Avoid excessive em dashes.
+Avoid repeated three-part lists.
+Avoid robotic mini-conclusions after every section.
+Avoid generic motivational filler and corporate language.
+Avoid cliché AI expressions such as "delve into", "navigate the landscape", "unlock the power", "game-changer", and "a testament to" unless genuinely natural and necessary.
+
+CONCLUSION
+
+End with a purposeful final paragraph or section.
+Reinforce the central idea without mechanically repeating every previous section.
+Leave the reader with a useful final understanding, implication, recommendation, or perspective appropriate to the topic.
+
+FINAL SILENT CHECK
+
+Before responding, silently verify:
+- the article directly addresses the user's topic
+- it is appropriate for $audience
+- depth matches $selectedDepth
+- tone matches $selectedTone
+- point of view matches $selectedPointOfView
+- there are approximately $sections useful sections
+- no section unnecessarily repeats another
+- keywords are natural
+- no unsupported facts or fake citations were invented
+- paragraphs are compact and properly developed
+- there are no excessive blank lines
+- there are no Markdown heading symbols
+- there are no Markdown tables
+- the entire article is in $selectedLanguage
+- the result feels natural, useful, polished, and publication-ready
+
+STRICT OUTPUT RULES
+
+Output only the finished article.
+Start directly with the article title.
+Do not say "Here is your article".
+Do not say "Generated Article".
+Do not say "Sure".
+Do not explain your process.
+Do not include notes, analysis, alternatives, or word counts.
+Do not use Markdown heading symbols.
+Do not use Markdown tables.
+Do not add anything before or after the finished article.
+""";
   }
 
   void _showAlert({
@@ -676,7 +1068,6 @@ class _ArticleScreenState extends State<ArticleScreen> {
     required List<String> values,
     required String selectedValue,
     required ValueChanged<String> onSelected,
-    bool searchable = false,
   }) {
     showModalBottomSheet(
       context: context,
@@ -692,7 +1083,6 @@ class _ArticleScreenState extends State<ArticleScreen> {
           title: title,
           values: values,
           selectedValue: selectedValue,
-          searchable: searchable,
           onSelected: (value) {
             Navigator.pop(context);
             onSelected(value);
@@ -707,39 +1097,31 @@ class _ArticleSelectorSheet extends StatefulWidget {
   final String title;
   final List<String> values;
   final String selectedValue;
-  final bool searchable;
   final ValueChanged<String> onSelected;
 
   const _ArticleSelectorSheet({
     required this.title,
     required this.values,
     required this.selectedValue,
-    required this.searchable,
     required this.onSelected,
   });
 
   @override
-  State<_ArticleSelectorSheet> createState() =>
-      _ArticleSelectorSheetState();
+  State<_ArticleSelectorSheet> createState() => _ArticleSelectorSheetState();
 }
 
-class _ArticleSelectorSheetState
-    extends State<_ArticleSelectorSheet> {
-  final TextEditingController _searchController =
-  TextEditingController();
-
+class _ArticleSelectorSheetState extends State<_ArticleSelectorSheet> {
+  final TextEditingController _searchController = TextEditingController();
   String search = '';
 
+  bool get _showSearch => widget.values.length > 20;
+
   List<String> get filtered {
-    if (search.trim().isEmpty) {
-      return widget.values;
-    }
-
+    if (search.trim().isEmpty) return widget.values;
     final query = search.trim().toLowerCase();
-
-    return widget.values.where((value) {
-      return value.toLowerCase().contains(query);
-    }).toList();
+    return widget.values
+        .where((value) => value.toLowerCase().contains(query))
+        .toList();
   }
 
   @override
@@ -748,15 +1130,33 @@ class _ArticleSelectorSheetState
     super.dispose();
   }
 
+  double _sheetHeight(BuildContext context) {
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final maxHeight = screenHeight * 0.50;
+
+    // Large searchable lists (such as Language) use at most half the screen.
+    if (_showSearch) {
+      return maxHeight;
+    }
+
+    // Small lists stay compact, but can never exceed half the screen.
+    const fixedContent = 95.0;
+    const rowHeight = 56.0;
+    final naturalHeight = fixedContent + (widget.values.length * rowHeight);
+
+    return naturalHeight.clamp(190.0, maxHeight).toDouble();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final values = filtered;
+
     return SafeArea(
       child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.70,
+        height: _sheetHeight(context),
         child: Column(
           children: [
             const SizedBox(height: 10),
-
             Container(
               width: 42,
               height: 5,
@@ -765,14 +1165,8 @@ class _ArticleSelectorSheetState
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-
             Padding(
-              padding: const EdgeInsets.fromLTRB(
-                20,
-                18,
-                20,
-                12,
-              ),
+              padding: const EdgeInsets.fromLTRB(20, 14, 12, 10),
               child: Row(
                 children: [
                   Expanded(
@@ -784,28 +1178,16 @@ class _ArticleSelectorSheetState
                       ),
                     ),
                   ),
-
                   IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(
-                      Icons.close_rounded,
-                    ),
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
                   ),
                 ],
               ),
             ),
-
-            if (widget.searchable &&
-                widget.values.length > 10)
+            if (_showSearch)
               Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  20,
-                  0,
-                  20,
-                  12,
-                ),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                 child: Container(
                   height: 46,
                   decoration: BoxDecoration(
@@ -814,66 +1196,88 @@ class _ArticleSelectorSheetState
                   ),
                   child: TextField(
                     controller: _searchController,
-                    onChanged: (value) {
-                      setState(() {
-                        search = value;
-                      });
-                    },
-                    decoration: const InputDecoration(
-                      hintText: 'Search',
-                      prefixIcon: Icon(
-                        Icons.search_rounded,
-                      ),
+                    onChanged: (value) => setState(() => search = value),
+                    decoration: InputDecoration(
+                      hintText: 'Search ${widget.title}',
+                      prefixIcon: const Icon(Icons.search_rounded),
+                      suffixIcon: search.isNotEmpty
+                          ? IconButton(
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => search = '');
+                              },
+                              icon: const Icon(Icons.close_rounded),
+                            )
+                          : null,
                       border: InputBorder.none,
                     ),
                   ),
                 ),
               ),
-
             Expanded(
-              child: ListView.separated(
-                physics: const BouncingScrollPhysics(),
-                itemCount: filtered.length,
-                separatorBuilder: (_, __) {
-                  return const Divider(
-                    height: 1,
-                    indent: 20,
-                    endIndent: 20,
-                  );
-                },
-                itemBuilder: (context, index) {
-                  final value = filtered[index];
-                  final selected =
-                      value == widget.selectedValue;
-
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                    ),
-                    title: Text(
-                      value,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: selected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                        color: selected
-                            ? const Color(0xFFFF9500)
-                            : const Color(0xFF222222),
+              child: values.isEmpty
+                  ? const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.search_off_rounded,
+                            size: 34,
+                            color: Color(0xFFAAAAAA),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'No results found',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF888888),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    trailing: selected
-                        ? const Icon(
-                      Icons.check_circle_rounded,
-                      color: Color(0xFFFF9500),
                     )
-                        : null,
-                    onTap: () {
-                      widget.onSelected(value);
-                    },
-                  );
-                },
-              ),
+                  : ListView.separated(
+                      physics: widget.values.length > 4
+                          ? const BouncingScrollPhysics()
+                          : const NeverScrollableScrollPhysics(),
+                      itemCount: values.length,
+                      separatorBuilder: (_, __) => const Divider(
+                        height: 1,
+                        indent: 20,
+                        endIndent: 20,
+                      ),
+                      itemBuilder: (context, index) {
+                        final value = values[index];
+                        final selected = value == widget.selectedValue;
+
+                        return SizedBox(
+                          height: 56,
+                          child: ListTile(
+                            contentPadding:
+                                const EdgeInsets.symmetric(horizontal: 20),
+                            title: Text(
+                              value,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: selected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: selected
+                                    ? const Color(0xFFFF9500)
+                                    : const Color(0xFF222222),
+                              ),
+                            ),
+                            trailing: selected
+                                ? const Icon(
+                                    Icons.check_circle_rounded,
+                                    color: Color(0xFFFF9500),
+                                  )
+                                : null,
+                            onTap: () => widget.onSelected(value),
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),

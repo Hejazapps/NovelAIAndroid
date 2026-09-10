@@ -808,7 +808,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
       builder: (sheetContext) {
         return SafeArea(
           child: SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.72,
+            height: MediaQuery.sizeOf(context).height * 0.50,
             child: Column(
               children: [
                 const SizedBox(height: 10),
@@ -1527,41 +1527,217 @@ class _AdvancedStorySettingsScreenState
               _selectValue(
                 title: 'Language',
                 values: const [
-                  'English',
-                  'Bengali',
+                  'Afrikaans',
+                  'Albanian',
+                  'Amharic',
                   'Arabic',
+                  'Armenian',
+                  'Assamese',
+                  'Aymara',
+                  'Azerbaijani',
+                  'Bambara',
+                  'Basque',
+                  'Belarusian',
+                  'Bengali',
+                  'Bhojpuri',
+                  'Bosnian',
+                  'Bulgarian',
+                  'Burmese',
                   'Catalan',
+                  'Cebuano',
+                  'Chichewa',
                   'Chinese Simplified',
                   'Chinese Traditional',
+                  'Corsican',
                   'Croatian',
                   'Czech',
                   'Danish',
+                  'Dhivehi',
+                  'Dogri',
                   'Dutch',
+                  'English',
+                  'Esperanto',
+                  'Estonian',
+                  'Ewe',
+                  'Filipino',
                   'Finnish',
                   'French',
+                  'Frisian',
+                  'Galician',
+                  'Georgian',
                   'German',
                   'Greek',
+                  'Guarani',
+                  'Gujarati',
+                  'Haitian Creole',
+                  'Hausa',
+                  'Hawaiian',
                   'Hebrew',
                   'Hindi',
+                  'Hmong',
                   'Hungarian',
+                  'Icelandic',
+                  'Igbo',
+                  'Ilocano',
                   'Indonesian',
+                  'Irish',
                   'Italian',
                   'Japanese',
+                  'Javanese',
+                  'Kannada',
+                  'Kazakh',
+                  'Khmer',
+                  'Kinyarwanda',
+                  'Konkani',
                   'Korean',
+                  'Krio',
+                  'Kurdish',
+                  'Kurdish (Sorani)',
+                  'Kyrgyz',
+                  'Lao',
+                  'Latin',
+                  'Latvian',
+                  'Lingala',
+                  'Lithuanian',
+                  'Luganda',
+                  'Luxembourgish',
+                  'Macedonian',
+                  'Maithili',
+                  'Malagasy',
                   'Malay',
+                  'Malayalam',
+                  'Maltese',
+                  'Maori',
+                  'Marathi',
+                  'Meiteilon (Manipuri)',
+                  'Mizo',
+                  'Mongolian',
+                  'Nepali',
+                  'Norwegian',
                   'Norwegian Bokmål',
+                  'Odia (Oriya)',
+                  'Oromo',
+                  'Pashto',
+                  'Persian',
                   'Polish',
                   'Portuguese',
                   'Portuguese (Brazil)',
+                  'Portuguese (Portugal)',
+                  'Punjabi',
+                  'Quechua',
                   'Romanian',
                   'Russian',
+                  'Samoan',
+                  'Sanskrit',
+                  'Scots Gaelic',
+                  'Sepedi',
+                  'Serbian',
+                  'Sesotho',
+                  'Shona',
+                  'Sindhi',
+                  'Sinhala',
                   'Slovak',
+                  'Slovenian',
+                  'Somali',
                   'Spanish',
+                  'Sundanese',
+                  'Swahili',
                   'Swedish',
+                  'Tagalog',
+                  'Tajik',
+                  'Tamil',
+                  'Tatar',
+                  'Telugu',
                   'Thai',
+                  'Tigrinya',
+                  'Tsonga',
                   'Turkish',
+                  'Turkmen',
+                  'Twi',
                   'Ukrainian',
+                  'Urdu',
+                  'Uyghur',
+                  'Uzbek',
                   'Vietnamese',
+                  'Welsh',
+                  'Xhosa',
+                  'Yiddish',
+                  'Yoruba',
+                  'Zulu',
+                  'Acehnese',
+                  'Acholi',
+                  'Afar',
+                  'Alur',
+                  'Awadhi',
+                  'Balinese',
+                  'Baluchi',
+                  'Batak Karo',
+                  'Batak Simalungun',
+                  'Batak Toba',
+                  'Bemba',
+                  'Betawi',
+                  'Bikol',
+                  'Breton',
+                  'Buryat',
+                  'Cantonese',
+                  'Chamorro',
+                  'Chechen',
+                  'Chuukese',
+                  'Chuvash',
+                  'Crimean Tatar',
+                  'Dari',
+                  'Dinka',
+                  'Dombe',
+                  'Dzongkha',
+                  'Faroese',
+                  'Fijian',
+                  'Fon',
+                  'Friulian',
+                  'Ga',
+                  'Greenlandic',
+                  'Hakha Chin',
+                  'Herero',
+                  'Hiligaynon',
+                  'Iban',
+                  'Jingpo',
+                  'Kalaallisut',
+                  'Kanuri',
+                  'Kapampangan',
+                  'Khasi',
+                  'Kituba',
+                  'Kokborok',
+                  'Komering',
+                  'Limburgish',
+                  'Lombard',
+                  'Madurese',
+                  'Makassar',
+                  'Marshallese',
+                  'Minangkabau',
+                  'Ndebele (South)',
+                  'NKo',
+                  'Occitan',
+                  'Ossetian',
+                  'Pangasinan',
+                  'Papiamento',
+                  'Romani',
+                  'Rundi',
+                  'Sango',
+                  'Santali',
+                  'Seychellois Creole',
+                  'Sicilian',
+                  'Silesian',
+                  'Swati',
+                  'Tahitian',
+                  'Tiv',
+                  'Tok Pisin',
+                  'Tshiluba',
+                  'Tswana',
+                  'Tulu',
+                  'Venda',
+                  'Waray',
+                  'Wolof',
+                  'Yakut',
+                  'Zapotec',
                 ],
                 current: language,
                 onSelected: (value) => setState(() => language = value),
@@ -1928,6 +2104,7 @@ class _AdvancedStorySettingsScreenState
     required String current,
     required ValueChanged<String> onSelected,
   }) {
+    final searchable = values.length > 20;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1936,121 +2113,199 @@ class _AdvancedStorySettingsScreenState
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (sheetContext) {
-        const double itemHeight = 50.0;
-        const double topSpace = 10.0;
-        const double handleHeight = 5.0;
-        const double titleTopSpace = 18.0;
-        const double titleHeight = 28.0;
-        const double titleBottomSpace = 8.0;
-        const double bottomSpace = 8.0;
+        String searchQuery = '';
+        final searchController = TextEditingController();
 
-        final double naturalHeight =
-            topSpace +
-            handleHeight +
-            titleTopSpace +
-            titleHeight +
-            titleBottomSpace +
-            (values.length * itemHeight) +
-            bottomSpace;
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final normalizedQuery = searchQuery.trim().toLowerCase();
+            final filteredValues = normalizedQuery.isEmpty
+                ? values
+                : values.where((value) {
+                    return value.toLowerCase().contains(normalizedQuery);
+                  }).toList();
 
-        final double maxHeight =
-            MediaQuery.sizeOf(sheetContext).height * 0.50;
+            final screenHeight = MediaQuery.sizeOf(sheetContext).height;
 
-        final double sheetHeight =
-            naturalHeight > maxHeight ? maxHeight : naturalHeight;
+            // Large lists get a tall searchable sheet.
+            // Small lists size themselves to their actual number of rows.
+            const headerHeight = 82.0;
+            const rowHeight = 57.0;
+            const bottomPadding = 12.0;
+            const searchAreaHeight = 78.0;
 
-        final bool needsScrolling = naturalHeight > maxHeight;
+            final naturalHeight = headerHeight +
+                (searchable ? searchAreaHeight : 0.0) +
+                (filteredValues.length * rowHeight) +
+                bottomPadding;
 
-        return SafeArea(
-          child: SizedBox(
-            height: sheetHeight,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: topSpace),
+            final maxHeight = screenHeight * 0.50;
+            final minHeight = searchable ? maxHeight : 170.0;
+            final sheetHeight =
+                naturalHeight.clamp(minHeight, maxHeight).toDouble();
 
-                Container(
-                  width: 40,
-                  height: handleHeight,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDADADA),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-
-                const SizedBox(height: titleTopSpace),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF222222),
+            return SafeArea(
+              child: SizedBox(
+                height: sheetHeight,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 10),
+                    Container(
+                      width: 40,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDADADA),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                  ),
-                ),
-
-                const SizedBox(height: titleBottomSpace),
-
-                Flexible(
-                  child: ListView.builder(
-                    shrinkWrap: !needsScrolling,
-                    physics: needsScrolling
-                        ? const BouncingScrollPhysics()
-                        : const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.only(bottom: bottomSpace),
-                    itemCount: values.length,
-                    itemBuilder: (context, index) {
-                      final value = values[index];
-                      final isSelected = value == current;
-
-                      return SizedBox(
-                        height: itemHeight,
-                        child: ListTile(
-                          dense: true,
-                          visualDensity: VisualDensity.compact,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
+                    const SizedBox(height: 18),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF222222),
                           ),
-                          title: Text(
-                            value,
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
-                              color: const Color(0xFF222222),
+                        ),
+                      ),
+                    ),
+                    if (searchable) ...[
+                      const SizedBox(height: 14),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: TextField(
+                          controller: searchController,
+                          autofocus: false,
+                          onChanged: (value) {
+                            setSheetState(() => searchQuery = value);
+                          },
+                          decoration: InputDecoration(
+                            hintText: 'Search $title',
+                            hintStyle: const TextStyle(
+                              color: Color(0xFF9A9A9A),
+                              fontSize: 14,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.search_rounded,
+                              color: Color(0xFF777777),
+                            ),
+                            suffixIcon: searchQuery.isNotEmpty
+                                ? IconButton(
+                                    onPressed: () {
+                                      searchController.clear();
+                                      setSheetState(() => searchQuery = '');
+                                    },
+                                    icon: const Icon(
+                                      Icons.close_rounded,
+                                      color: Color(0xFF777777),
+                                    ),
+                                  )
+                                : null,
+                            filled: true,
+                            fillColor: const Color(0xFFF6F6F6),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 13,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE7E7E7),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFFF6435),
+                                width: 1.2,
+                              ),
                             ),
                           ),
-                          trailing: isSelected
-                              ? const Icon(
-                                  Icons.check_circle_rounded,
-                                  color: Color(0xFFFF6435),
-                                  size: 21,
-                                )
-                              : null,
-                          onTap: () {
-                            onSelected(value);
-                            Navigator.pop(sheetContext);
-                          },
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: filteredValues.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.search_off_rounded,
+                                    size: 34,
+                                    color: Color(0xFFAAAAAA),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'No $title found',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Color(0xFF888888),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.separated(
+                              physics: const BouncingScrollPhysics(),
+                              padding: const EdgeInsets.only(bottom: 12),
+                              itemCount: filteredValues.length,
+                              separatorBuilder: (_, __) => const Divider(
+                                height: 1,
+                                indent: 16,
+                                endIndent: 16,
+                                color: Color(0xFFF0F0F0),
+                              ),
+                              itemBuilder: (context, index) {
+                                final value = filteredValues[index];
+                                final isSelected = value == current;
+
+                                return ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 1,
+                                  ),
+                                  title: Text(
+                                    value,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w700
+                                          : FontWeight.w400,
+                                      color: isSelected
+                                          ? const Color(0xFFFF6435)
+                                          : const Color(0xFF222222),
+                                    ),
+                                  ),
+                                  trailing: isSelected
+                                      ? const Icon(
+                                          Icons.check_circle_rounded,
+                                          color: Color(0xFFFF6435),
+                                          size: 21,
+                                        )
+                                      : null,
+                                  onTap: () {
+                                    onSelected(value);
+                                    Navigator.pop(sheetContext);
+                                  },
+                                );
+                              },
+                            ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
-  }
-}
+  }}
 
 
 class _AddCharacterSheet extends StatefulWidget {
