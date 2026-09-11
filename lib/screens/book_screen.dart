@@ -22,74 +22,31 @@ class _BookScreenState extends State<BookScreen> {
   final ScrollController _genreScrollController = ScrollController();
 
   final List<BookGenre> genres = const [
-    BookGenre(
-      name: 'Adventure',
-      image: 'assets/genres/adventure.png',
-    ),
-    BookGenre(
-      name: 'Fairy Tale',
-      image: 'assets/genres/fairy_tale.png',
-    ),
-    BookGenre(
-      name: 'Historical',
-      image: 'assets/genres/historical.png',
-    ),
-    BookGenre(
-      name: 'Comedy',
-      image: 'assets/genres/comedy.png',
-    ),
-    BookGenre(
-      name: 'Sad',
-      image: 'assets/genres/sad.png',
-    ),
-    BookGenre(
-      name: 'Non-Fiction',
-      image: 'assets/genres/non_fiction.png',
-    ),
-    BookGenre(
-      name: 'Drama',
-      image: 'assets/genres/drama.png',
-    ),
-    BookGenre(
-      name: 'Fantasy',
-      image: 'assets/genres/fantasy.png',
-    ),
-    BookGenre(
-      name: 'Mystery',
-      image: 'assets/genres/mystery.png',
-    ),
-    BookGenre(
-      name: 'Thriller',
-      image: 'assets/genres/thriller.png',
-    ),
-    BookGenre(
-      name: 'Horror',
-      image: 'assets/genres/horror.png',
-    ),
-    BookGenre(
-      name: 'Science Fiction',
-      image: 'assets/genres/science_fiction.png',
-    ),
-    BookGenre(
-      name: 'Romance',
-      image: 'assets/genres/romance.png',
-    ),
-    BookGenre(
-      name: 'Mythology',
-      image: 'assets/genres/mythology.png',
-    ),
-    BookGenre(
-      name: 'Superhero',
-      image: 'assets/genres/superhero.png',
-    ),
-    BookGenre(
-      name: 'Historical Fiction',
-      image: 'assets/genres/historical_fiction.png',
-    ),
-    BookGenre(
-      name: 'Crime',
-      image: 'assets/genres/crime.png',
-    ),
+    BookGenre(name: 'Horror', image: 'assets/genres/horror.png'),
+    BookGenre(name: 'Comedy', image: 'assets/genres/comedy.png'),
+    BookGenre(name: 'Sad', image: 'assets/genres/sad.png'),
+    BookGenre(name: 'Romance', image: 'assets/genres/romance.png'),
+    BookGenre(name: 'Adventure', image: 'assets/genres/adventure.png'),
+    BookGenre(name: 'Fantasy', image: 'assets/genres/fantasy.png'),
+    BookGenre(name: 'Mystery', image: 'assets/genres/mystery.png'),
+    BookGenre(name: 'Thriller', image: 'assets/genres/thriller.png'),
+    BookGenre(name: 'Drama', image: 'assets/genres/drama.png'),
+    BookGenre(name: 'Crime', image: 'assets/genres/crime.png'),
+    BookGenre(name: 'Science Fiction', image: 'assets/genres/science_fiction.png'),
+    BookGenre(name: 'Mythology', image: 'assets/genres/mythology.png'),
+    BookGenre(name: 'Superhero', image: 'assets/genres/superhero.png'),
+    BookGenre(name: 'Fairy Tale', image: 'assets/genres/fairy_tale.png'),
+    BookGenre(name: 'Historical', image: 'assets/genres/historical.png'),
+    BookGenre(name: 'Historical Fiction', image: 'assets/genres/historical_fiction.png'),
+    BookGenre(name: 'Non-Fiction', image: 'assets/genres/non_fiction.png'),
+    BookGenre(name: 'Detective', image: 'assets/genres/detective.png'),
+    BookGenre(name: 'Young Adult', image: 'assets/genres/young_adult.png'),
+    BookGenre(name: 'Dystopian', image: 'assets/genres/dystopian.png'),
+    BookGenre(name: 'Time Travel', image: 'assets/genres/time_travel.png'),
+    BookGenre(name: 'Dark Fantasy', image: 'assets/genres/dark_fantasy.png'),
+    BookGenre(name: 'Cyberpunk', image: 'assets/genres/cyberpunk.png'),
+    BookGenre(name: 'Post-Apocalyptic', image: 'assets/genres/post_apocalyptic.png'),
+    BookGenre(name: 'Spy', image: 'assets/genres/spy.png'),
   ];
 
   final List<String> languages = const [

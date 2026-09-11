@@ -114,74 +114,31 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
   ];
 
   final List<ScreenplayGenre> genres = const [
-    ScreenplayGenre(
-      name: 'Adventure',
-      image: 'assets/genres/adventure.png',
-    ),
-    ScreenplayGenre(
-      name: 'Fairy Tale',
-      image: 'assets/genres/fairy_tale.png',
-    ),
-    ScreenplayGenre(
-      name: 'Historical',
-      image: 'assets/genres/historical.png',
-    ),
-    ScreenplayGenre(
-      name: 'Comedy',
-      image: 'assets/genres/comedy.png',
-    ),
-    ScreenplayGenre(
-      name: 'Sad',
-      image: 'assets/genres/sad.png',
-    ),
-    ScreenplayGenre(
-      name: 'Non-Fiction',
-      image: 'assets/genres/non_fiction.png',
-    ),
-    ScreenplayGenre(
-      name: 'Drama',
-      image: 'assets/genres/drama.png',
-    ),
-    ScreenplayGenre(
-      name: 'Fantasy',
-      image: 'assets/genres/fantasy.png',
-    ),
-    ScreenplayGenre(
-      name: 'Mystery',
-      image: 'assets/genres/mystery.png',
-    ),
-    ScreenplayGenre(
-      name: 'Thriller',
-      image: 'assets/genres/thriller.png',
-    ),
-    ScreenplayGenre(
-      name: 'Horror',
-      image: 'assets/genres/horror.png',
-    ),
-    ScreenplayGenre(
-      name: 'Science Fiction',
-      image: 'assets/genres/science_fiction.png',
-    ),
-    ScreenplayGenre(
-      name: 'Romance',
-      image: 'assets/genres/romance.png',
-    ),
-    ScreenplayGenre(
-      name: 'Mythology',
-      image: 'assets/genres/mythology.png',
-    ),
-    ScreenplayGenre(
-      name: 'Superhero',
-      image: 'assets/genres/superhero.png',
-    ),
-    ScreenplayGenre(
-      name: 'Historical Fiction',
-      image: 'assets/genres/historical_fiction.png',
-    ),
-    ScreenplayGenre(
-      name: 'Crime',
-      image: 'assets/genres/crime.png',
-    ),
+    ScreenplayGenre(name: 'Horror', image: 'assets/genres/horror.png'),
+    ScreenplayGenre(name: 'Comedy', image: 'assets/genres/comedy.png'),
+    ScreenplayGenre(name: 'Sad', image: 'assets/genres/sad.png'),
+    ScreenplayGenre(name: 'Romance', image: 'assets/genres/romance.png'),
+    ScreenplayGenre(name: 'Adventure', image: 'assets/genres/adventure.png'),
+    ScreenplayGenre(name: 'Fantasy', image: 'assets/genres/fantasy.png'),
+    ScreenplayGenre(name: 'Mystery', image: 'assets/genres/mystery.png'),
+    ScreenplayGenre(name: 'Thriller', image: 'assets/genres/thriller.png'),
+    ScreenplayGenre(name: 'Drama', image: 'assets/genres/drama.png'),
+    ScreenplayGenre(name: 'Crime', image: 'assets/genres/crime.png'),
+    ScreenplayGenre(name: 'Science Fiction', image: 'assets/genres/science_fiction.png'),
+    ScreenplayGenre(name: 'Mythology', image: 'assets/genres/mythology.png'),
+    ScreenplayGenre(name: 'Superhero', image: 'assets/genres/superhero.png'),
+    ScreenplayGenre(name: 'Fairy Tale', image: 'assets/genres/fairy_tale.png'),
+    ScreenplayGenre(name: 'Historical', image: 'assets/genres/historical.png'),
+    ScreenplayGenre(name: 'Historical Fiction', image: 'assets/genres/historical_fiction.png'),
+    ScreenplayGenre(name: 'Non-Fiction', image: 'assets/genres/non_fiction.png'),
+    ScreenplayGenre(name: 'Detective', image: 'assets/genres/detective.png'),
+    ScreenplayGenre(name: 'Young Adult', image: 'assets/genres/young_adult.png'),
+    ScreenplayGenre(name: 'Dystopian', image: 'assets/genres/dystopian.png'),
+    ScreenplayGenre(name: 'Time Travel', image: 'assets/genres/time_travel.png'),
+    ScreenplayGenre(name: 'Dark Fantasy', image: 'assets/genres/dark_fantasy.png'),
+    ScreenplayGenre(name: 'Cyberpunk', image: 'assets/genres/cyberpunk.png'),
+    ScreenplayGenre(name: 'Post-Apocalyptic', image: 'assets/genres/post_apocalyptic.png'),
+    ScreenplayGenre(name: 'Spy', image: 'assets/genres/spy.png'),
   ];
 
 
