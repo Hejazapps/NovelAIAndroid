@@ -17,8 +17,10 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   String _language = 'English';
   String _personality = 'Romantic';
   String _roleInStory = 'Hero';
-  String _storyGenre = 'Adventure';
+  String _storyGenre = 'Horror';
   int _credibilityIndex = 0;
+
+  final ScrollController _genreScrollController = ScrollController();
 
   final List<String> _personalityOptions = const [
     'Romantic',
@@ -74,18 +76,31 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   ];
 
   final List<String> _genreOptions = const [
+    'Horror',
+    'Comedy',
+    'Sad',
+    'Romance',
     'Adventure',
     'Fantasy',
-    'Romance',
     'Mystery',
     'Thriller',
-    'Horror',
-    'Science Fiction',
     'Drama',
-    'Comedy',
-    'Historical',
     'Crime',
+    'Science Fiction',
+    'Mythology',
     'Superhero',
+    'Fairy Tale',
+    'Historical',
+    'Historical Fiction',
+    'Non-Fiction',
+    'Detective',
+    'Young Adult',
+    'Dystopian',
+    'Time Travel',
+    'Dark Fantasy',
+    'Cyberpunk',
+    'Post-Apocalyptic',
+    'Spy',
   ];
 
   final List<String> _languageOptions = const [
@@ -131,6 +146,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     _goalController.dispose();
     _strengthController.dispose();
     _weaknessController.dispose();
+    _genreScrollController.dispose();
     super.dispose();
   }
 
@@ -264,17 +280,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
             ),
             const SizedBox(height: 24),
 
-            _sectionTitle(context, 'Story Genre'),
-            const SizedBox(height: 10),
-            _dropdown(
-              context,
-              value: _storyGenre,
-              items: _genreOptions,
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() => _storyGenre = value);
-              },
-            ),
+            _storyGenreSelector(context),
             const SizedBox(height: 24),
 
             _sectionTitle(context, 'Choose Credibility'),
@@ -440,6 +446,406 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
       ),
+    );
+  }
+
+
+  String _genreAsset(String genre) {
+    switch (genre) {
+      case 'Horror':
+        return 'assets/genres/horror.png';
+      case 'Comedy':
+        return 'assets/genres/comedy.png';
+      case 'Sad':
+        return 'assets/genres/sad.png';
+      case 'Romance':
+        return 'assets/genres/romance.png';
+      case 'Adventure':
+        return 'assets/genres/adventure.png';
+      case 'Fantasy':
+        return 'assets/genres/fantasy.png';
+      case 'Mystery':
+        return 'assets/genres/mystery.png';
+      case 'Thriller':
+        return 'assets/genres/thriller.png';
+      case 'Drama':
+        return 'assets/genres/drama.png';
+      case 'Crime':
+        return 'assets/genres/crime.png';
+      case 'Science Fiction':
+        return 'assets/genres/science_fiction.png';
+      case 'Mythology':
+        return 'assets/genres/mythology.png';
+      case 'Superhero':
+        return 'assets/genres/superhero.png';
+      case 'Fairy Tale':
+        return 'assets/genres/fairy_tale.png';
+      case 'Historical':
+        return 'assets/genres/historical.png';
+      case 'Historical Fiction':
+        return 'assets/genres/historical_fiction.png';
+      case 'Non-Fiction':
+        return 'assets/genres/non_fiction.png';
+      case 'Detective':
+        return 'assets/genres/detective.png';
+      case 'Young Adult':
+        return 'assets/genres/young_adult.png';
+      case 'Dystopian':
+        return 'assets/genres/dystopian.png';
+      case 'Time Travel':
+        return 'assets/genres/time_travel.png';
+      case 'Dark Fantasy':
+        return 'assets/genres/dark_fantasy.png';
+      case 'Cyberpunk':
+        return 'assets/genres/cyberpunk.png';
+      case 'Post-Apocalyptic':
+        return 'assets/genres/post_apocalyptic.png';
+      case 'Spy':
+        return 'assets/genres/spy.png';
+      default:
+        return 'assets/genres/horror.png';
+    }
+  }
+
+  void _selectStoryGenre(String genre, {bool autoScroll = true}) {
+    setState(() {
+      _storyGenre = genre;
+    });
+
+    if (!autoScroll) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_genreScrollController.hasClients) return;
+
+      final index = _genreOptions.indexOf(genre);
+      if (index < 0) return;
+
+      const itemWidth = 76.0;
+      const separator = 14.0;
+      final rawOffset = index * (itemWidth + separator);
+      final viewport = _genreScrollController.position.viewportDimension;
+      final centeredOffset = rawOffset - ((viewport - itemWidth) / 2);
+
+      final target = centeredOffset.clamp(
+        _genreScrollController.position.minScrollExtent,
+        _genreScrollController.position.maxScrollExtent,
+      );
+
+      _genreScrollController.animateTo(
+        target.toDouble(),
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
+
+  Widget _storyGenreSelector(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accent =
+        isDark ? const Color(0xFF9146E8) : const Color(0xFFFF6435);
+    final textColor =
+        isDark ? Colors.white : const Color(0xFF1B1B1B);
+    final muted =
+        isDark ? const Color(0xFFB9AEC8) : const Color(0xFF666666);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Story Genre',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => _showAllGenres(context),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(60, 34),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                'View All',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: accent,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 112,
+          child: ListView.separated(
+            controller: _genreScrollController,
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: _genreOptions.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 14),
+            itemBuilder: (context, index) {
+              final genre = _genreOptions[index];
+              final selected = genre == _storyGenre;
+
+              return GestureDetector(
+                onTap: () {
+                  _selectStoryGenre(genre);
+                },
+                child: SizedBox(
+                  width: 76,
+                  child: Column(
+                    children: [
+                      Stack(
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            width: 76,
+                            height: 76,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              border: Border.all(
+                                color: selected
+                                    ? accent
+                                    : Colors.transparent,
+                                width: selected ? 2 : 1,
+                              ),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(13),
+                              child: Image.asset(
+                                _genreAsset(genre),
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) {
+                                  return Container(
+                                    color: isDark
+                                        ? const Color(0xFF21152F)
+                                        : const Color(0xFFF2F2F2),
+                                    child: Icon(
+                                      Icons.auto_stories_rounded,
+                                      color: muted,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          if (selected)
+                            Positioned(
+                              top: 6,
+                              right: 6,
+                              child: Container(
+                                width: 20,
+                                height: 20,
+                                decoration: BoxDecoration(
+                                  color: accent,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.check_rounded,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 7),
+                      Text(
+                        genre,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight:
+                              selected ? FontWeight.w600 : FontWeight.w500,
+                          color: selected ? accent : textColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showAllGenres(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final background =
+        isDark ? const Color(0xFF21152F) : Colors.white;
+    final accent =
+        isDark ? const Color(0xFF9146E8) : const Color(0xFFFF6435);
+    final textColor =
+        isDark ? Colors.white : const Color(0xFF1B1B1B);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.62,
+          ),
+          decoration: BoxDecoration(
+            color: background,
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(24),
+            ),
+          ),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.paddingOf(sheetContext).bottom,
+          ),
+          child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 10),
+                Container(
+                  width: 42,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF6F5A80)
+                        : const Color(0xFFDADADA),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Story Genre',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: textColor,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(sheetContext),
+                        icon: Icon(
+                          Icons.close_rounded,
+                          color: textColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+                    physics: const BouncingScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      mainAxisSpacing: 14,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 0.84,
+                    ),
+                    itemCount: _genreOptions.length,
+                    itemBuilder: (context, index) {
+                      final genre = _genreOptions[index];
+                      final selected = genre == _storyGenre;
+
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.pop(sheetContext);
+                          _selectStoryGenre(genre);
+                        },
+                        child: Column(
+                          children: [
+                            Stack(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: selected
+                                          ? accent
+                                          : Colors.transparent,
+                                      width: selected ? 2 : 1,
+                                    ),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: AspectRatio(
+                                      aspectRatio: 1,
+                                      child: Image.asset(
+                                        _genreAsset(genre),
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) {
+                                          return Container(
+                                            color: isDark
+                                                ? const Color(0xFF2A1A3B)
+                                                : const Color(0xFFF2F2F2),
+                                            child: const Icon(
+                                              Icons.auto_stories_rounded,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                if (selected)
+                                  Positioned(
+                                    top: 5,
+                                    right: 5,
+                                    child: Container(
+                                      width: 19,
+                                      height: 19,
+                                      decoration: BoxDecoration(
+                                        color: accent,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.check_rounded,
+                                        size: 13,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              genre,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: selected
+                                    ? FontWeight.w600
+                                    : FontWeight.w500,
+                                color: selected ? accent : textColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+      },
     );
   }
 

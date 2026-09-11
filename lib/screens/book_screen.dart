@@ -19,6 +19,8 @@ class _BookScreenState extends State<BookScreen> {
 
   int chapterCount = 4;
 
+  final ScrollController _genreScrollController = ScrollController();
+
   final List<BookGenre> genres = const [
     BookGenre(
       name: 'Adventure',
@@ -142,18 +144,53 @@ class _BookScreenState extends State<BookScreen> {
     'Poetic',
   ];
 
+
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color _pageBackground(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF160D26) : const Color(0xFFF9F9F9);
+
+  Color _surface(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF21152F) : Colors.white;
+
+  Color _surfaceAlt(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF2A1A3B) : const Color(0xFFF1F1F1);
+
+  Color _border(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF49305F) : const Color(0xFFE8E8E8);
+
+  Color _text(BuildContext context) =>
+      _isDark(context) ? Colors.white : const Color(0xFF1B1B1B);
+
+  Color _bodyText(BuildContext context) =>
+      _isDark(context) ? const Color(0xFFE9E2F3) : const Color(0xFF222222);
+
+  Color _muted(BuildContext context) =>
+      _isDark(context) ? const Color(0xFFB9AEC8) : const Color(0xFF777777);
+
+  Color _hint(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF81758F) : const Color(0xFFA0A0A0);
+
+  Color _accent(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF9146E8) : const Color(0xFFFF6435);
+
+  Color _accentSoft(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF2D1A43) : const Color(0xFFFFF0EA);
+
   @override
   void dispose() {
     _titleController.dispose();
     _authorController.dispose();
     _descriptionController.dispose();
+    _genreScrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
+      backgroundColor: _pageBackground(context),
       body: SafeArea(
         child: Column(
           children: [
@@ -261,48 +298,48 @@ class _BookScreenState extends State<BookScreen> {
               Navigator.pop(context);
             },
             borderRadius: BorderRadius.circular(30),
-            child: const SizedBox(
+            child: SizedBox(
               width: 42,
               height: 42,
               child: Icon(
                 Icons.arrow_back_ios_new_rounded,
                 size: 21,
-                color: Colors.black,
+                color: _text(context),
               ),
             ),
           ),
-
           const SizedBox(width: 4),
-
-          const Expanded(
+          Expanded(
             child: Text(
               'Create Book',
               style: TextStyle(
                 fontSize: 23,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF171717),
+                color: _text(context),
               ),
             ),
           ),
-
           Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _surface(context),
               borderRadius: BorderRadius.circular(13),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-              ],
+              border: Border.all(color: _border(context)),
+              boxShadow: _isDark(context)
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
             ),
-            child: const Icon(
+            child: Icon(
               Icons.workspace_premium_outlined,
               size: 21,
-              color: Color(0xFFFF6435),
+              color: _accent(context),
             ),
           ),
         ],
@@ -324,10 +361,10 @@ class _BookScreenState extends State<BookScreen> {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF1B1B1B),
+            color: _text(context),
           ),
         ),
 
@@ -336,23 +373,23 @@ class _BookScreenState extends State<BookScreen> {
         Container(
           height: 52,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: _surface(context),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: const Color(0xFFE8E8E8),
+              color: _border(context),
             ),
           ),
           child: TextField(
             controller: controller,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF222222),
+              color: _bodyText(context),
             ),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: const TextStyle(
+              hintStyle: TextStyle(
                 fontSize: 14,
-                color: Color(0xFFA0A0A0),
+                color: _hint(context),
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
@@ -374,12 +411,12 @@ class _BookScreenState extends State<BookScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Description',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF1B1B1B),
+            color: _text(context),
           ),
         ),
 
@@ -388,10 +425,10 @@ class _BookScreenState extends State<BookScreen> {
         Container(
           height: 150,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: _surface(context),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: const Color(0xFFE8E8E8),
+              color: _border(context),
             ),
           ),
           child: TextField(
@@ -399,19 +436,19 @@ class _BookScreenState extends State<BookScreen> {
             expands: true,
             maxLines: null,
             textAlignVertical: TextAlignVertical.top,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               height: 1.45,
-              color: Color(0xFF222222),
+              color: _bodyText(context),
             ),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Describe your book idea...',
               hintStyle: TextStyle(
                 fontSize: 14,
-                color: Color(0xFFA0A0A0),
+                color: _hint(context),
               ),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.all(15),
+              contentPadding: const EdgeInsets.all(15),
             ),
           ),
         ),
@@ -429,13 +466,13 @@ class _BookScreenState extends State<BookScreen> {
       children: [
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
                 'Chapter',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF1B1B1B),
+                  color: _text(context),
                 ),
               ),
             ),
@@ -450,15 +487,15 @@ class _BookScreenState extends State<BookScreen> {
               ),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF0EA),
+                color: _accentSoft(context),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 '$chapterCount',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFFFF6435),
+                  color: _accent(context),
                 ),
               ),
             ),
@@ -470,10 +507,12 @@ class _BookScreenState extends State<BookScreen> {
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             trackHeight: 4,
-            activeTrackColor: const Color(0xFFFF6435),
-            inactiveTrackColor: const Color(0xFFE5E5E5),
-            thumbColor: const Color(0xFFFF6435),
-            overlayColor: const Color(0xFFFF6435).withValues(
+            activeTrackColor: _accent(context),
+            inactiveTrackColor: _isDark(context)
+                ? const Color(0xFF2A1A3B)
+                : const Color(0xFFE5E5E5),
+            thumbColor: _accent(context),
+            overlayColor: _accent(context).withValues(
               alpha: 0.12,
             ),
           ),
@@ -494,8 +533,8 @@ class _BookScreenState extends State<BookScreen> {
           ),
         ),
 
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 2),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -503,14 +542,14 @@ class _BookScreenState extends State<BookScreen> {
                 '1',
                 style: TextStyle(
                   fontSize: 11,
-                  color: Color(0xFF999999),
+                  color: _muted(context),
                 ),
               ),
               Text(
                 '25',
                 style: TextStyle(
                   fontSize: 11,
-                  color: Color(0xFF999999),
+                  color: _muted(context),
                 ),
               ),
             ],
@@ -530,27 +569,27 @@ class _BookScreenState extends State<BookScreen> {
       children: [
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
                 'Select Genre',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF1B1B1B),
+                  color: _text(context),
                 ),
               ),
             ),
 
             InkWell(
               onTap: _showAllGenres,
-              child: const Padding(
-                padding: EdgeInsets.all(6),
+              child: Padding(
+                padding: const EdgeInsets.all(6),
                 child: Text(
                   'View All',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFFFF6435),
+                    color: _accent(context),
                   ),
                 ),
               ),
@@ -563,6 +602,7 @@ class _BookScreenState extends State<BookScreen> {
         SizedBox(
           height: 130,
           child: ListView.separated(
+            controller: _genreScrollController,
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             itemCount: genres.length,
@@ -584,11 +624,7 @@ class _BookScreenState extends State<BookScreen> {
     final selected = selectedGenre == genre.name;
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedGenre = genre.name;
-        });
-      },
+      onTap: () => _selectGenre(genre.name),
       child: SizedBox(
         width: 92,
         child: Column(
@@ -604,7 +640,7 @@ class _BookScreenState extends State<BookScreen> {
                 borderRadius: BorderRadius.circular(18),
                 border: selected
                     ? Border.all(
-                  color: const Color(0xFFFF6435),
+                  color: _accent(context),
                   width: 2,
                 )
                     : null,
@@ -619,16 +655,24 @@ class _BookScreenState extends State<BookScreen> {
                     Image.asset(
                       genre.image,
                       fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: _surfaceAlt(context),
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.auto_stories_outlined,
+                          color: _muted(context),
+                        ),
+                      ),
                     ),
 
                     if (selected)
-                      const Positioned(
+                      Positioned(
                         top: 6,
                         right: 6,
                         child: CircleAvatar(
                           radius: 10,
-                          backgroundColor: Color(0xFFFF6435),
-                          child: Icon(
+                          backgroundColor: _accent(context),
+                          child: const Icon(
                             Icons.check_rounded,
                             color: Colors.white,
                             size: 13,
@@ -653,8 +697,8 @@ class _BookScreenState extends State<BookScreen> {
                     ? FontWeight.w700
                     : FontWeight.w500,
                 color: selected
-                    ? const Color(0xFFFF6435)
-                    : const Color(0xFF333333),
+                    ? _accent(context)
+                    : _text(context),
               ),
             ),
           ],
@@ -663,40 +707,65 @@ class _BookScreenState extends State<BookScreen> {
     );
   }
 
+  void _selectGenre(String genreName) {
+    final index = genres.indexWhere((genre) => genre.name == genreName);
+    if (index == -1) return;
+
+    setState(() {
+      selectedGenre = genreName;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_genreScrollController.hasClients || !mounted) return;
+
+      const itemWidth = 92.0;
+      const spacing = 10.0;
+      final screenWidth = MediaQuery.sizeOf(context).width;
+
+      double targetOffset =
+          (index * (itemWidth + spacing)) -
+          ((screenWidth - itemWidth) / 2);
+
+      targetOffset = targetOffset.clamp(
+        0.0,
+        _genreScrollController.position.maxScrollExtent,
+      );
+
+      _genreScrollController.animateTo(
+        targetOffset,
+        duration: const Duration(milliseconds: 420),
+        curve: Curves.easeInOutCubic,
+      );
+    });
+  }
+
   void _showAllGenres() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: _surface(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(25),
         ),
       ),
-      builder: (context) {
+      builder: (sheetContext) {
         return SafeArea(
           child: SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.72,
+            height: MediaQuery.sizeOf(context).height * 0.50,
             child: Column(
               children: [
                 const SizedBox(height: 10),
-
                 Container(
                   width: 42,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFDADADA),
+                    color: _border(context),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    20,
-                    20,
-                    20,
-                    15,
-                  ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 15),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
@@ -704,21 +773,16 @@ class _BookScreenState extends State<BookScreen> {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
+                        color: _text(context),
                       ),
                     ),
                   ),
                 ),
-
                 Expanded(
                   child: GridView.builder(
-                    padding: const EdgeInsets.fromLTRB(
-                      20,
-                      0,
-                      20,
-                      20,
-                    ),
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                     gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
                       mainAxisSpacing: 18,
                       crossAxisSpacing: 15,
@@ -727,16 +791,19 @@ class _BookScreenState extends State<BookScreen> {
                     itemCount: genres.length,
                     itemBuilder: (context, index) {
                       final genre = genres[index];
-                      final selected =
-                          selectedGenre == genre.name;
+                      final selected = selectedGenre == genre.name;
 
                       return GestureDetector(
                         onTap: () {
-                          setState(() {
-                            selectedGenre = genre.name;
-                          });
-
-                          Navigator.pop(context);
+                          Navigator.pop(sheetContext);
+                          Future.delayed(
+                            const Duration(milliseconds: 120),
+                            () {
+                              if (mounted) {
+                                _selectGenre(genre.name);
+                              }
+                            },
+                          );
                         },
                         child: Column(
                           children: [
@@ -746,31 +813,53 @@ class _BookScreenState extends State<BookScreen> {
                                   selected ? 3 : 0,
                                 ),
                                 decoration: BoxDecoration(
-                                  borderRadius:
-                                  BorderRadius.circular(18),
+                                  borderRadius: BorderRadius.circular(18),
                                   border: selected
                                       ? Border.all(
-                                    color: const Color(
-                                      0xFFFF6435,
-                                    ),
-                                    width: 2,
-                                  )
+                                          color: _accent(context),
+                                          width: 2,
+                                        )
                                       : null,
                                 ),
                                 child: ClipRRect(
-                                  borderRadius:
-                                  BorderRadius.circular(14),
-                                  child: Image.asset(
-                                    genre.image,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      Image.asset(
+                                        genre.image,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) =>
+                                            Container(
+                                          color: _surfaceAlt(context),
+                                          alignment: Alignment.center,
+                                          child: Icon(
+                                            Icons.auto_stories_outlined,
+                                            color: _muted(context),
+                                          ),
+                                        ),
+                                      ),
+                                      if (selected)
+                                        Positioned(
+                                          top: 6,
+                                          right: 6,
+                                          child: CircleAvatar(
+                                            radius: 10,
+                                            backgroundColor:
+                                                _accent(context),
+                                            child: const Icon(
+                                              Icons.check_rounded,
+                                              size: 13,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ),
                               ),
                             ),
-
                             const SizedBox(height: 7),
-
                             Text(
                               genre.name,
                               maxLines: 1,
@@ -780,6 +869,9 @@ class _BookScreenState extends State<BookScreen> {
                                 fontWeight: selected
                                     ? FontWeight.w700
                                     : FontWeight.w500,
+                                color: selected
+                                    ? _accent(context)
+                                    : _text(context),
                               ),
                             ),
                           ],
@@ -820,10 +912,10 @@ class _BookScreenState extends State<BookScreen> {
             vertical: 10,
           ),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: _surface(context),
             borderRadius: BorderRadius.circular(15),
             border: Border.all(
-              color: const Color(0xFFE9E9E9),
+              color: _border(context),
             ),
           ),
           child: Row(
@@ -832,13 +924,13 @@ class _BookScreenState extends State<BookScreen> {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF0EA),
+                  color: _accentSoft(context),
                   borderRadius: BorderRadius.circular(11),
                 ),
                 child: Icon(
                   icon,
                   size: 19,
-                  color: const Color(0xFFFF6435),
+                  color: _accent(context),
                 ),
               ),
 
@@ -850,9 +942,9 @@ class _BookScreenState extends State<BookScreen> {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF888888),
+                        color: _muted(context),
                       ),
                     ),
 
@@ -860,19 +952,19 @@ class _BookScreenState extends State<BookScreen> {
 
                     Text(
                       value,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF222222),
+                        color: _bodyText(context),
                       ),
                     ),
                   ],
                 ),
               ),
 
-              const Icon(
+              Icon(
                 Icons.keyboard_arrow_down_rounded,
-                color: Color(0xFF777777),
+                color: _muted(context),
               ),
             ],
           ),
@@ -895,28 +987,32 @@ class _BookScreenState extends State<BookScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Book Length',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF1B1B1B),
+            color: _text(context),
           ),
         ),
-
         const SizedBox(height: 12),
-
         Container(
           height: 48,
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: const Color(0xFFF1F1F1),
+            color: _isDark(context)
+                ? const Color(0xFF2A2138)
+                : Colors.white,
             borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: _isDark(context)
+                  ? const Color(0xFF3A2F4B)
+                  : const Color(0xFFEDEDED),
+            ),
           ),
           child: Row(
             children: values.map((value) {
-              final selected =
-                  selectedLength == value;
+              final selected = selectedLength == value;
 
               return Expanded(
                 child: GestureDetector(
@@ -926,26 +1022,15 @@ class _BookScreenState extends State<BookScreen> {
                     });
                   },
                   child: AnimatedContainer(
-                    duration: const Duration(
-                      milliseconds: 180,
-                    ),
+                    duration: const Duration(milliseconds: 180),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: selected
-                          ? Colors.white
+                          ? (_isDark(context)
+                              ? const Color(0xFF514368)
+                              : const Color(0xFFF1F1F1))
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(11),
-                      boxShadow: selected
-                          ? [
-                        BoxShadow(
-                          color: Colors.black.withValues(
-                            alpha: 0.07,
-                          ),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                          : null,
                     ),
                     child: Text(
                       value,
@@ -954,9 +1039,9 @@ class _BookScreenState extends State<BookScreen> {
                         fontWeight: selected
                             ? FontWeight.w700
                             : FontWeight.w500,
-                        color: selected
-                            ? const Color(0xFFFF6435)
-                            : const Color(0xFF707070),
+                        color: _isDark(context)
+                            ? Colors.white
+                            : const Color(0xFF171717),
                       ),
                     ),
                   ),
@@ -984,7 +1069,7 @@ class _BookScreenState extends State<BookScreen> {
           12,
         ),
         decoration: BoxDecoration(
-          color: const Color(0xFFF9F9F9),
+          color: _pageBackground(context),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
@@ -998,7 +1083,7 @@ class _BookScreenState extends State<BookScreen> {
           child: Container(
             height: 54,
             decoration: BoxDecoration(
-              color: const Color(0xFFFF6435),
+              color: _accent(context),
               borderRadius: BorderRadius.circular(16),
             ),
             alignment: Alignment.center,
@@ -1071,17 +1156,24 @@ class _BookScreenState extends State<BookScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(title),
-          content: Text(message),
+          backgroundColor: _surface(context),
+          title: Text(
+            title,
+            style: TextStyle(color: _text(context)),
+          ),
+          content: Text(
+            message,
+            style: TextStyle(color: _muted(context)),
+          ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text(
+              child: Text(
                 'OK',
                 style: TextStyle(
-                  color: Color(0xFFFF6435),
+                  color: _accent(context),
                 ),
               ),
             ),
@@ -1105,12 +1197,7 @@ class _BookScreenState extends State<BookScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(25),
-        ),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return _BookSelectorSheet(
           title: title,
@@ -1178,67 +1265,88 @@ class _BookSelectorSheetState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.50;
+    final showSearch = widget.searchable && widget.values.length > 10;
+    final items = filtered;
+
+    final background =
+        isDark ? const Color(0xFF21152F) : Colors.white;
+    final secondary =
+        isDark ? const Color(0xFF2A1A3B) : const Color(0xFFF4F4F4);
+    final border =
+        isDark ? const Color(0xFF49305F) : const Color(0xFFE8E8E8);
+    final accent =
+        isDark ? const Color(0xFF9146E8) : const Color(0xFFFF6435);
+    final muted =
+        isDark ? const Color(0xFFB9AEC8) : const Color(0xFF777777);
+    final textColor =
+        isDark ? Colors.white : const Color(0xFF222222);
+
+    final naturalHeight = showSearch
+        ? maxHeight
+        : (88.0 + widget.values.length * 56.0)
+            .clamp(190.0, maxHeight)
+            .toDouble();
+
     return SafeArea(
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.70,
+      top: false,
+      child: Container(
+        height: naturalHeight,
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(24),
+          ),
+        ),
         child: Column(
           children: [
             const SizedBox(height: 10),
-
             Container(
               width: 42,
               height: 5,
               decoration: BoxDecoration(
-                color: const Color(0xFFDADADA),
+                color: isDark
+                    ? const Color(0xFF6F5A80)
+                    : const Color(0xFFDADADA),
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-
             Padding(
-              padding: const EdgeInsets.fromLTRB(
-                20,
-                18,
-                20,
-                12,
-              ),
+              padding: const EdgeInsets.fromLTRB(20, 16, 14, 10),
               child: Row(
                 children: [
                   Expanded(
                     child: Text(
                       widget.title,
-                      style: const TextStyle(
-                        fontSize: 20,
+                      style: TextStyle(
+                        fontSize: 18,
                         fontWeight: FontWeight.w700,
+                        color: textColor,
                       ),
                     ),
                   ),
-
                   IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
                       Icons.close_rounded,
+                      size: 21,
+                      color: textColor,
                     ),
                   ),
                 ],
               ),
             ),
-
-            if (widget.searchable &&
-                widget.values.length > 10)
+            if (showSearch)
               Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  20,
-                  0,
-                  20,
-                  12,
-                ),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
                 child: Container(
                   height: 46,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF4F4F4),
+                    color: secondary,
                     borderRadius: BorderRadius.circular(13),
+                    border: Border.all(color: border),
                   ),
                   child: TextField(
                     controller: _searchController,
@@ -1247,67 +1355,81 @@ class _BookSelectorSheetState
                         search = value;
                       });
                     },
-                    decoration: const InputDecoration(
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: textColor,
+                    ),
+                    decoration: InputDecoration(
                       hintText: 'Search',
+                      hintStyle: TextStyle(color: muted),
                       prefixIcon: Icon(
                         Icons.search_rounded,
+                        color: muted,
                       ),
                       border: InputBorder.none,
                     ),
                   ),
                 ),
               ),
-
             Expanded(
-              child: ListView.separated(
-                itemCount: filtered.length,
-                separatorBuilder: (_, __) {
-                  return const Divider(
-                    height: 1,
-                    indent: 20,
-                    endIndent: 20,
-                  );
-                },
-                itemBuilder: (context, index) {
-                  final value = filtered[index];
-
-                  final selected =
-                      value == widget.selectedValue;
-
-                  return ListTile(
-                    contentPadding:
-                    const EdgeInsets.symmetric(
-                      horizontal: 20,
-                    ),
-                    title: Text(
-                      value,
-                      style: TextStyle(
-                        fontWeight: selected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                        color: selected
-                            ? const Color(0xFFFF6435)
-                            : const Color(0xFF222222),
+              child: items.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No results found',
+                        style: TextStyle(color: muted),
                       ),
-                    ),
-                    trailing: selected
-                        ? const Icon(
-                      Icons.check_circle_rounded,
-                      color: Color(0xFFFF6435),
                     )
-                        : null,
-                    onTap: () {
-                      widget.onSelected(value);
-                    },
-                  );
-                },
-              ),
+                  : ListView.separated(
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: items.length,
+                      separatorBuilder: (_, __) => Divider(
+                        height: 1,
+                        indent: 20,
+                        endIndent: 20,
+                        color: border,
+                      ),
+                      itemBuilder: (context, index) {
+                        final value = items[index];
+                        final selected =
+                            value == widget.selectedValue;
+
+                        return SizedBox(
+                          height: 56,
+                          child: ListTile(
+                            contentPadding:
+                                const EdgeInsets.symmetric(horizontal: 20),
+                            title: Text(
+                              value,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: selected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: selected ? accent : textColor,
+                              ),
+                            ),
+                            trailing: selected
+                                ? Icon(
+                                    Icons.check_circle_rounded,
+                                    color: accent,
+                                  )
+                                : null,
+                            onTap: () {
+                              widget.onSelected(value);
+                            },
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
       ),
     );
   }
+
 }
 
 // ============================================================
