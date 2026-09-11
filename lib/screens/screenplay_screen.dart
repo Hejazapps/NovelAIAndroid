@@ -24,6 +24,8 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
 
   int sceneCount = 4;
 
+  final ScrollController _genreScrollController = ScrollController();
+
   final List<String> scriptFormats = const [
     'Standard Screenplay',
     'Film Script',
@@ -182,6 +184,40 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
     ),
   ];
 
+
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color _pageBackground(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF160D26) : const Color(0xFFF9F9F9);
+
+  Color _surface(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF21152F) : Colors.white;
+
+  Color _surfaceAlt(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF2A1A3B) : const Color(0xFFF1F1F1);
+
+  Color _border(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF49305F) : const Color(0xFFE8E8E8);
+
+  Color _text(BuildContext context) =>
+      _isDark(context) ? Colors.white : const Color(0xFF1B1B1B);
+
+  Color _bodyText(BuildContext context) =>
+      _isDark(context) ? const Color(0xFFE9E2F3) : const Color(0xFF222222);
+
+  Color _muted(BuildContext context) =>
+      _isDark(context) ? const Color(0xFFB9AEC8) : const Color(0xFF777777);
+
+  Color _hint(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF81758F) : const Color(0xFFA0A0A0);
+
+  Color _accent(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF9146E8) : const Color(0xFFFF6435);
+
+  Color _accentSoft(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF2D1A43) : const Color(0xFFFFF0EA);
+
   @override
   void dispose() {
     _titleController.dispose();
@@ -189,13 +225,14 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
     _ideaController.dispose();
     _synopsisController.dispose();
     _settingsController.dispose();
+    _genreScrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
+      backgroundColor: _pageBackground(context),
 
       body: SafeArea(
         child: Column(
@@ -376,12 +413,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        14,
-        10,
-        20,
-        12,
-      ),
+      padding: const EdgeInsets.fromLTRB(14, 10, 20, 12),
       child: Row(
         children: [
           InkWell(
@@ -389,50 +421,48 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
               Navigator.pop(context);
             },
             borderRadius: BorderRadius.circular(30),
-            child: const SizedBox(
+            child: SizedBox(
               width: 42,
               height: 42,
               child: Icon(
                 Icons.arrow_back_ios_new_rounded,
                 size: 21,
-                color: Colors.black,
+                color: _text(context),
               ),
             ),
           ),
-
           const SizedBox(width: 4),
-
-          const Expanded(
+          Expanded(
             child: Text(
               'Create Screenplay',
               style: TextStyle(
                 fontSize: 23,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF171717),
+                color: _text(context),
               ),
             ),
           ),
-
           Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _surface(context),
               borderRadius: BorderRadius.circular(13),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(
-                    alpha: 0.06,
-                  ),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-              ],
+              border: Border.all(color: _border(context)),
+              boxShadow: _isDark(context)
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
             ),
-            child: const Icon(
+            child: Icon(
               Icons.workspace_premium_outlined,
               size: 21,
-              color: Color(0xFFFF6435),
+              color: _accent(context),
             ),
           ),
         ],
@@ -454,10 +484,10 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF1B1B1B),
+            color: _text(context),
           ),
         ),
 
@@ -466,23 +496,23 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
         Container(
           height: 52,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: _surface(context),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: const Color(0xFFE8E8E8),
+              color: _border(context),
             ),
           ),
           child: TextField(
             controller: controller,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF222222),
+              color: _bodyText(context),
             ),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: const TextStyle(
+              hintStyle: TextStyle(
                 fontSize: 14,
-                color: Color(0xFFA0A0A0),
+                color: _hint(context),
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
@@ -511,10 +541,10 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF1B1B1B),
+            color: _text(context),
           ),
         ),
 
@@ -523,10 +553,10 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
         Container(
           height: height,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: _surface(context),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: const Color(0xFFE8E8E8),
+              color: _border(context),
             ),
           ),
           child: TextField(
@@ -534,17 +564,17 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
             expands: true,
             maxLines: null,
             textAlignVertical: TextAlignVertical.top,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               height: 1.45,
-              color: Color(0xFF222222),
+              color: _bodyText(context),
             ),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: const TextStyle(
+              hintStyle: TextStyle(
                 fontSize: 14,
                 height: 1.4,
-                color: Color(0xFFA0A0A0),
+                color: _hint(context),
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(15),
@@ -565,27 +595,27 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
       children: [
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
                 'Select Genre',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF1B1B1B),
+                  color: _text(context),
                 ),
               ),
             ),
 
             InkWell(
               onTap: _showAllGenres,
-              child: const Padding(
-                padding: EdgeInsets.all(6),
+              child: Padding(
+                padding: const EdgeInsets.all(6),
                 child: Text(
                   'View All',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFFFF6435),
+                    color: _accent(context),
                   ),
                 ),
               ),
@@ -598,6 +628,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
         SizedBox(
           height: 130,
           child: ListView.separated(
+            controller: _genreScrollController,
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             itemCount: genres.length,
@@ -622,11 +653,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
         selectedGenre == genre.name;
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedGenre = genre.name;
-        });
-      },
+      onTap: () => _selectGenre(genre.name),
       child: SizedBox(
         width: 92,
         child: Column(
@@ -644,8 +671,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
                 BorderRadius.circular(18),
                 border: selected
                     ? Border.all(
-                  color:
-                  const Color(0xFFFF6435),
+                  color: _accent(context),
                   width: 2,
                 )
                     : null,
@@ -661,17 +687,24 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
                     Image.asset(
                       genre.image,
                       fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: _surfaceAlt(context),
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.movie_creation_outlined,
+                          color: _muted(context),
+                        ),
+                      ),
                     ),
 
                     if (selected)
-                      const Positioned(
+                      Positioned(
                         top: 6,
                         right: 6,
                         child: CircleAvatar(
                           radius: 10,
-                          backgroundColor:
-                          Color(0xFFFF6435),
-                          child: Icon(
+                          backgroundColor: _accent(context),
+                          child: const Icon(
                             Icons.check_rounded,
                             color: Colors.white,
                             size: 13,
@@ -696,8 +729,8 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
                     ? FontWeight.w700
                     : FontWeight.w500,
                 color: selected
-                    ? const Color(0xFFFF6435)
-                    : const Color(0xFF333333),
+                    ? _accent(context)
+                    : _text(context),
               ),
             ),
           ],
@@ -710,152 +743,171 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
   // VIEW ALL GENRES
   // ============================================================
 
+  void _selectGenre(String genreName) {
+    final index = genres.indexWhere((genre) => genre.name == genreName);
+    if (index == -1) return;
+
+    setState(() {
+      selectedGenre = genreName;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_genreScrollController.hasClients || !mounted) return;
+
+      const itemWidth = 92.0;
+      const spacing = 10.0;
+      final screenWidth = MediaQuery.sizeOf(context).width;
+
+      double targetOffset =
+          (index * (itemWidth + spacing)) -
+          ((screenWidth - itemWidth) / 2);
+
+      targetOffset = targetOffset.clamp(
+        0.0,
+        _genreScrollController.position.maxScrollExtent,
+      );
+
+      _genreScrollController.animateTo(
+        targetOffset,
+        duration: const Duration(milliseconds: 420),
+        curve: Curves.easeInOutCubic,
+      );
+    });
+  }
+
   void _showAllGenres() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: _surface(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(25),
         ),
       ),
-      builder: (context) {
+      builder: (sheetContext) {
         return SafeArea(
           child: SizedBox(
-            height:
-            MediaQuery.sizeOf(context).height *
-                0.72,
+            height: MediaQuery.sizeOf(context).height * 0.50,
             child: Column(
               children: [
                 const SizedBox(height: 10),
-
                 Container(
                   width: 42,
                   height: 5,
                   decoration: BoxDecoration(
-                    color:
-                    const Color(0xFFDADADA),
-                    borderRadius:
-                    BorderRadius.circular(10),
+                    color: _border(context),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    20,
-                    20,
-                    20,
-                    15,
-                  ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 15),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Select Genre',
                       style: TextStyle(
                         fontSize: 20,
-                        fontWeight:
-                        FontWeight.w700,
+                        fontWeight: FontWeight.w700,
+                        color: _text(context),
                       ),
                     ),
                   ),
                 ),
-
                 Expanded(
                   child: GridView.builder(
-                    padding:
-                    const EdgeInsets.fromLTRB(
-                      20,
-                      0,
-                      20,
-                      20,
-                    ),
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                     gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
                       mainAxisSpacing: 18,
                       crossAxisSpacing: 15,
                       childAspectRatio: 0.82,
                     ),
                     itemCount: genres.length,
-                    itemBuilder:
-                        (context, index) {
-                      final genre =
-                      genres[index];
-
-                      final selected =
-                          selectedGenre ==
-                              genre.name;
+                    itemBuilder: (context, index) {
+                      final genre = genres[index];
+                      final selected = selectedGenre == genre.name;
 
                       return GestureDetector(
                         onTap: () {
-                          setState(() {
-                            selectedGenre =
-                                genre.name;
-                          });
-
-                          Navigator.pop(context);
+                          Navigator.pop(sheetContext);
+                          Future.delayed(
+                            const Duration(milliseconds: 120),
+                            () {
+                              if (mounted) {
+                                _selectGenre(genre.name);
+                              }
+                            },
+                          );
                         },
                         child: Column(
                           children: [
                             Expanded(
                               child: Container(
-                                padding:
-                                EdgeInsets.all(
+                                padding: EdgeInsets.all(
                                   selected ? 3 : 0,
                                 ),
-                                decoration:
-                                BoxDecoration(
-                                  borderRadius:
-                                  BorderRadius
-                                      .circular(
-                                    18,
-                                  ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(18),
                                   border: selected
                                       ? Border.all(
-                                    color:
-                                    const Color(
-                                      0xFFFF6435,
-                                    ),
-                                    width: 2,
-                                  )
+                                          color: _accent(context),
+                                          width: 2,
+                                        )
                                       : null,
                                 ),
                                 child: ClipRRect(
-                                  borderRadius:
-                                  BorderRadius
-                                      .circular(
-                                    14,
-                                  ),
-                                  child:
-                                  Image.asset(
-                                    genre.image,
-                                    width: double
-                                        .infinity,
-                                    fit:
-                                    BoxFit.cover,
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      Image.asset(
+                                        genre.image,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) =>
+                                            Container(
+                                          color: _surfaceAlt(context),
+                                          alignment: Alignment.center,
+                                          child: Icon(
+                                            Icons.movie_creation_outlined,
+                                            color: _muted(context),
+                                          ),
+                                        ),
+                                      ),
+                                      if (selected)
+                                        Positioned(
+                                          top: 6,
+                                          right: 6,
+                                          child: CircleAvatar(
+                                            radius: 10,
+                                            backgroundColor:
+                                                _accent(context),
+                                            child: const Icon(
+                                              Icons.check_rounded,
+                                              size: 13,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ),
                               ),
                             ),
-
-                            const SizedBox(
-                              height: 7,
-                            ),
-
+                            const SizedBox(height: 7),
                             Text(
                               genre.name,
                               maxLines: 1,
-                              overflow:
-                              TextOverflow
-                                  .ellipsis,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: selected
-                                    ? FontWeight
-                                    .w700
-                                    : FontWeight
-                                    .w500,
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: selected
+                                    ? _accent(context)
+                                    : _text(context),
                               ),
                             ),
                           ],
@@ -900,11 +952,11 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
             vertical: 10,
           ),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: _surface(context),
             borderRadius:
             BorderRadius.circular(15),
             border: Border.all(
-              color: const Color(0xFFE9E9E9),
+              color: _border(context),
             ),
           ),
           child: Row(
@@ -913,8 +965,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color:
-                  const Color(0xFFFFF0EA),
+                  color: _accentSoft(context),
                   borderRadius:
                   BorderRadius.circular(
                     11,
@@ -937,11 +988,9 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
                   children: [
                     Text(
                       title,
-                      style:
-                      const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color:
-                        Color(0xFF888888),
+                        color: _muted(context),
                       ),
                     ),
 
@@ -949,23 +998,19 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
 
                     Text(
                       value,
-                      style:
-                      const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
-                        fontWeight:
-                        FontWeight.w600,
-                        color:
-                        Color(0xFF222222),
+                        fontWeight: FontWeight.w600,
+                        color: _bodyText(context),
                       ),
                     ),
                   ],
                 ),
               ),
 
-              const Icon(
-                Icons
-                    .keyboard_arrow_down_rounded,
-                color: Color(0xFF777777),
+              Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: _muted(context),
               ),
             ],
           ),
@@ -985,15 +1030,13 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
       children: [
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
                 'Scenes',
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight:
-                  FontWeight.w700,
-                  color:
-                  Color(0xFF1B1B1B),
+                  fontWeight: FontWeight.w700,
+                  color: _text(context),
                 ),
               ),
             ),
@@ -1010,19 +1053,16 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
               ),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color:
-                const Color(0xFFFFF0EA),
+                color: _accentSoft(context),
                 borderRadius:
                 BorderRadius.circular(10),
               ),
               child: Text(
                 '$sceneCount',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  fontWeight:
-                  FontWeight.w700,
-                  color:
-                  Color(0xFFFF6435),
+                  fontWeight: FontWeight.w700,
+                  color: _accent(context),
                 ),
               ),
             ),
@@ -1035,15 +1075,12 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
           data:
           SliderTheme.of(context).copyWith(
             trackHeight: 4,
-            activeTrackColor:
-            const Color(0xFFFF6435),
-            inactiveTrackColor:
-            const Color(0xFFE5E5E5),
-            thumbColor:
-            const Color(0xFFFF6435),
-            overlayColor:
-            const Color(0xFFFF6435)
-                .withValues(
+            activeTrackColor: _accent(context),
+            inactiveTrackColor: _isDark(context)
+                ? const Color(0xFF2A1A3B)
+                : const Color(0xFFE5E5E5),
+            thumbColor: _accent(context),
+            overlayColor: _accent(context).withValues(
               alpha: 0.12,
             ),
           ),
@@ -1064,24 +1101,21 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
           ),
         ),
 
-        const Row(
-          mainAxisAlignment:
-          MainAxisAlignment.spaceBetween,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               '1',
               style: TextStyle(
                 fontSize: 11,
-                color:
-                Color(0xFF999999),
+                color: _muted(context),
               ),
             ),
             Text(
               '25',
               style: TextStyle(
                 fontSize: 11,
-                color:
-                Color(0xFF999999),
+                color: _muted(context),
               ),
             ),
           ],
@@ -1102,97 +1136,63 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
     ];
 
     return Column(
-      crossAxisAlignment:
-      CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Screenplay Length',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF1B1B1B),
+            color: _text(context),
           ),
         ),
-
         const SizedBox(height: 12),
-
         Container(
           height: 48,
-          padding:
-          const EdgeInsets.all(4),
+          padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color:
-            const Color(0xFFF1F1F1),
-            borderRadius:
-            BorderRadius.circular(14),
+            color: _isDark(context)
+                ? const Color(0xFF2A2138)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: _isDark(context)
+                  ? const Color(0xFF3A2F4B)
+                  : const Color(0xFFEDEDED),
+            ),
           ),
           child: Row(
-            children:
-            values.map((value) {
-              final selected =
-                  selectedLength == value;
+            children: values.map((value) {
+              final selected = selectedLength == value;
 
               return Expanded(
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
-                      selectedLength =
-                          value;
+                      selectedLength = value;
                     });
                   },
-                  child:
-                  AnimatedContainer(
-                    duration:
-                    const Duration(
-                      milliseconds: 180,
-                    ),
-                    alignment:
-                    Alignment.center,
-                    decoration:
-                    BoxDecoration(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
                       color: selected
-                          ? Colors.white
-                          : Colors
-                          .transparent,
-                      borderRadius:
-                      BorderRadius
-                          .circular(11),
-                      boxShadow: selected
-                          ? [
-                        BoxShadow(
-                          color: Colors
-                              .black
-                              .withValues(
-                            alpha:
-                            0.07,
-                          ),
-                          blurRadius:
-                          6,
-                          offset:
-                          const Offset(
-                            0,
-                            2,
-                          ),
-                        ),
-                      ]
-                          : null,
+                          ? (_isDark(context)
+                              ? const Color(0xFF514368)
+                              : const Color(0xFFF1F1F1))
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(11),
                     ),
                     child: Text(
                       value,
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: selected
-                            ? FontWeight
-                            .w700
-                            : FontWeight
-                            .w500,
-                        color: selected
-                            ? const Color(
-                          0xFFFF6435,
-                        )
-                            : const Color(
-                          0xFF707070,
-                        ),
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: _isDark(context)
+                            ? Colors.white
+                            : const Color(0xFF171717),
                       ),
                     ),
                   ),
@@ -1221,7 +1221,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
           12,
         ),
         decoration: BoxDecoration(
-          color: const Color(0xFFF9F9F9),
+          color: _pageBackground(context),
           boxShadow: [
             BoxShadow(
               color:
@@ -1239,8 +1239,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
           child: Container(
             height: 54,
             decoration: BoxDecoration(
-              color:
-              const Color(0xFFFF6435),
+              color: _accent(context),
               borderRadius:
               BorderRadius.circular(16),
             ),
@@ -1336,18 +1335,24 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(title),
-          content: Text(message),
+          backgroundColor: _surface(context),
+          title: Text(
+            title,
+            style: TextStyle(color: _text(context)),
+          ),
+          content: Text(
+            message,
+            style: TextStyle(color: _muted(context)),
+          ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text(
+              child: Text(
                 'OK',
                 style: TextStyle(
-                  color:
-                  Color(0xFFFF6435),
+                  color: _accent(context),
                 ),
               ),
             ),
@@ -1372,14 +1377,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape:
-      const RoundedRectangleBorder(
-        borderRadius:
-        BorderRadius.vertical(
-          top: Radius.circular(25),
-        ),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return _ScreenplaySelectorSheet(
           title: title,
@@ -1452,170 +1450,171 @@ class _ScreenplaySelectorSheetState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.50;
+    final showSearch = widget.searchable && widget.values.length > 10;
+    final items = filtered;
+
+    final background =
+        isDark ? const Color(0xFF21152F) : Colors.white;
+    final secondary =
+        isDark ? const Color(0xFF2A1A3B) : const Color(0xFFF4F4F4);
+    final border =
+        isDark ? const Color(0xFF49305F) : const Color(0xFFE8E8E8);
+    final accent =
+        isDark ? const Color(0xFF9146E8) : const Color(0xFFFF6435);
+    final muted =
+        isDark ? const Color(0xFFB9AEC8) : const Color(0xFF777777);
+    final textColor =
+        isDark ? Colors.white : const Color(0xFF222222);
+
+    final naturalHeight = showSearch
+        ? maxHeight
+        : (88.0 + widget.values.length * 56.0)
+            .clamp(190.0, maxHeight)
+            .toDouble();
+
     return SafeArea(
-      child: SizedBox(
-        height:
-        MediaQuery.sizeOf(context)
-            .height *
-            0.70,
+      top: false,
+      child: Container(
+        height: naturalHeight,
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(24),
+          ),
+        ),
         child: Column(
           children: [
             const SizedBox(height: 10),
-
             Container(
               width: 42,
               height: 5,
               decoration: BoxDecoration(
-                color:
-                const Color(0xFFDADADA),
-                borderRadius:
-                BorderRadius.circular(
-                  10,
-                ),
+                color: isDark
+                    ? const Color(0xFF6F5A80)
+                    : const Color(0xFFDADADA),
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
-
             Padding(
-              padding:
-              const EdgeInsets.fromLTRB(
-                20,
-                18,
-                20,
-                12,
-              ),
+              padding: const EdgeInsets.fromLTRB(20, 16, 14, 10),
               child: Row(
                 children: [
                   Expanded(
                     child: Text(
                       widget.title,
-                      style:
-                      const TextStyle(
-                        fontSize: 20,
-                        fontWeight:
-                        FontWeight.w700,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: textColor,
                       ),
                     ),
                   ),
-
                   IconButton(
-                    onPressed: () {
-                      Navigator.pop(
-                          context);
-                    },
-                    icon: const Icon(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
                       Icons.close_rounded,
+                      size: 21,
+                      color: textColor,
                     ),
                   ),
                 ],
               ),
             ),
-
-            if (widget.searchable &&
-                widget.values.length > 10)
+            if (showSearch)
               Padding(
-                padding:
-                const EdgeInsets.fromLTRB(
-                  20,
-                  0,
-                  20,
-                  12,
-                ),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
                 child: Container(
                   height: 46,
                   decoration: BoxDecoration(
-                    color:
-                    const Color(0xFFF4F4F4),
-                    borderRadius:
-                    BorderRadius.circular(
-                      13,
-                    ),
+                    color: secondary,
+                    borderRadius: BorderRadius.circular(13),
+                    border: Border.all(color: border),
                   ),
                   child: TextField(
-                    controller:
-                    _searchController,
+                    controller: _searchController,
                     onChanged: (value) {
                       setState(() {
                         search = value;
                       });
                     },
-                    decoration:
-                    const InputDecoration(
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: textColor,
+                    ),
+                    decoration: InputDecoration(
                       hintText: 'Search',
+                      hintStyle: TextStyle(color: muted),
                       prefixIcon: Icon(
                         Icons.search_rounded,
+                        color: muted,
                       ),
-                      border:
-                      InputBorder.none,
+                      border: InputBorder.none,
                     ),
                   ),
                 ),
               ),
-
             Expanded(
-              child: ListView.separated(
-                itemCount:
-                filtered.length,
-                separatorBuilder: (_, __) {
-                  return const Divider(
-                    height: 1,
-                    indent: 20,
-                    endIndent: 20,
-                  );
-                },
-                itemBuilder:
-                    (context, index) {
-                  final value =
-                  filtered[index];
-
-                  final selected =
-                      value ==
-                          widget
-                              .selectedValue;
-
-                  return ListTile(
-                    contentPadding:
-                    const EdgeInsets
-                        .symmetric(
-                      horizontal: 20,
-                    ),
-                    title: Text(
-                      value,
-                      style: TextStyle(
-                        fontWeight: selected
-                            ? FontWeight
-                            .w700
-                            : FontWeight
-                            .w500,
-                        color: selected
-                            ? const Color(
-                          0xFFFF6435,
-                        )
-                            : const Color(
-                          0xFF222222,
-                        ),
+              child: items.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No results found',
+                        style: TextStyle(color: muted),
                       ),
-                    ),
-                    trailing: selected
-                        ? const Icon(
-                      Icons
-                          .check_circle_rounded,
-                      color:
-                      Color(0xFFFF6435),
                     )
-                        : null,
-                    onTap: () {
-                      widget
-                          .onSelected(value);
-                    },
-                  );
-                },
-              ),
+                  : ListView.separated(
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: items.length,
+                      separatorBuilder: (_, __) => Divider(
+                        height: 1,
+                        indent: 20,
+                        endIndent: 20,
+                        color: border,
+                      ),
+                      itemBuilder: (context, index) {
+                        final value = items[index];
+                        final selected =
+                            value == widget.selectedValue;
+
+                        return SizedBox(
+                          height: 56,
+                          child: ListTile(
+                            contentPadding:
+                                const EdgeInsets.symmetric(horizontal: 20),
+                            title: Text(
+                              value,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: selected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: selected ? accent : textColor,
+                              ),
+                            ),
+                            trailing: selected
+                                ? Icon(
+                                    Icons.check_circle_rounded,
+                                    color: accent,
+                                  )
+                                : null,
+                            onTap: () {
+                              widget.onSelected(value);
+                            },
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
       ),
     );
   }
+
 }
 
 // ============================================================
