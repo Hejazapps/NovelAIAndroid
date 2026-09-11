@@ -300,12 +300,12 @@ class _LyricsScreenState extends State<LyricsScreen> {
               ),
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Text(
               'Lyrics',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white,
+                color: _lyricsText(context),
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
               ),
@@ -401,7 +401,7 @@ class _LyricsScreenState extends State<LyricsScreen> {
 
   Widget _actionGrid() {
     return SizedBox(
-      height: 250,
+      height: 272,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -493,35 +493,47 @@ class _LyricsScreenState extends State<LyricsScreen> {
                           ],
                         ),
                       ),
-                      padding: const EdgeInsets.fromLTRB(14, 14, 12, 12),
-                      child: const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _CardBadge(
-                            icon: Icons.queue_music_rounded,
-                            background: Color(0xFF63303B),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Create Verse',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w800,
+                      padding: const EdgeInsets.fromLTRB(13, 11, 11, 9),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.topLeft,
+                            child: SizedBox(
+                              width: constraints.maxWidth,
+                              child: const Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _CardBadge(
+                                    icon: Icons.queue_music_rounded,
+                                    background: Color(0xFF63303B),
+                                  ),
+                                  SizedBox(height: 5),
+                                  Text(
+                                    'Create Verse',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    'Craft meaningful verses to tell the core story of your song.',
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10.5,
+                                      height: 1.18,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Craft meaningful verses to tell the core story of your song.',
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 11.5,
-                              height: 1.24,
-                            ),
-                          ),
-                        ],
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -542,35 +554,47 @@ class _LyricsScreenState extends State<LyricsScreen> {
                           ],
                         ),
                       ),
-                      padding: const EdgeInsets.fromLTRB(14, 14, 12, 12),
-                      child: const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _CardBadge(
-                            icon: Icons.record_voice_over_rounded,
-                            background: Color(0xFF5C351F),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Rhyming',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w800,
+                      padding: const EdgeInsets.fromLTRB(13, 11, 11, 9),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.topLeft,
+                            child: SizedBox(
+                              width: constraints.maxWidth,
+                              child: const Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _CardBadge(
+                                    icon: Icons.record_voice_over_rounded,
+                                    background: Color(0xFF5C351F),
+                                  ),
+                                  SizedBox(height: 5),
+                                  Text(
+                                    'Rhyming',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    'Find creative rhyming words and phrases for every line.',
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10.5,
+                                      height: 1.18,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Find creative rhyming words and phrases for every line.',
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 11.5,
-                              height: 1.24,
-                            ),
-                          ),
-                        ],
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -692,8 +716,8 @@ class _CardBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 34,
-      height: 34,
+      width: 30,
+      height: 30,
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(9),
@@ -701,7 +725,7 @@ class _CardBadge extends StatelessWidget {
       child: Icon(
         icon,
         color: Colors.white,
-        size: 20,
+        size: 18,
       ),
     );
   }
@@ -1462,7 +1486,7 @@ class _LyricsSelectorSheetState extends State<_LyricsSelectorSheet> {
                 ),
               ),
             ],
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
             Flexible(
               child: ListView.builder(
                 shrinkWrap: true,
