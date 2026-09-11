@@ -267,7 +267,9 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF160D26)
+          : Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -316,26 +318,17 @@ class _HomeScreenState extends State<HomeScreen>
   // ============================================================
 
   Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        20,
-        15,
-        20,
-        12,
-      ),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? Colors.white : Theme.of(context).colorScheme.onSurface;
+
+    return Container(
+      color: isDark
+          ? const Color(0xFF160D26)
+          : Theme.of(context).scaffoldBackgroundColor,
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
       child: Row(
         children: [
-          Expanded(
-            child: Text(
-              'AI Story Generator',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-          ),
-
           GestureDetector(
             onTap: () {
               Navigator.of(context).push(
@@ -344,31 +337,60 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               );
             },
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(
-                  12,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(
-                      alpha: 0.06,
-                    ),
-                    blurRadius: 10,
-                    offset: const Offset(
-                      0,
-                      3,
-                    ),
-                  ),
+            child: SizedBox(
+              width: 42,
+              height: 42,
+              child: Icon(
+                Icons.info_outline_rounded,
+                size: 29,
+                color: textColor,
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 10),
+
+          Expanded(
+            child: Text(
+              'AI Story Generator',
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                color: textColor,
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 10),
+
+          Container(
+            height: 38,
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFFAEEBFF),
+                  Color(0xFFF4D7FF),
                 ],
               ),
-              child: Icon(
-                Icons.info_outline,
-                size: 22,
-                color: Theme.of(context).colorScheme.onSurface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isDark
+                    ? const Color(0xFFC879FF)
+                    : const Color(0xFF8FDFFF),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              'PRO',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF111111),
               ),
             ),
           ),
@@ -376,6 +398,7 @@ class _HomeScreenState extends State<HomeScreen>
       ),
     );
   }
+
 }
 
 // ============================================================
@@ -410,11 +433,11 @@ class HomeFeatureCard extends StatelessWidget {
         : const Color(0xFF666666);
 
     final borderColor = isDark
-        ? const Color(0xFF6D28D9)
+        ? const Color(0xFF9146E8)
         : const Color(0xFFFF6229);
 
     final buttonColor = isDark
-        ? const Color(0xFF7C3AED)
+        ? const Color(0xFF9146E8)
         : const Color(0xFFFF6229);
 
     return Padding(
@@ -463,7 +486,9 @@ class HomeFeatureCard extends StatelessWidget {
                             stackTrace,
                             ) {
                           return Container(
-                            color: Colors.white,
+                            color: isDark
+                                ? const Color(0xFF21152F)
+                                : Colors.white,
                           );
                         },
                       ),

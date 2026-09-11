@@ -203,7 +203,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       backgroundColor:
-      theme.scaffoldBackgroundColor,
+      isDark
+          ? const Color(0xFF160D26)
+          : theme.scaffoldBackgroundColor,
 
       body: SafeArea(
         child: Column(
@@ -464,7 +466,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Material(
       color:
-      scheme.primaryContainer,
+      theme.brightness == Brightness.dark
+          ? const Color(0xFF21152F)
+          : scheme.primaryContainer,
 
       borderRadius:
       BorderRadius.circular(18),
@@ -492,10 +496,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 decoration:
                 BoxDecoration(
                   color:
-                  scheme.primary
-                      .withValues(
-                    alpha: 0.12,
-                  ),
+                  theme.brightness == Brightness.dark
+                      ? const Color(0xFF2D1A43)
+                      : scheme.primary.withValues(alpha: 0.12),
 
                   borderRadius:
                   BorderRadius.circular(
@@ -506,7 +509,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Icon(
                   Icons.workspace_premium_rounded,
                   color:
-                  scheme.primary,
+                  theme.brightness == Brightness.dark
+                      ? const Color(0xFF9146E8)
+                      : scheme.primary,
                 ),
               ),
 
@@ -604,15 +609,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       BoxDecoration(
         color:
         isDark
-            ? theme
-            .colorScheme
-            .surfaceContainerHighest
-            .withValues(
-          alpha: 0.45,
-        )
-            : theme
-            .colorScheme
-            .surface,
+            ? const Color(0xFF21152F)
+            : theme.colorScheme.surface,
 
         borderRadius:
         BorderRadius.circular(
@@ -622,10 +620,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         border:
         Border.all(
           color:
-          theme.dividerColor
-              .withValues(
-            alpha: 0.12,
-          ),
+          isDark
+              ? const Color(0xFF49305F)
+              : theme.dividerColor.withValues(alpha: 0.12),
         ),
       ),
 
@@ -776,12 +773,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       BoxDecoration(
         color:
         isDark
-            ? theme
-            .colorScheme
-            .surfaceContainerHighest
-            : const Color(
-          0xFFF3F1F5,
-        ),
+            ? const Color(0xFF2A1A3B)
+            : const Color(0xFFF3F1F5),
 
         borderRadius:
         BorderRadius.circular(
@@ -849,11 +842,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       BoxDecoration(
                         color:
                         selected
-                            ? theme
-                            .colorScheme
-                            .surface
-                            : Colors
-                            .transparent,
+                            ? (isDark
+                                ? const Color(0xFF21152F)
+                                : theme.colorScheme.surface)
+                            : Colors.transparent,
 
                         borderRadius:
                         BorderRadius.circular(
@@ -913,12 +905,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                             color:
                             selected
-                                ? theme
-                                .colorScheme
-                                .primary
-                                : theme
-                                .colorScheme
-                                .onSurfaceVariant,
+                                ? (isDark
+                                    ? const Color(0xFF9146E8)
+                                    : theme.colorScheme.primary)
+                                : (isDark
+                                    ? const Color(0xFFB9AEC8)
+                                    : theme.colorScheme.onSurfaceVariant),
                           ),
 
                           const SizedBox(
@@ -1007,9 +999,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     decoration:
                     BoxDecoration(
                       color:
-                      theme
-                          .colorScheme
-                          .primaryContainer,
+                      Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF2D1A43)
+                          : theme.colorScheme.primaryContainer,
 
                       borderRadius:
                       BorderRadius.circular(
@@ -1022,9 +1014,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       size: 28,
 
                       color:
-                      theme
-                          .colorScheme
-                          .primary,
+                      Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF9146E8)
+                          : theme.colorScheme.primary,
                     ),
                   ),
 
@@ -1100,9 +1092,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     decoration:
                     BoxDecoration(
                       color:
-                      theme
-                          .colorScheme
-                          .primary,
+                      Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF9146E8)
+                          : theme.colorScheme.primary,
 
                       borderRadius:
                       BorderRadius.circular(

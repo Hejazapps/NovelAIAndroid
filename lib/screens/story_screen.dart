@@ -10,28 +10,28 @@ Color _storySurface(BuildContext context) =>
     _storyIsDark(context) ? Color(0xFF21182E) : Colors.white;
 
 Color _storySurfaceAlt(BuildContext context) =>
-    _storyIsDark(context) ? Color(0xFF2A2038) : _storySurfaceAlt(context);
+    _storyIsDark(context) ? const Color(0xFF2A1A3B) : const Color(0xFFF2F0F4);
 
 Color _storyBorder(BuildContext context) =>
-    _storyIsDark(context) ? Color(0xFF3A2C4D) : _storyBorder(context);
+    _storyIsDark(context) ? const Color(0xFF49305F) : const Color(0xFFE4E1E7);
 
 Color _storyText(BuildContext context) =>
-    _storyIsDark(context) ? Colors.white : _storyText(context);
+    _storyIsDark(context) ? Colors.white : const Color(0xFF17121E);
 
 Color _storyMuted(BuildContext context) =>
-    _storyIsDark(context) ? Color(0xFFB4A9C4) : _storyMuted(context);
+    _storyIsDark(context) ? const Color(0xFFB9AEC8) : const Color(0xFF7A7283);
 
 Color _storyHint(BuildContext context) =>
-    _storyIsDark(context) ? Color(0xFF756A84) : _storyHint(context);
+    _storyIsDark(context) ? const Color(0xFF81758F) : const Color(0xFFA39BAA);
 
 Color _storyAccent(BuildContext context) =>
-    _storyIsDark(context) ? Color(0xFF7C3AED) : _storyAccent(context);
+    _storyIsDark(context) ? const Color(0xFF9146E8) : const Color(0xFF7C3AED);
 
 Color _storyAccentSoft(BuildContext context) =>
-    _storyIsDark(context) ? Color(0xFF45266D) : _storyAccentSoft(context);
+    _storyIsDark(context) ? const Color(0xFF432464) : const Color(0xFFF0E8FF);
 
 Color _storyAccentSoft2(BuildContext context) =>
-    _storyIsDark(context) ? Color(0xFF332047) : _storyAccentSoft2(context);
+    _storyIsDark(context) ? const Color(0xFF2D1A43) : const Color(0xFFF5EEFF);
 
 
 class StoryScreen extends StatefulWidget {
@@ -661,7 +661,10 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
             ),
             child: TextField(
               controller: _titleController,
-              style: TextStyle(fontSize: 14, color: Colors.black),
+              style: TextStyle(
+                fontSize: 14,
+                color: _storyText(context),
+              ),
               decoration: InputDecoration(
                 hintText: 'Enter story title',
                 hintStyle: TextStyle(fontSize: 14, color: _storyHint(context)),
