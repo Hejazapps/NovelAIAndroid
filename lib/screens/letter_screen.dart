@@ -150,6 +150,40 @@ class _LetterScreenState extends State<LetterScreen> {
     'Chinese Traditional',
   ];
 
+
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color _pageBackground(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF160D26) : const Color(0xFFF9F9F9);
+
+  Color _surface(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF21152F) : Colors.white;
+
+  Color _surfaceAlt(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF2A1A3B) : const Color(0xFFF1F1F1);
+
+  Color _border(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF49305F) : const Color(0xFFE8E8E8);
+
+  Color _text(BuildContext context) =>
+      _isDark(context) ? Colors.white : const Color(0xFF1B1B1B);
+
+  Color _bodyText(BuildContext context) =>
+      _isDark(context) ? const Color(0xFFE9E2F3) : const Color(0xFF222222);
+
+  Color _muted(BuildContext context) =>
+      _isDark(context) ? const Color(0xFFB9AEC8) : const Color(0xFF777777);
+
+  Color _hint(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF81758F) : const Color(0xFFA0A0A0);
+
+  Color _accent(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF9146E8) : const Color(0xFFFF6435);
+
+  Color _accentSoft(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF2D1A43) : const Color(0xFFFFF0EA);
+
   @override
   void dispose() {
     _messageController.dispose();
@@ -162,7 +196,7 @@ class _LetterScreenState extends State<LetterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
+      backgroundColor: _pageBackground(context),
       body: SafeArea(
         child: Column(
           children: [
@@ -345,24 +379,24 @@ class _LetterScreenState extends State<LetterScreen> {
               Navigator.pop(context);
             },
             borderRadius: BorderRadius.circular(30),
-            child: const SizedBox(
+            child: SizedBox(
               width: 42,
               height: 42,
               child: Icon(
                 Icons.arrow_back_ios_new_rounded,
                 size: 21,
-                color: Colors.black,
+                color: _text(context),
               ),
             ),
           ),
           const SizedBox(width: 4),
-          const Expanded(
+          Expanded(
             child: Text(
               'Create Letter',
               style: TextStyle(
                 fontSize: 23,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF171717),
+                color: _text(context),
               ),
             ),
           ),
@@ -370,20 +404,23 @@ class _LetterScreenState extends State<LetterScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _surface(context),
               borderRadius: BorderRadius.circular(13),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-              ],
+              border: Border.all(color: _border(context)),
+              boxShadow: _isDark(context)
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
             ),
-            child: const Icon(
+            child: Icon(
               Icons.workspace_premium_outlined,
               size: 21,
-              color: Color(0xFFFF6435),
+              color: _accent(context),
             ),
           ),
         ],
@@ -395,22 +432,22 @@ class _LetterScreenState extends State<LetterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Message',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF1B1B1B),
+            color: _text(context),
           ),
         ),
         const SizedBox(height: 10),
         Container(
           height: 160,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: _surface(context),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: const Color(0xFFE7E7E7),
+              color: _border(context),
             ),
           ),
           child: TextField(
@@ -418,18 +455,18 @@ class _LetterScreenState extends State<LetterScreen> {
             maxLines: null,
             expands: true,
             textAlignVertical: TextAlignVertical.top,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               height: 1.45,
-              color: Color(0xFF222222),
+              color: _bodyText(context),
             ),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Write Message',
               hintStyle: TextStyle(
-                color: Color(0xFFA0A0A0),
+                color: _hint(context),
               ),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.all(15),
+              contentPadding: const EdgeInsets.all(15),
             ),
           ),
         ),
@@ -447,33 +484,33 @@ class _LetterScreenState extends State<LetterScreen> {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF1B1B1B),
+            color: _text(context),
           ),
         ),
         const SizedBox(height: 9),
         Container(
           height: 52,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: _surface(context),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: const Color(0xFFE8E8E8),
+              color: _border(context),
             ),
           ),
           child: TextField(
             controller: controller,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: Colors.black,
+              color: _bodyText(context),
             ),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: const TextStyle(
+              hintStyle: TextStyle(
                 fontSize: 14,
-                color: Color(0xFFA0A0A0),
+                color: _hint(context),
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
@@ -507,10 +544,10 @@ class _LetterScreenState extends State<LetterScreen> {
             vertical: 10,
           ),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: _surface(context),
             borderRadius: BorderRadius.circular(15),
             border: Border.all(
-              color: const Color(0xFFE9E9E9),
+              color: _border(context),
             ),
           ),
           child: Row(
@@ -519,13 +556,13 @@ class _LetterScreenState extends State<LetterScreen> {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF0EA),
+                  color: _accentSoft(context),
                   borderRadius: BorderRadius.circular(11),
                 ),
                 child: Icon(
                   icon,
                   size: 19,
-                  color: const Color(0xFFFF6435),
+                  color: _accent(context),
                 ),
               ),
               const SizedBox(width: 12),
@@ -535,26 +572,26 @@ class _LetterScreenState extends State<LetterScreen> {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF888888),
+                        color: _muted(context),
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       value,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF222222),
+                        color: _bodyText(context),
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.keyboard_arrow_down_rounded,
-                color: Color(0xFF777777),
+                color: _muted(context),
               ),
             ],
           ),
@@ -573,12 +610,12 @@ class _LetterScreenState extends State<LetterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Length',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF1B1B1B),
+            color: _text(context),
           ),
         ),
         const SizedBox(height: 12),
@@ -586,8 +623,15 @@ class _LetterScreenState extends State<LetterScreen> {
           height: 48,
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: const Color(0xFFF1F1F1),
+            color: _isDark(context)
+                ? const Color(0xFF2A2138)
+                : Colors.white,
             borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: _isDark(context)
+                  ? const Color(0xFF3A2F4B)
+                  : const Color(0xFFEDEDED),
+            ),
           ),
           child: Row(
             children: values.map((value) {
@@ -605,20 +649,11 @@ class _LetterScreenState extends State<LetterScreen> {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: selected
-                          ? Colors.white
+                          ? (_isDark(context)
+                              ? const Color(0xFF514368)
+                              : const Color(0xFFF1F1F1))
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(11),
-                      boxShadow: selected
-                          ? [
-                        BoxShadow(
-                          color: Colors.black.withValues(
-                            alpha: 0.07,
-                          ),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                          : null,
                     ),
                     child: Text(
                       value,
@@ -627,9 +662,9 @@ class _LetterScreenState extends State<LetterScreen> {
                         fontWeight: selected
                             ? FontWeight.w700
                             : FontWeight.w500,
-                        color: selected
-                            ? const Color(0xFFFF6435)
-                            : const Color(0xFF707070),
+                        color: _isDark(context)
+                            ? Colors.white
+                            : const Color(0xFF171717),
                       ),
                     ),
                   ),
@@ -648,7 +683,7 @@ class _LetterScreenState extends State<LetterScreen> {
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
         decoration: BoxDecoration(
-          color: const Color(0xFFF9F9F9),
+          color: _pageBackground(context),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
@@ -662,7 +697,7 @@ class _LetterScreenState extends State<LetterScreen> {
           child: Container(
             height: 54,
             decoration: BoxDecoration(
-              color: const Color(0xFFFF6435),
+              color: _accent(context),
               borderRadius: BorderRadius.circular(16),
             ),
             alignment: Alignment.center,
@@ -724,7 +759,309 @@ class _LetterScreenState extends State<LetterScreen> {
     debugPrint('closing: $selectedClosing');
     debugPrint('length: $selectedLength');
 
+    final prompt = _buildLetterPrompt();
+
+    debugPrint('========== LETTER PROMPT ==========');
+    debugPrint(prompt);
+    debugPrint('===================================');
+
     // API / generation logic later.
+    // Send `prompt` to your generation flow when ready.
+  }
+
+  String _optionalPromptValue(String value) {
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? 'Not provided' : trimmed;
+  }
+
+  String get _letterLengthRequirement {
+    switch (selectedLength) {
+      case 'Short':
+        switch (selectedDelivery) {
+          case 'Text Message':
+          case 'Greeting Card':
+          case 'Social Media Message':
+            return '50–120 words';
+          default:
+            return '120–200 words';
+        }
+
+      case 'Medium':
+        switch (selectedDelivery) {
+          case 'Text Message':
+          case 'Greeting Card':
+          case 'Social Media Message':
+            return '120–220 words';
+          default:
+            return '250–400 words';
+        }
+
+      case 'Long':
+        switch (selectedDelivery) {
+          case 'Text Message':
+          case 'Greeting Card':
+          case 'Social Media Message':
+            return '220–350 words';
+          default:
+            return '500–700 words';
+        }
+
+      default:
+        return '120–200 words';
+    }
+  }
+
+  String _buildLetterPrompt() {
+    final message = _messageController.text.trim();
+    final subject = _subjectController.text.trim();
+    final sender = _senderController.text.trim();
+    final recipient = _recipientController.text.trim();
+
+    return '''
+You are an exceptional professional letter writer with excellent emotional intelligence, empathy, cultural awareness, and linguistic precision.
+
+Create one polished, natural, highly effective letter based on the user's specifications.
+
+The final result must feel genuinely written by a thoughtful human and should never feel like a generic AI template.
+
+LETTER DETAILS
+
+Main Message / Intent:
+$message
+
+Letter Type:
+$selectedLetterType
+
+Tone:
+$selectedTone
+
+Language:
+$selectedLanguage
+
+Recipient Relationship:
+$selectedRelationship
+
+Delivery Method:
+$selectedDelivery
+
+Content to Include:
+$selectedInclude
+
+Closing Style:
+$selectedClosing
+
+Length:
+$selectedLength
+
+Target Length:
+$_letterLengthRequirement
+
+Subject:
+${_optionalPromptValue(subject)}
+
+Recipient Name:
+${_optionalPromptValue(recipient)}
+
+Sender Name:
+${_optionalPromptValue(sender)}
+
+PRIMARY OBJECTIVE
+
+First understand what the user genuinely wants to communicate.
+
+Preserve the user's meaning, facts, emotional intent, requests, concerns, and priorities.
+
+Improve clarity, structure, wording, emotional impact, professionalism, and natural flow without changing the user's actual intent.
+
+Do not simply paraphrase the user's input sentence by sentence.
+
+Create a complete and coherent letter suitable for the requested situation.
+
+LETTER TYPE ADAPTATION
+
+Follow the real-world conventions of $selectedLetterType.
+
+Formal, business, recommendation, cover, resignation, complaint, and request letters should be structured, credible, clear, and professionally appropriate.
+
+Personal and informal letters should sound warm, natural, and conversational.
+
+Love letters should feel intimate, sincere, emotionally believable, and not overly dramatic.
+
+Apology letters should acknowledge the situation sincerely, show understanding, and avoid manipulative language.
+
+Thank-you letters should express believable and meaningful gratitude.
+
+Condolence letters should be gentle, compassionate, respectful, and restrained.
+
+Congratulations letters should feel warm and genuinely celebratory.
+
+Invitation letters should clearly communicate the invitation while matching the relationship and tone.
+
+Complaint letters should explain the issue clearly and respectfully.
+
+Request letters should communicate the request clearly without sounding demanding.
+
+RELATIONSHIP AWARENESS
+
+The recipient relationship is $selectedRelationship.
+
+Adapt vocabulary, emotional closeness, formality, warmth, politeness, boundaries, and style naturally to this relationship.
+
+A letter to a spouse should not sound like a letter to a manager.
+
+A message to a close friend should not sound like corporate correspondence.
+
+TONE
+
+Maintain a genuinely ${selectedTone.toLowerCase()} tone throughout.
+
+Express the tone through vocabulary, sentence structure, pacing, warmth, directness, and emotional intensity.
+
+Do not merely insert words associated with the selected tone.
+
+CONTENT TO INCLUDE
+
+Naturally incorporate:
+$selectedInclude
+
+Do not create an artificial separate section for it.
+
+Never invent a memory, event, achievement, apology reason, future plan, contact information, or other factual detail that the user did not provide.
+
+DELIVERY METHOD
+
+Adapt the structure and style to $selectedDelivery.
+
+Email:
+Use natural email conventions.
+
+Printed Letter:
+Use an appropriate polished letter structure.
+
+Handwritten Letter:
+Favor warmth and personal flow.
+
+Text Message:
+Keep it natural, concise, and appropriate for messaging.
+
+Greeting Card:
+Keep it emotionally meaningful and concise.
+
+Social Media Message:
+Use conversational direct-message style.
+
+Official Document:
+Use clear, formal, precise wording.
+
+LANGUAGE
+
+Write the entire result in $selectedLanguage.
+
+Make it sound as though it was originally written by a fluent native speaker.
+
+Avoid awkward literal translation.
+
+Use culturally appropriate greetings, honorifics, vocabulary, punctuation, and sentence structure.
+
+HUMAN WRITING QUALITY
+
+Use natural sentence-length variation, smooth transitions, clear paragraph progression, and believable emotional restraint.
+
+Avoid:
+- generic filler
+- robotic phrasing
+- repeated ideas
+- clichés
+- exaggerated sentimentality
+- unnecessary flowery wording
+- unnecessary formality
+- generic AI-style phrases
+
+Every paragraph should serve a clear purpose.
+
+FACTUAL INTEGRITY
+
+Use only information supported by the user's input.
+
+Never invent names, dates, addresses, places, companies, job titles, memories, conversations, incidents, promises, achievements, contact information, or relationship history.
+
+If information is missing, write naturally around it rather than fabricating details.
+
+OPENING
+
+Use a greeting appropriate to the letter type, relationship, tone, language, and delivery method.
+
+If the recipient name is provided, use it naturally.
+
+Do not invent a recipient name.
+
+BODY
+
+Establish the purpose reasonably early.
+
+Preserve all important details supplied by the user.
+
+Organize the message logically.
+
+Maintain smooth transitions and believable emotional progression.
+
+ENDING
+
+End naturally and meaningfully without repeating the entire message.
+
+Use the selected closing style where appropriate:
+$selectedClosing
+
+If a sender name was provided, use it naturally after the closing when appropriate.
+
+Never invent a sender name.
+
+SUBJECT
+
+If a subject was provided and the delivery format normally uses one, include it naturally.
+
+If no subject was provided, do not invent one unless clearly needed by the selected format.
+
+LENGTH
+
+Target:
+$_letterLengthRequirement
+
+Respect the requested length as closely as practical.
+
+Do not add meaningless filler just to reach the word count.
+
+FINAL QUALITY CHECK
+
+Before responding, silently verify that:
+- the user's true intent is preserved
+- the letter matches $selectedLetterType
+- the relationship $selectedRelationship is reflected naturally
+- the tone genuinely feels ${selectedTone.toLowerCase()}
+- the writing fits $selectedDelivery
+- $selectedInclude is incorporated naturally where appropriate
+- no unsupported facts were invented
+- the language sounds fluent in $selectedLanguage
+- the result does not sound generic
+- the result is immediately usable
+
+Do not reveal this quality check.
+
+STRICT OUTPUT RULES
+
+Output only the finished letter or message.
+
+Do not provide explanations, analysis, alternatives, writing advice, notes, or commentary.
+
+Do not write phrases such as:
+"Here is your letter"
+"Generated Letter"
+"Sure, here you go"
+
+Do not include commentary before or after the letter.
+
+Produce exactly one polished final version ready to send.
+''';
   }
 
   void _showAlert({
@@ -735,14 +1072,24 @@ class _LetterScreenState extends State<LetterScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(title),
-          content: Text(message),
+          backgroundColor: _surface(context),
+          title: Text(
+            title,
+            style: TextStyle(color: _text(context)),
+          ),
+          content: Text(
+            message,
+            style: TextStyle(color: _muted(context)),
+          ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('OK'),
+              child: Text(
+                'OK',
+                style: TextStyle(color: _accent(context)),
+              ),
             ),
           ],
         );
@@ -762,7 +1109,7 @@ class _LetterScreenState extends State<LetterScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: _surface(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(24),
@@ -771,7 +1118,7 @@ class _LetterScreenState extends State<LetterScreen> {
       builder: (context) {
         return SafeArea(
           child: SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.65,
+            height: MediaQuery.sizeOf(context).height * 0.50,
             child: Column(
               children: [
                 const SizedBox(height: 10),
@@ -779,7 +1126,7 @@ class _LetterScreenState extends State<LetterScreen> {
                   width: 40,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFDADADA),
+                    color: _isDark(context) ? const Color(0xFF6F5A80) : const Color(0xFFDADADA),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -794,9 +1141,10 @@ class _LetterScreenState extends State<LetterScreen> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
+                        color: _text(context),
                       ),
                     ),
                   ),
@@ -808,11 +1156,11 @@ class _LetterScreenState extends State<LetterScreen> {
                       final value = values[index];
 
                       return ListTile(
-                        title: Text(value),
+                        title: Text(value, style: TextStyle(color: _bodyText(context))),
                         trailing: value == selectedValue
-                            ? const Icon(
+                            ? Icon(
                           Icons.check_circle_rounded,
-                          color: Color(0xFFFF6435),
+                          color: _accent(context),
                         )
                             : null,
                         onTap: () {
@@ -851,12 +1199,28 @@ class _LetterScreenState extends State<LetterScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(title),
+          backgroundColor: _surface(context),
+          title: Text(
+            title,
+            style: TextStyle(color: _text(context)),
+          ),
           content: TextField(
             controller: controller,
             autofocus: true,
+            style: TextStyle(color: _bodyText(context)),
             decoration: InputDecoration(
               hintText: hint,
+              hintStyle: TextStyle(color: _hint(context)),
+              filled: true,
+              fillColor: _surfaceAlt(context),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: _border(context)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: _accent(context)),
+              ),
             ),
           ),
           actions: [
@@ -864,7 +1228,10 @@ class _LetterScreenState extends State<LetterScreen> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: _muted(context)),
+              ),
             ),
             TextButton(
               onPressed: () {
@@ -877,7 +1244,10 @@ class _LetterScreenState extends State<LetterScreen> {
                 Navigator.pop(context);
                 onDone(value);
               },
-              child: const Text('Done'),
+              child: Text(
+                'Done',
+                style: TextStyle(color: _accent(context)),
+              ),
             ),
           ],
         );

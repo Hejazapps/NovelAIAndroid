@@ -8,6 +8,36 @@ class ArticleScreen extends StatefulWidget {
 }
 
 class _ArticleScreenState extends State<ArticleScreen> {
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color _pageBg(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF160D26) : const Color(0xFFF9F9F9);
+
+  Color _surface(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF21152F) : Colors.white;
+
+  Color _surfaceAlt(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF2A1A3B) : const Color(0xFFF4F4F4);
+
+  Color _border(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF49305F) : const Color(0xFFE0DCE8);
+
+  Color _text(BuildContext context) =>
+      _isDark(context) ? Colors.white : const Color(0xFF1B1B1B);
+
+  Color _bodyText(BuildContext context) =>
+      _isDark(context) ? const Color(0xFFE9E2F3) : const Color(0xFF222222);
+
+  Color _muted(BuildContext context) =>
+      _isDark(context) ? const Color(0xFFB9AEC8) : const Color(0xFF777777);
+
+  Color _hint(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF81758F) : const Color(0xFFA0A0A0);
+
+  Color _accent(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF9146E8) : const Color(0xFFFF9500);
+
   final TextEditingController _articleIdeaController =
   TextEditingController();
 
@@ -279,7 +309,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
+      backgroundColor: _pageBg(context),
 
       body: SafeArea(
         child: Column(
@@ -443,6 +473,8 @@ class _ArticleScreenState extends State<ArticleScreen> {
   }
 
   Widget _buildHeader() {
+    final isDark = _isDark(context);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         14,
@@ -457,26 +489,26 @@ class _ArticleScreenState extends State<ArticleScreen> {
               Navigator.pop(context);
             },
             borderRadius: BorderRadius.circular(30),
-            child: const SizedBox(
+            child: SizedBox(
               width: 42,
               height: 42,
               child: Icon(
                 Icons.arrow_back_ios_new_rounded,
                 size: 21,
-                color: Colors.black,
+                color: _text(context),
               ),
             ),
           ),
 
           const SizedBox(width: 4),
 
-          const Expanded(
+          Expanded(
             child: Text(
               'Create Article',
               style: TextStyle(
                 fontSize: 23,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF171717),
+                color: _text(context),
               ),
             ),
           ),
@@ -485,22 +517,25 @@ class _ArticleScreenState extends State<ArticleScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _surface(context),
               borderRadius: BorderRadius.circular(13),
+              border: isDark
+                  ? Border.all(color: const Color(0xFF49305F))
+                  : null,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(
-                    alpha: 0.06,
+                    alpha: isDark ? 0.16 : 0.06,
                   ),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
               ],
             ),
-            child: const Icon(
+            child: Icon(
               Icons.workspace_premium_outlined,
               size: 21,
-              color: Color(0xFFFF9500),
+              color: _accent(context),
             ),
           ),
         ],
@@ -518,10 +553,10 @@ class _ArticleScreenState extends State<ArticleScreen> {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1B1B1B),
+            color: _text(context),
           ),
         ),
 
@@ -529,10 +564,10 @@ class _ArticleScreenState extends State<ArticleScreen> {
 
         Text(
           subtitle,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             height: 1.4,
-            color: Color(0xFF777777),
+            color: _muted(context),
           ),
         ),
 
@@ -551,10 +586,10 @@ class _ArticleScreenState extends State<ArticleScreen> {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _surface(context),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFFE0DCE8),
+          color: _border(context),
         ),
       ),
       child: TextField(
@@ -562,17 +597,17 @@ class _ArticleScreenState extends State<ArticleScreen> {
         maxLines: null,
         expands: true,
         textAlignVertical: TextAlignVertical.top,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           height: 1.45,
-          color: Color(0xFF222222),
+          color: _bodyText(context),
         ),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(
+          hintStyle: TextStyle(
             fontSize: 14,
             height: 1.4,
-            color: Color(0xFFA0A0A0),
+            color: _hint(context),
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.fromLTRB(
@@ -599,10 +634,10 @@ class _ArticleScreenState extends State<ArticleScreen> {
           horizontal: 16,
         ),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _surface(context),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: const Color(0xFFE0DCE8),
+            color: _border(context),
           ),
         ),
         child: Row(
@@ -612,18 +647,18 @@ class _ArticleScreenState extends State<ArticleScreen> {
                 value,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF222222),
+                  color: _bodyText(context),
                 ),
               ),
             ),
 
-            const Icon(
+            Icon(
               Icons.keyboard_arrow_down_rounded,
               size: 22,
-              color: Color(0xFF555555),
+              color: _muted(context),
             ),
           ],
         ),
@@ -637,23 +672,23 @@ class _ArticleScreenState extends State<ArticleScreen> {
       children: [
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
                 'Sections',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF1B1B1B),
+                  color: _text(context),
                 ),
               ),
             ),
 
             Text(
               '$sectionValue',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFFFF9500),
+                color: _accent(context),
               ),
             ),
           ],
@@ -661,12 +696,12 @@ class _ArticleScreenState extends State<ArticleScreen> {
 
         const SizedBox(height: 2),
 
-        const Text(
+        Text(
           'Choose how many main sections the article should contain.',
           style: TextStyle(
             fontSize: 12,
             height: 1.4,
-            color: Color(0xFF777777),
+            color: _muted(context),
           ),
         ),
 
@@ -675,10 +710,10 @@ class _ArticleScreenState extends State<ArticleScreen> {
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             trackHeight: 4,
-            activeTrackColor: const Color(0xFFFF9500),
-            inactiveTrackColor: const Color(0xFFD1D1D6),
-            thumbColor: Colors.white,
-            overlayColor: const Color(0xFFFF9500).withValues(
+            activeTrackColor: _accent(context),
+            inactiveTrackColor: _isDark(context) ? const Color(0xFF49305F) : const Color(0xFFD1D1D6),
+            thumbColor: _isDark(context) ? const Color(0xFFEDE7F6) : Colors.white,
+            overlayColor: _accent(context).withValues(
               alpha: 0.12,
             ),
             thumbShape: const RoundSliderThumbShape(
@@ -717,8 +752,10 @@ class _ArticleScreenState extends State<ArticleScreen> {
                         ? FontWeight.w600
                         : FontWeight.w400,
                     color: selected
-                        ? const Color(0xFFFF9500)
-                        : const Color(0xFF8E8E93),
+                        ? _accent(context)
+                        : (_isDark(context)
+                            ? const Color(0xFF9B90A8)
+                            : const Color(0xFF8E8E93)),
                   ),
                 ),
               );
@@ -740,7 +777,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
           12,
         ),
         decoration: BoxDecoration(
-          color: const Color(0xFFF9F9F9),
+          color: _pageBg(context),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(
@@ -756,7 +793,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
           child: Container(
             height: 54,
             decoration: BoxDecoration(
-              color: const Color(0xFFFF9500),
+              color: _accent(context),
               borderRadius: BorderRadius.circular(16),
             ),
             alignment: Alignment.center,
@@ -1050,10 +1087,10 @@ Do not add anything before or after the finished article.
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text(
+              child: Text(
                 'OK',
                 style: TextStyle(
-                  color: Color(0xFFFF9500),
+                  color: _accent(context),
                 ),
               ),
             ),
@@ -1072,7 +1109,7 @@ Do not add anything before or after the finished article.
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: _surface(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(25),
@@ -1111,6 +1148,24 @@ class _ArticleSelectorSheet extends StatefulWidget {
 }
 
 class _ArticleSelectorSheetState extends State<_ArticleSelectorSheet> {
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color _surface(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF21152F) : Colors.white;
+
+  Color _surfaceAlt(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF2A1A3B) : const Color(0xFFF4F4F4);
+
+  Color _text(BuildContext context) =>
+      _isDark(context) ? Colors.white : const Color(0xFF222222);
+
+  Color _muted(BuildContext context) =>
+      _isDark(context) ? const Color(0xFFB9AEC8) : const Color(0xFF888888);
+
+  Color _accent(BuildContext context) =>
+      _isDark(context) ? const Color(0xFF9146E8) : const Color(0xFFFF9500);
+
   final TextEditingController _searchController = TextEditingController();
   String search = '';
 
@@ -1161,7 +1216,7 @@ class _ArticleSelectorSheetState extends State<_ArticleSelectorSheet> {
               width: 42,
               height: 5,
               decoration: BoxDecoration(
-                color: const Color(0xFFDADADA),
+                color: _isDark(context) ? const Color(0xFF6F5A80) : const Color(0xFFDADADA),
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
@@ -1172,9 +1227,10 @@ class _ArticleSelectorSheetState extends State<_ArticleSelectorSheet> {
                   Expanded(
                     child: Text(
                       widget.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
+                        color: _text(context),
                       ),
                     ),
                   ),
@@ -1191,7 +1247,7 @@ class _ArticleSelectorSheetState extends State<_ArticleSelectorSheet> {
                 child: Container(
                   height: 46,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF4F4F4),
+                    color: _surfaceAlt(context),
                     borderRadius: BorderRadius.circular(13),
                   ),
                   child: TextField(
@@ -1216,21 +1272,21 @@ class _ArticleSelectorSheetState extends State<_ArticleSelectorSheet> {
               ),
             Expanded(
               child: values.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             Icons.search_off_rounded,
                             size: 34,
-                            color: Color(0xFFAAAAAA),
+                            color: _muted(context),
                           ),
                           SizedBox(height: 8),
                           Text(
                             'No results found',
                             style: TextStyle(
                               fontSize: 14,
-                              color: Color(0xFF888888),
+                              color: _muted(context),
                             ),
                           ),
                         ],
@@ -1241,10 +1297,13 @@ class _ArticleSelectorSheetState extends State<_ArticleSelectorSheet> {
                           ? const BouncingScrollPhysics()
                           : const NeverScrollableScrollPhysics(),
                       itemCount: values.length,
-                      separatorBuilder: (_, __) => const Divider(
+                      separatorBuilder: (_, __) => Divider(
                         height: 1,
                         indent: 20,
                         endIndent: 20,
+                        color: _isDark(context)
+                            ? const Color(0xFF49305F)
+                            : const Color(0xFFE5E5E5),
                       ),
                       itemBuilder: (context, index) {
                         final value = values[index];
@@ -1263,14 +1322,14 @@ class _ArticleSelectorSheetState extends State<_ArticleSelectorSheet> {
                                     ? FontWeight.w700
                                     : FontWeight.w500,
                                 color: selected
-                                    ? const Color(0xFFFF9500)
-                                    : const Color(0xFF222222),
+                                    ? _accent(context)
+                                    : _text(context),
                               ),
                             ),
                             trailing: selected
-                                ? const Icon(
+                                ? Icon(
                                     Icons.check_circle_rounded,
-                                    color: Color(0xFFFF9500),
+                                    color: _accent(context),
                                   )
                                 : null,
                             onTap: () => widget.onSelected(value),

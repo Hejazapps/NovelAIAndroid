@@ -502,7 +502,7 @@ class HomeFeatureCard extends StatelessWidget {
                       left: 0,
                       top: 0,
                       bottom: 0,
-                      width: 200,
+                      width: 220,
                       child: Padding(
                         padding: const EdgeInsets.only(
                           left: 15,
@@ -519,43 +519,43 @@ class HomeFeatureCard extends StatelessWidget {
                             // ==========================================
 
                             Row(
-                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Flexible(
                                   child: Text(
                                     feature.title,
-                                    maxLines: 1,
-                                    overflow:
-                                    TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.visible,
+                                    softWrap: true,
                                     style: TextStyle(
                                       fontSize: 21,
                                       height: 1.1,
-                                      fontWeight:
-                                      FontWeight.w600,
+                                      fontWeight: FontWeight.w600,
                                       color: titleColor,
                                     ),
                                   ),
                                 ),
 
-                                const SizedBox(
-                                  width: 4,
-                                ),
+                                const SizedBox(width: 4),
 
-                                Image.asset(
-                                  feature.iconImage,
-                                  width: 20,
-                                  height: 20,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 1),
+                                  child: Image.asset(
+                                    feature.iconImage,
+                                    width: 20,
+                                    height: 20,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (
                                       context,
                                       error,
                                       stackTrace,
-                                      ) {
-                                    return const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                    );
-                                  },
+                                    ) {
+                                      return const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                      );
+                                    },
+                                  ),
                                 ),
                               ],
                             ),
@@ -570,8 +570,9 @@ class HomeFeatureCard extends StatelessWidget {
 
                             Text(
                               feature.subtitle,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                              overflow: TextOverflow.visible,
+                              softWrap: true,
                               style: TextStyle(
                                 fontSize: 13,
                                 height: 1.2,
