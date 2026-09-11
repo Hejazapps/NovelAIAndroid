@@ -26,7 +26,11 @@ class _MainTabScreenState extends State<MainTabScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor:
+          isDark ? const Color(0xFF140D20) : const Color(0xFFF9F9F9),
       body: IndexedStack(
         index: selectedIndex,
         children: pages,
@@ -36,11 +40,17 @@ class _MainTabScreenState extends State<MainTabScreen> {
         child: Container(
           height: 80,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? const Color(0xFF21182E) : Colors.white,
             borderRadius: BorderRadius.circular(40),
+            border: isDark
+                ? Border.all(
+                    color: const Color(0xFF3A2C4D),
+                    width: 1,
+                  )
+                : null,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withOpacity(isDark ? 0.28 : 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 5),
               ),
@@ -62,6 +72,13 @@ class _MainTabScreenState extends State<MainTabScreen> {
 
   Widget _buildTab(int index, IconData icon, String label) {
     final selected = selectedIndex == index;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final selectedColor =
+        isDark ? const Color(0xFF8B5CF6) : const Color(0xFFFF6338);
+
+    final unselectedColor =
+        isDark ? const Color(0xFFD8D0E2) : Colors.black;
 
     return Expanded(
       child: InkWell(
@@ -75,7 +92,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
               Icon(
                 icon,
                 size: 27,
-                color: selected ? const Color(0xFFFF6338) : Colors.black,
+                color: selected ? selectedColor : unselectedColor,
               ),
               const SizedBox(height: 4),
               Text(
@@ -83,7 +100,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                  color: selected ? const Color(0xFFFF6338) : Colors.black,
+                  color: selected ? selectedColor : unselectedColor,
                 ),
               ),
             ],

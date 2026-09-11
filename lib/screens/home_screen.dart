@@ -267,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -325,13 +325,13 @@ class _HomeScreenState extends State<HomeScreen>
       ),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
               'AI Story Generator',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
-                color: Colors.black,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
@@ -348,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen>
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(
                   12,
                 ),
@@ -365,10 +365,10 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.info_outline,
                 size: 22,
-                color: Colors.black,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
@@ -395,6 +395,28 @@ class HomeFeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final backgroundImage = isDark
+        ? feature.backgroundImage.replaceFirst('/light/', '/dark/')
+        : feature.backgroundImage;
+
+    final titleColor = isDark
+        ? Colors.white
+        : const Color(0xFF111111);
+
+    final subtitleColor = isDark
+        ? const Color(0xFFB9AEC8)
+        : const Color(0xFF666666);
+
+    final borderColor = isDark
+        ? const Color(0xFF6D28D9)
+        : const Color(0xFFFF6229);
+
+    final buttonColor = isDark
+        ? const Color(0xFF7C3AED)
+        : const Color(0xFFFF6229);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         10,
@@ -417,9 +439,7 @@ class HomeFeatureCard extends StatelessWidget {
                   20,
                 ),
                 border: Border.all(
-                  color: const Color(
-                    0xFFFF6229,
-                  ),
+                  color: borderColor,
                   width: 1,
                 ),
               ),
@@ -435,7 +455,7 @@ class HomeFeatureCard extends StatelessWidget {
 
                     Positioned.fill(
                       child: Image.asset(
-                        feature.backgroundImage,
+                        backgroundImage,
                         fit: BoxFit.cover,
                         errorBuilder: (
                             context,
@@ -482,12 +502,12 @@ class HomeFeatureCard extends StatelessWidget {
                                     maxLines: 1,
                                     overflow:
                                     TextOverflow.ellipsis,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 21,
                                       height: 1.1,
                                       fontWeight:
                                       FontWeight.w600,
-                                      color: Colors.black,
+                                      color: titleColor,
                                     ),
                                   ),
                                 ),
@@ -527,13 +547,11 @@ class HomeFeatureCard extends StatelessWidget {
                               feature.subtitle,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 height: 1.2,
                                 fontWeight: FontWeight.w300,
-                                color: Color(
-                                  0xFF666666,
-                                ),
+                                color: subtitleColor,
                               ),
                             ),
 
@@ -549,9 +567,7 @@ class HomeFeatureCard extends StatelessWidget {
                               width: 82,
                               height: 28,
                               decoration: BoxDecoration(
-                                color: const Color(
-                                  0xFFFF6229,
-                                ),
+                                color: buttonColor,
                                 borderRadius:
                                 BorderRadius.circular(
                                   14,

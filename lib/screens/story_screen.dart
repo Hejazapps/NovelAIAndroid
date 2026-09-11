@@ -1,5 +1,39 @@
 import 'package:flutter/material.dart';
 
+bool _storyIsDark(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark;
+
+Color _storyPageBackground(BuildContext context) =>
+    _storyIsDark(context) ? Color(0xFF140D20) : Color(0xFFF9F9F9);
+
+Color _storySurface(BuildContext context) =>
+    _storyIsDark(context) ? Color(0xFF21182E) : Colors.white;
+
+Color _storySurfaceAlt(BuildContext context) =>
+    _storyIsDark(context) ? Color(0xFF2A2038) : _storySurfaceAlt(context);
+
+Color _storyBorder(BuildContext context) =>
+    _storyIsDark(context) ? Color(0xFF3A2C4D) : _storyBorder(context);
+
+Color _storyText(BuildContext context) =>
+    _storyIsDark(context) ? Colors.white : _storyText(context);
+
+Color _storyMuted(BuildContext context) =>
+    _storyIsDark(context) ? Color(0xFFB4A9C4) : _storyMuted(context);
+
+Color _storyHint(BuildContext context) =>
+    _storyIsDark(context) ? Color(0xFF756A84) : _storyHint(context);
+
+Color _storyAccent(BuildContext context) =>
+    _storyIsDark(context) ? Color(0xFF7C3AED) : _storyAccent(context);
+
+Color _storyAccentSoft(BuildContext context) =>
+    _storyIsDark(context) ? Color(0xFF45266D) : _storyAccentSoft(context);
+
+Color _storyAccentSoft2(BuildContext context) =>
+    _storyIsDark(context) ? Color(0xFF332047) : _storyAccentSoft2(context);
+
+
 class StoryScreen extends StatefulWidget {
   const StoryScreen({
     super.key,
@@ -315,7 +349,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
+      backgroundColor: _storyPageBackground(context),
       body: SafeArea(
         child: Column(
           children: [
@@ -348,31 +382,31 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
 
   Widget _buildHeader() {
     return Container(
-      color: const Color(0xFFF9F9F9),
+      color: _storyPageBackground(context),
       padding: const EdgeInsets.fromLTRB(16, 10, 20, 12),
       child: Row(
         children: [
           InkWell(
             onTap: () => Navigator.maybePop(context),
             borderRadius: BorderRadius.circular(30),
-            child: const SizedBox(
+            child: SizedBox(
               width: 42,
               height: 42,
               child: Icon(
                 Icons.arrow_back_ios_new_rounded,
                 size: 21,
-                color: Colors.black,
+                color: _storyText(context),
               ),
             ),
           ),
           const SizedBox(width: 4),
-          const Expanded(
+          Expanded(
             child: Text(
               'Create Story',
               style: TextStyle(
                 fontSize: 23,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF171717),
+                color: _storyText(context),
               ),
             ),
           ),
@@ -380,20 +414,20 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _storySurface(context),
               borderRadius: BorderRadius.circular(13),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
+                  color: (_storyIsDark(context) ? Colors.black : Colors.black).withValues(alpha: _storyIsDark(context) ? 0.22 : 0.06),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
               ],
             ),
-            child: const Icon(
+            child: Icon(
               Icons.workspace_premium_outlined,
               size: 21,
-              color: Color(0xFFFF6435),
+              color: _storyAccent(context),
             ),
           ),
         ],
@@ -407,21 +441,21 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Enter Your Imaginations',
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1B1B1B),
+              color: _storyText(context),
             ),
           ),
           const SizedBox(height: 12),
           Container(
             height: 205,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _storySurface(context),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFFE8E8E8)),
+              border: Border.all(color: _storyBorder(context)),
             ),
             child: Column(
               children: [
@@ -434,16 +468,16 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                       maxLines: null,
                       expands: true,
                       textAlignVertical: TextAlignVertical.top,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         height: 1.45,
-                        color: Color(0xFF222222),
+                        color: _storyText(context),
                       ),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: 'Describe your prompt here…',
                         hintStyle: TextStyle(
                           fontSize: 14,
-                          color: Color(0xFFA2A2A2),
+                          color: _storyHint(context),
                         ),
                         border: InputBorder.none,
                       ),
@@ -463,8 +497,8 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
     return Container(
       height: 45,
       padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFF0F0F0))),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: _storyBorder(context))),
       ),
       child: Row(
         children: [
@@ -472,29 +506,29 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
             width: 27,
             height: 27,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFEEE8),
+              color: _storyAccentSoft2(context),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.auto_awesome_rounded,
               size: 16,
-              color: Color(0xFFFF6435),
+              color: _storyAccent(context),
             ),
           ),
           const SizedBox(width: 8),
-          const Text(
+          Text(
             'Rewrite with AI',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF272727),
+              color: _storyText(context),
             ),
           ),
           const Spacer(),
-          const Icon(
+          Icon(
             Icons.chevron_right_rounded,
             size: 20,
-            color: Color(0xFF777777),
+            color: _storyMuted(context),
           ),
         ],
       ),
@@ -510,18 +544,18 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
             InkWell(
               onTap: _promptController.clear,
               borderRadius: BorderRadius.circular(12),
-              child: const Padding(
+              child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4, vertical: 5),
                 child: Row(
                   children: [
-                    Icon(Icons.close_rounded, size: 17, color: Color(0xFF777777)),
+                    Icon(Icons.close_rounded, size: 17, color: _storyMuted(context)),
                     SizedBox(width: 4),
                     Text(
                       'Clear',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF555555),
+                        color: _storyMuted(context),
                       ),
                     ),
                   ],
@@ -536,19 +570,19 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
               height: 32,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF0EA),
+                color: _storyAccentSoft(context),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.auto_awesome, size: 15, color: Color(0xFFFF6435)),
+                  Icon(Icons.auto_awesome, size: 15, color: _storyAccent(context)),
                   SizedBox(width: 6),
                   Text(
                     'Inspire Me',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFFFF6435),
+                      color: _storyAccent(context),
                     ),
                   ),
                 ],
@@ -609,28 +643,28 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Story Title',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1B1B1B),
+              color: _storyText(context),
             ),
           ),
           const SizedBox(height: 10),
           Container(
             height: 52,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _storySurface(context),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFE8E8E8)),
+              border: Border.all(color: _storyBorder(context)),
             ),
             child: TextField(
               controller: _titleController,
-              style: const TextStyle(fontSize: 14, color: Colors.black),
-              decoration: const InputDecoration(
+              style: TextStyle(fontSize: 14, color: Colors.black),
+              decoration: InputDecoration(
                 hintText: 'Enter story title',
-                hintStyle: TextStyle(fontSize: 14, color: Color(0xFFA0A0A0)),
+                hintStyle: TextStyle(fontSize: 14, color: _storyHint(context)),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 16),
               ),
@@ -649,26 +683,26 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Story Genre',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1B1B1B),
+                    color: _storyText(context),
                   ),
                 ),
               ),
               InkWell(
                 onTap: _showAllGenres,
-                child: const Padding(
+                child: Padding(
                   padding: EdgeInsets.all(6),
                   child: Text(
                     'View All',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFFFF6435),
+                      color: _storyAccent(context),
                     ),
                   ),
                 ),
@@ -710,7 +744,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(17),
                 border: selected
-                    ? Border.all(color: const Color(0xFFFF6435), width: 2)
+                    ? Border.all(color: _storyAccent(context), width: 2)
                     : null,
               ),
               child: ClipRRect(
@@ -722,21 +756,21 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                       genre.image,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
-                        color: const Color(0xFFF1F1F1),
+                        color: _storySurfaceAlt(context),
                         alignment: Alignment.center,
-                        child: const Icon(
+                        child: Icon(
                           Icons.auto_stories_outlined,
-                          color: Color(0xFF999999),
+                          color: _storyMuted(context),
                         ),
                       ),
                     ),
                     if (selected)
-                      const Positioned(
+                      Positioned(
                         top: 5,
                         right: 5,
                         child: CircleAvatar(
                           radius: 9,
-                          backgroundColor: Color(0xFFFF6435),
+                          backgroundColor: _storyAccent(context),
                           child: Icon(
                             Icons.check_rounded,
                             color: Colors.white,
@@ -757,8 +791,8 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                 fontSize: 11,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                 color: selected
-                    ? const Color(0xFFFF6435)
-                    : const Color(0xFF333333),
+                    ? _storyAccent(context)
+                    : _storyText(context),
               ),
             ),
           ],
@@ -801,7 +835,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: _storySurface(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
@@ -816,7 +850,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                   width: 42,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFDADADA),
+                    color: _storyBorder(context),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -864,7 +898,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                                   borderRadius: BorderRadius.circular(18),
                                   border: selected
                                       ? Border.all(
-                                          color: const Color(0xFFFF6435),
+                                          color: _storyAccent(context),
                                           width: 2,
                                         )
                                       : null,
@@ -878,21 +912,21 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                                         genre.image,
                                         fit: BoxFit.cover,
                                         errorBuilder: (_, __, ___) => Container(
-                                          color: const Color(0xFFF1F1F1),
+                                          color: _storySurfaceAlt(context),
                                           alignment: Alignment.center,
-                                          child: const Icon(
+                                          child: Icon(
                                             Icons.auto_stories_outlined,
-                                            color: Color(0xFF999999),
+                                            color: _storyMuted(context),
                                           ),
                                         ),
                                       ),
                                       if (selected)
-                                        const Positioned(
+                                        Positioned(
                                           top: 6,
                                           right: 6,
                                           child: CircleAvatar(
                                             radius: 10,
-                                            backgroundColor: Color(0xFFFF6435),
+                                            backgroundColor: _storyAccent(context),
                                             child: Icon(
                                               Icons.check_rounded,
                                               size: 13,
@@ -916,8 +950,8 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                                     ? FontWeight.w700
                                     : FontWeight.w500,
                                 color: selected
-                                    ? const Color(0xFFFF6435)
-                                    : const Color(0xFF333333),
+                                    ? _storyAccent(context)
+                                    : _storyText(context),
                               ),
                             ),
                           ],
@@ -942,12 +976,12 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Story Length',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1B1B1B),
+              color: _storyText(context),
             ),
           ),
           const SizedBox(height: 12),
@@ -955,7 +989,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
             height: 48,
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: const Color(0xFFF1F1F1),
+              color: _storySurfaceAlt(context),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
@@ -969,12 +1003,12 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                       duration: const Duration(milliseconds: 180),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: selected ? Colors.white : Colors.transparent,
+                        color: selected ? _storySurface(context) : Colors.transparent,
                         borderRadius: BorderRadius.circular(11),
                         boxShadow: selected
                             ? [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.07),
+                                  color: Colors.black.withValues(alpha: _storyIsDark(context) ? 0.22 : 0.07),
                                   blurRadius: 6,
                                   offset: const Offset(0, 2),
                                 ),
@@ -988,8 +1022,8 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                           fontWeight:
                               selected ? FontWeight.w700 : FontWeight.w500,
                           color: selected
-                              ? const Color(0xFFFF6435)
-                              : const Color(0xFF707070),
+                              ? _storyAccent(context)
+                              : _storyMuted(context),
                         ),
                       ),
                     ),
@@ -1009,10 +1043,10 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
         decoration: BoxDecoration(
-          color: const Color(0xFFF9F9F9),
+          color: _storyPageBackground(context),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: Colors.black.withValues(alpha: _storyIsDark(context) ? 0.18 : 0.04),
               blurRadius: 10,
               offset: const Offset(0, -3),
             ),
@@ -1027,13 +1061,13 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: _storySurface(context),
                   borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: const Color(0xFFE6E6E6)),
+                  border: Border.all(color: _storyBorder(context)),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.tune_rounded,
-                  color: Color(0xFF202020),
+                  color: _storyText(context),
                 ),
               ),
             ),
@@ -1047,7 +1081,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                   child: Container(
                     height: 54,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF6435),
+                      color: _storyAccent(context),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     alignment: Alignment.center,
@@ -1505,9 +1539,9 @@ class _AdvancedStorySettingsScreenState
         if (!didPop) _closeWithSettings();
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF9F9F9),
+        backgroundColor: _storyPageBackground(context),
         appBar: AppBar(
-          backgroundColor: const Color(0xFFF9F9F9),
+          backgroundColor: _storyPageBackground(context),
           surfaceTintColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
@@ -1906,10 +1940,10 @@ class _AdvancedStorySettingsScreenState
             if (characters.isNotEmpty)
               Text(
                 '${characters.length}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFFFF6435),
+                  color: _storyAccent(context),
                 ),
               ),
           ],
@@ -1926,19 +1960,19 @@ class _AdvancedStorySettingsScreenState
               return Container(
                 padding: const EdgeInsets.fromLTRB(12, 8, 7, 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF0EA),
+                  color: _storyAccentSoft(context),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: const Color(0xFFFFD8CB),
+                    color: _storyAccentSoft(context),
                   ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.person_outline_rounded,
                       size: 17,
-                      color: Color(0xFFFF6435),
+                      color: _storyAccent(context),
                     ),
                     const SizedBox(width: 6),
                     ConstrainedBox(
@@ -1947,10 +1981,10 @@ class _AdvancedStorySettingsScreenState
                         character.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF333333),
+                          color: _storyText(context),
                         ),
                       ),
                     ),
@@ -1962,12 +1996,12 @@ class _AdvancedStorySettingsScreenState
                         });
                       },
                       borderRadius: BorderRadius.circular(20),
-                      child: const Padding(
+                      child: Padding(
                         padding: EdgeInsets.all(3),
                         child: Icon(
                           Icons.close_rounded,
                           size: 16,
-                          color: Color(0xFF777777),
+                          color: _storyMuted(context),
                         ),
                       ),
                     ),
@@ -1983,20 +2017,20 @@ class _AdvancedStorySettingsScreenState
           child: Container(
             height: 56,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _storySurface(context),
               borderRadius: BorderRadius.circular(15),
-              border: Border.all(color: const Color(0xFFE7E7E7)),
+              border: Border.all(color: _storyBorder(context)),
             ),
-            child: const Row(
+            child: Row(
               children: [
                 SizedBox(width: 15),
                 CircleAvatar(
                   radius: 16,
-                  backgroundColor: Color(0xFFFFEEE8),
+                  backgroundColor: _storyAccentSoft2(context),
                   child: Icon(
                     Icons.add_rounded,
                     size: 20,
-                    color: Color(0xFFFF6435),
+                    color: _storyAccent(context),
                   ),
                 ),
                 SizedBox(width: 11),
@@ -2019,7 +2053,7 @@ class _AdvancedStorySettingsScreenState
     final character = await showModalBottomSheet<StoryCharacter>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: _storySurface(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -2048,9 +2082,9 @@ class _AdvancedStorySettingsScreenState
           constraints: const BoxConstraints(minHeight: 62),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: _storySurface(context),
             borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: const Color(0xFFE9E9E9)),
+            border: Border.all(color: _storyBorder(context)),
           ),
           child: Row(
             children: [
@@ -2058,10 +2092,10 @@ class _AdvancedStorySettingsScreenState
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF0EA),
+                  color: _storyAccentSoft(context),
                   borderRadius: BorderRadius.circular(11),
                 ),
-                child: Icon(icon, size: 19, color: const Color(0xFFFF6435)),
+                child: Icon(icon, size: 19, color: _storyAccent(context)),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -2070,26 +2104,26 @@ class _AdvancedStorySettingsScreenState
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF888888),
+                        color: _storyMuted(context),
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       value,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF222222),
+                        color: _storyText(context),
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.keyboard_arrow_down_rounded,
-                color: Color(0xFF777777),
+                color: _storyMuted(context),
               ),
             ],
           ),
@@ -2108,7 +2142,7 @@ class _AdvancedStorySettingsScreenState
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: _storySurface(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -2154,7 +2188,7 @@ class _AdvancedStorySettingsScreenState
                       width: 40,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFDADADA),
+                        color: _storyBorder(context),
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
@@ -2165,10 +2199,10 @@ class _AdvancedStorySettingsScreenState
                         alignment: Alignment.centerLeft,
                         child: Text(
                           title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 19,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF222222),
+                            color: _storyText(context),
                           ),
                         ),
                       ),
@@ -2185,13 +2219,13 @@ class _AdvancedStorySettingsScreenState
                           },
                           decoration: InputDecoration(
                             hintText: 'Search $title',
-                            hintStyle: const TextStyle(
-                              color: Color(0xFF9A9A9A),
+                            hintStyle: TextStyle(
+                              color: _storyMuted(context),
                               fontSize: 14,
                             ),
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.search_rounded,
-                              color: Color(0xFF777777),
+                              color: _storyMuted(context),
                             ),
                             suffixIcon: searchQuery.isNotEmpty
                                 ? IconButton(
@@ -2199,28 +2233,28 @@ class _AdvancedStorySettingsScreenState
                                       searchController.clear();
                                       setSheetState(() => searchQuery = '');
                                     },
-                                    icon: const Icon(
+                                    icon: Icon(
                                       Icons.close_rounded,
-                                      color: Color(0xFF777777),
+                                      color: _storyMuted(context),
                                     ),
                                   )
                                 : null,
                             filled: true,
-                            fillColor: const Color(0xFFF6F6F6),
+                            fillColor: _storySurfaceAlt(context),
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 14,
                               vertical: 13,
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE7E7E7),
+                              borderSide: BorderSide(
+                                color: _storyBorder(context),
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFFF6435),
+                              borderSide: BorderSide(
+                                color: _storyAccent(context),
                                 width: 1.2,
                               ),
                             ),
@@ -2235,17 +2269,17 @@ class _AdvancedStorySettingsScreenState
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.search_off_rounded,
                                     size: 34,
-                                    color: Color(0xFFAAAAAA),
+                                    color: _storyMuted(context),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     'No $title found',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 14,
-                                      color: Color(0xFF888888),
+                                      color: _storyMuted(context),
                                     ),
                                   ),
                                 ],
@@ -2255,11 +2289,11 @@ class _AdvancedStorySettingsScreenState
                               physics: const BouncingScrollPhysics(),
                               padding: const EdgeInsets.only(bottom: 12),
                               itemCount: filteredValues.length,
-                              separatorBuilder: (_, __) => const Divider(
+                              separatorBuilder: (_, __) => Divider(
                                 height: 1,
                                 indent: 16,
                                 endIndent: 16,
-                                color: Color(0xFFF0F0F0),
+                                color: _storyBorder(context),
                               ),
                               itemBuilder: (context, index) {
                                 final value = filteredValues[index];
@@ -2278,14 +2312,14 @@ class _AdvancedStorySettingsScreenState
                                           ? FontWeight.w700
                                           : FontWeight.w400,
                                       color: isSelected
-                                          ? const Color(0xFFFF6435)
-                                          : const Color(0xFF222222),
+                                          ? _storyAccent(context)
+                                          : _storyText(context),
                                     ),
                                   ),
                                   trailing: isSelected
-                                      ? const Icon(
+                                      ? Icon(
                                           Icons.check_circle_rounded,
-                                          color: Color(0xFFFF6435),
+                                          color: _storyAccent(context),
                                           size: 21,
                                         )
                                       : null,
@@ -2369,7 +2403,7 @@ class _AddCharacterSheetState extends State<_AddCharacterSheet> {
                 width: 40,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFDADADA),
+                  color: _storyBorder(context),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -2393,23 +2427,23 @@ class _AddCharacterSheetState extends State<_AddCharacterSheet> {
                   labelText: 'Character Name',
                   hintText: 'Enter character name',
                   filled: true,
-                  fillColor: const Color(0xFFF8F8F8),
+                  fillColor: _storySurfaceAlt(context),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFE7E7E7),
+                    borderSide: BorderSide(
+                      color: _storyBorder(context),
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFE7E7E7),
+                    borderSide: BorderSide(
+                      color: _storyBorder(context),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFFF6435),
+                    borderSide: BorderSide(
+                      color: _storyAccent(context),
                       width: 1.4,
                     ),
                   ),
@@ -2428,23 +2462,23 @@ class _AddCharacterSheetState extends State<_AddCharacterSheet> {
                       'Describe personality, role, goal, appearance, or important details',
                   alignLabelWithHint: true,
                   filled: true,
-                  fillColor: const Color(0xFFF8F8F8),
+                  fillColor: _storySurfaceAlt(context),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFE7E7E7),
+                    borderSide: BorderSide(
+                      color: _storyBorder(context),
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFE7E7E7),
+                    borderSide: BorderSide(
+                      color: _storyBorder(context),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFFF6435),
+                    borderSide: BorderSide(
+                      color: _storyAccent(context),
                       width: 1.4,
                     ),
                   ),
@@ -2457,9 +2491,9 @@ class _AddCharacterSheetState extends State<_AddCharacterSheet> {
                 child: ElevatedButton(
                   onPressed: _canAdd ? _submit : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF6435),
+                    backgroundColor: _storyAccent(context),
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: const Color(0xFFFFC7B5),
+                    disabledBackgroundColor: _storyAccentSoft(context),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
