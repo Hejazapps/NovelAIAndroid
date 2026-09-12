@@ -16,8 +16,11 @@ class _BookScreenState extends State<BookScreen> {
   String selectedLanguage = 'English';
   String selectedTone = 'Standard';
   String selectedLength = 'Short';
+  String selectedAgeGroup = 'Adults (18+)';
 
   int chapterCount = 4;
+
+  final List<BookCharacterSpec> _characters = [];
 
   final ScrollController _genreScrollController = ScrollController();
 
@@ -53,6 +56,7 @@ class _BookScreenState extends State<BookScreen> {
     'English',
     'Bengali',
     'Arabic',
+    'Catalan',
     'Chinese Simplified',
     'Chinese Traditional',
     'Czech',
@@ -70,6 +74,7 @@ class _BookScreenState extends State<BookScreen> {
     'Japanese',
     'Korean',
     'Malay',
+    'Norwegian Bokmål',
     'Polish',
     'Portuguese',
     'Romanian',
@@ -100,6 +105,14 @@ class _BookScreenState extends State<BookScreen> {
     'Humorous',
     'Poetic',
   ];
+
+  final List<String> ageGroups = const [
+    'Adults (18+)',
+    'Teen (13–17)',
+    'Pre-teen (8–12)',
+    'Children (1–7)',
+  ];
+
 
 
   bool _isDark(BuildContext context) =>
@@ -141,6 +154,7 @@ class _BookScreenState extends State<BookScreen> {
     _authorController.dispose();
     _descriptionController.dispose();
     _genreScrollController.dispose();
+
     super.dispose();
   }
 
@@ -231,6 +245,14 @@ class _BookScreenState extends State<BookScreen> {
                   const SizedBox(height: 12),
 
                   _buildLengthSection(),
+
+                  const SizedBox(height: 25),
+
+                  _buildAgeGroupSection(),
+
+                  const SizedBox(height: 25),
+
+                  _buildCharactersSection(),
                 ],
               ),
             ),
@@ -1011,6 +1033,205 @@ class _BookScreenState extends State<BookScreen> {
     );
   }
 
+
+  // ============================================================
+  // TARGET AUDIENCE / AGE GROUP
+  // ============================================================
+
+  Widget _buildAgeGroupSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Target Audience',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: _text(context),
+          ),
+        ),
+        const SizedBox(height: 10),
+        _buildDropdownTile(
+          title: 'Age Group',
+          value: selectedAgeGroup,
+          icon: Icons.groups_2_outlined,
+          onTap: () {
+            _showSelector(
+              title: 'Choose Age Group',
+              values: ageGroups,
+              selectedValue: selectedAgeGroup,
+              onSelected: (value) {
+                setState(() {
+                  selectedAgeGroup = value;
+                });
+              },
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  // ============================================================
+  // CHARACTERS
+  // ============================================================
+
+  Widget _buildCharactersSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Main Characters',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: _text(context),
+                ),
+              ),
+            ),
+            if (_characters.isNotEmpty)
+              Text(
+                '${_characters.length}',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: _accent(context),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (_characters.isNotEmpty)
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _characters.asMap().entries.map((entry) {
+              final index = entry.key;
+              final character = entry.value;
+
+              return Container(
+                padding: const EdgeInsets.fromLTRB(12, 8, 7, 8),
+                decoration: BoxDecoration(
+                  color: _accentSoft(context),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: _accentSoft(context)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.person_outline_rounded,
+                      size: 17,
+                      color: _accent(context),
+                    ),
+                    const SizedBox(width: 6),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 150),
+                      child: Text(
+                        character.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _text(context),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          _characters.removeAt(index);
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Padding(
+                        padding: const EdgeInsets.all(3),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 16,
+                          color: _muted(context),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        if (_characters.isNotEmpty) const SizedBox(height: 10),
+        InkWell(
+          onTap: _showAddCharacterSheet,
+          borderRadius: BorderRadius.circular(15),
+          child: Container(
+            height: 56,
+            decoration: BoxDecoration(
+              color: _surface(context),
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(color: _border(context)),
+            ),
+            child: Row(
+              children: [
+                const SizedBox(width: 15),
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: _accentSoft(context),
+                  child: Icon(
+                    Icons.add_rounded,
+                    size: 20,
+                    color: _accent(context),
+                  ),
+                ),
+                const SizedBox(width: 11),
+                Text(
+                  'Add New Character',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: _text(context),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _showAddCharacterSheet() async {
+    FocusScope.of(context).unfocus();
+
+    final character = await showModalBottomSheet<BookCharacterSpec>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: _surface(context),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) => _BookCharacterInputSheet(
+        surfaceAlt: _surfaceAlt(context),
+        borderColor: _border(context),
+        textColor: _bodyText(context),
+        mutedColor: _muted(context),
+        hintColor: _hint(context),
+        accentColor: _accent(context),
+        accentSoftColor: _accentSoft(context),
+      ),
+    );
+
+    if (!mounted || character == null) return;
+
+    setState(() {
+      _characters.add(character);
+    });
+  }
+
   // ============================================================
   // CREATE
   // ============================================================
@@ -1072,8 +1293,7 @@ class _BookScreenState extends State<BookScreen> {
   void _createBook() {
     final title = _titleController.text.trim();
     final author = _authorController.text.trim();
-    final description =
-    _descriptionController.text.trim();
+    final description = _descriptionController.text.trim();
 
     if (title.isEmpty) {
       _showAlert(
@@ -1091,18 +1311,341 @@ class _BookScreenState extends State<BookScreen> {
       return;
     }
 
-    debugPrint('============= BOOK =============');
-    debugPrint('Title: $title');
-    debugPrint('Author: $author');
-    debugPrint('Description: $description');
-    debugPrint('Chapter: $chapterCount');
-    debugPrint('Genre: $selectedGenre');
-    debugPrint('Language: $selectedLanguage');
-    debugPrint('Tone: $selectedTone');
-    debugPrint('Length: $selectedLength');
-    debugPrint('================================');
+    final characters = List<BookCharacterSpec>.unmodifiable(_characters);
 
-    // Book generation/API later.
+    final spec = BookGenerationSpec(
+      title: title,
+      bookDescription: description,
+      author: author,
+      language: selectedLanguage,
+      tone: selectedTone,
+      category: selectedGenre,
+      length: selectedLength,
+      chapterCount: chapterCount,
+      ageGroup: selectedAgeGroup,
+      characters: characters,
+    );
+
+    final outlinePrompt = _buildOutlinePrompt(spec);
+
+    debugPrint('============= BOOK SPEC =============');
+    debugPrint('Title: ${spec.title}');
+    debugPrint('Author: ${spec.author}');
+    debugPrint('Description: ${spec.bookDescription}');
+    debugPrint('Chapter: ${spec.chapterCount}');
+    debugPrint('Genre: ${spec.category}');
+    debugPrint('Language: ${spec.language}');
+    debugPrint('Tone: ${spec.tone}');
+    debugPrint('Length: ${spec.length}');
+    debugPrint('Age Group: ${spec.ageGroup}');
+    debugPrint('Character Count: ${spec.characters.length}');
+
+    for (var i = 0; i < spec.characters.length; i++) {
+      final character = spec.characters[i];
+      debugPrint('Character ${i + 1} Name: ${character.name}');
+      debugPrint(
+        'Character ${i + 1} Description: ${character.description}',
+      );
+    }
+
+    debugPrint('Chapter Target: ${_chapterTargetText(spec.length)}');
+    debugPrint('============= OUTLINE PROMPT =============');
+    debugPrint(outlinePrompt);
+    debugPrint('===========================================');
+
+    // Intentionally stops at prompt creation.
+    // Connect this prompt to your generation/API layer later.
+  }
+
+  String _charactersBlock(BookGenerationSpec spec) {
+    if (spec.characters.isEmpty) {
+      return 'None specified.';
+    }
+
+    return spec.characters
+        .map((character) {
+          final name =
+              character.name.isEmpty ? 'Unnamed character' : character.name;
+          final description = character.description.isEmpty
+              ? 'No description provided.'
+              : character.description;
+          return '- $name: $description';
+        })
+        .join('\n');
+  }
+
+  String _chapterTargetText(String length) {
+    final normalized = length.toLowerCase();
+
+    if (normalized.contains('short')) {
+      return '300-400 words';
+    }
+
+    if (normalized.contains('long')) {
+      return '800-1000 words';
+    }
+
+    return '500-700 words';
+  }
+
+  String _buildOutlinePrompt(BookGenerationSpec spec) {
+    final total = spec.chapterCount > 0 ? spec.chapterCount : 12;
+    final language =
+        spec.language.trim().isEmpty ? 'English' : spec.language;
+    final tone = spec.tone.trim().isEmpty
+        ? 'engaging and consistent'
+        : spec.tone;
+    final author =
+        spec.author.trim().isEmpty ? 'Not specified' : spec.author;
+
+    return """
+You are an elite story architect, developmental editor, and professional novelist.
+
+Your job is to design a coherent, emotionally satisfying, causally connected book before prose is written.
+
+Think in terms of:
+- character desire
+- obstacles
+- choices
+- consequences
+- escalation
+- reversals
+- relationships
+- setup and payoff
+- emotional progression
+- thematic pressure
+- pacing
+- chapter variety
+
+A strong story is not a sequence of unrelated incidents.
+Each chapter should be caused partly by what came before and should change what becomes possible afterward.
+Characters must influence the plot through decisions.
+
+Avoid repetitive chapter formulas.
+Avoid solving the central problem too early.
+Avoid arbitrary twists with no setup.
+Avoid convenient coincidences that erase consequences.
+
+Design a professional $total-chapter ${spec.category} book.
+
+BOOK TITLE:
+${spec.title}
+
+PREMISE / USER DESCRIPTION:
+${spec.bookDescription}
+
+AUTHOR / VOICE REFERENCE:
+$author
+
+LANGUAGE:
+$language
+
+TONE:
+$tone
+
+TARGET AUDIENCE:
+${spec.ageGroup}
+
+TARGET CHAPTER LENGTH:
+${_chapterTargetText(spec.length)}
+
+CHARACTERS:
+${_charactersBlock(spec)}
+
+CORE GOAL
+
+Design ONE connected book with a clear dramatic spine.
+The story should feel deliberately constructed rather than generated chapter by chapter.
+
+Build:
+beginning → escalation → complications → major turn → increasing cost → climax → earned aftermath / resolution.
+
+THROUGHLINE
+
+Define one central dramatic question or conflict.
+Every chapter must meaningfully interact with this throughline.
+
+A chapter may focus on relationships, discovery, reflection, travel, politics, mystery, action, or another mode, but it must still alter the larger story.
+
+CAUSALITY
+
+Design the chapters so that important events happen because of earlier:
+- choices
+- discoveries
+- mistakes
+- promises
+- conflicts
+- sacrifices
+- consequences
+
+Avoid a sequence where chapters could be reordered without damaging the story.
+
+CHARACTER ARCS
+
+Character development should happen progressively.
+Major emotional changes need causes.
+
+Relationships should evolve through interaction, disagreement, trust, betrayal, sacrifice, discovery, boundaries, or shared experience.
+
+Do not make characters suddenly behave differently simply because the plot needs them to.
+
+COST / STAKES
+
+Define a real price demanded by the central conflict.
+
+The cost may be:
+- emotional
+- relational
+- moral
+- physical
+- social
+- financial
+- professional
+- existential
+
+The cost must matter.
+It cannot disappear through an easy conversation or convenient reconciliation.
+
+CLIMAX
+
+Set "climaxChapter" to the chapter where the central dramatic pressure reaches its peak.
+Usually this should fall in the final third.
+
+Before the climax:
+- keep the central problem alive
+- allow partial victories
+- allow losses
+- raise complications
+- reveal information
+- deepen consequences
+
+Do NOT fully pay or erase the central cost before the climax.
+At or after the climax, the story must genuinely confront the established cost.
+
+CHAPTER DESIGN
+
+Each chapter needs its own internal dramatic shape:
+goal → pressure/conflict → development → meaningful turn → consequence → chapter landing.
+
+The "beat" field must describe this progression concretely.
+
+Do NOT write vague beats like:
+"The characters learn more."
+"The story continues."
+"Tension increases."
+"The protagonist faces challenges."
+
+State what actually happens.
+
+CHAPTER IDENTITY
+
+Every chapter should have a distinct identity.
+
+Vary:
+- scene mode
+- dominant relationship
+- dramatic question
+- setting
+- pacing
+- emotional temperature
+- information revealed
+- type of conflict
+
+Do not repeatedly use the same pattern such as:
+meeting → explanation → argument → departure.
+
+Do not use the same character pairing in every chapter.
+Do not make every chapter an action scene.
+Do not make every chapter end with a cliffhanger.
+
+PACING
+
+Important events deserve space.
+
+Use quieter chapters when they create:
+- emotional consequence
+- character decisions
+- relationship movement
+- new understanding
+- anticipation
+
+But quiet chapters must still change something.
+
+SETTINGS AND TIME
+
+Give each chapter a concrete setting.
+Give each chapter a meaningful timeframe.
+
+Use time jumps only when the story benefits from them.
+A tight thriller may remain nearly continuous.
+A family saga may jump months or years.
+
+Do not force identical pacing onto every genre.
+
+SETUP AND PAYOFF
+
+Plant information, tensions, objects, promises, relationships, fears, or questions early enough for later payoffs to feel earned.
+
+Major revelations should connect to prior information where possible.
+Foreshadow without making every setup obvious.
+
+ENDING
+
+The final chapter must resolve the central dramatic question according to the genre and intended ending.
+
+Resolution does not mean everything becomes perfect.
+Preserve consequences.
+
+If the story is tragic, bittersweet, ambiguous, romantic, hopeful, dark, mysterious, or comedic, make the resolution appropriate to that mode.
+
+TITLES
+
+Each chapter title must be:
+- specific
+- evocative
+- 2-6 words
+- connected to that chapter
+
+Never use:
+"Chapter 1"
+"Chapter One"
+"Untitled"
+a bare number
+
+AUTHOR VOICE
+
+If an author or voice reference is provided, use it only as broad stylistic guidance such as pacing, atmosphere, emotional intimacy, humor, or descriptive density.
+
+Do not reproduce recognizable passages or distinctive wording from another work.
+
+OUTPUT
+
+Return ONLY this valid JSON object:
+
+{
+  "title": "<book title>",
+  "premise": "<2-3 sentence refined premise>",
+  "throughline": "<single central dramatic question/conflict>",
+  "arc": "<3-5 sentences describing the progression from opening through escalation, climax, cost, and resolution>",
+  "cost": "<the meaningful price or sacrifice demanded by the central conflict>",
+  "climaxChapter": <integer from 1 to $total>,
+  "chapters": [
+    {
+      "title": "<specific evocative 2-6 word title>",
+      "mode": "<action / discovery / relationship / confrontation / revelation / reflection / pursuit / investigation / negotiation / travel / survival / other suitable mode>",
+      "setting": "<specific place or environment>",
+      "timeframe": "<when it happens and any meaningful time shift>",
+      "focusCharacters": ["<character names>"],
+      "beat": "<concrete chapter mini-arc: immediate goal → conflict/pressure → important development → turn/decision/revelation → consequence/landing>",
+      "advances": "<exactly what changes in the overall plot, character arc, relationship, stakes, knowledge, or possibility because of this chapter>"
+    }
+  ]
+}
+
+The chapters array must contain EXACTLY $total objects.
+
+Return JSON only.
+""";
   }
 
   void _showAlert(
@@ -1402,3 +1945,228 @@ class BookGenre {
     required this.image,
   });
 }
+
+class BookCharacterSpec {
+  final String name;
+  final String description;
+
+  const BookCharacterSpec({
+    required this.name,
+    required this.description,
+  });
+}
+
+class BookGenerationSpec {
+  final String title;
+  final String bookDescription;
+  final String author;
+  final String language;
+  final String tone;
+  final String category;
+  final String length;
+  final int chapterCount;
+  final String ageGroup;
+  final List<BookCharacterSpec> characters;
+
+  const BookGenerationSpec({
+    required this.title,
+    required this.bookDescription,
+    required this.author,
+    required this.language,
+    required this.tone,
+    required this.category,
+    required this.length,
+    required this.chapterCount,
+    required this.ageGroup,
+    required this.characters,
+  });
+}
+
+class _BookCharacterInputSheet extends StatefulWidget {
+  const _BookCharacterInputSheet({
+    required this.surfaceAlt,
+    required this.borderColor,
+    required this.textColor,
+    required this.mutedColor,
+    required this.hintColor,
+    required this.accentColor,
+    required this.accentSoftColor,
+  });
+
+  final Color surfaceAlt;
+  final Color borderColor;
+  final Color textColor;
+  final Color mutedColor;
+  final Color hintColor;
+  final Color accentColor;
+  final Color accentSoftColor;
+
+  @override
+  State<_BookCharacterInputSheet> createState() =>
+      _BookCharacterInputSheetState();
+}
+
+class _BookCharacterInputSheetState extends State<_BookCharacterInputSheet> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+
+  bool get _canAdd => _nameController.text.trim().isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.addListener(_refresh);
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _nameController.removeListener(_refresh);
+    _nameController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (!_canAdd) return;
+
+    final character = BookCharacterSpec(
+      name: _nameController.text.trim(),
+      description: _descriptionController.text.trim(),
+    );
+
+    FocusScope.of(context).unfocus();
+    Navigator.of(context).pop(character);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
+      padding: EdgeInsets.only(bottom: keyboard),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 5,
+              decoration: BoxDecoration(
+                color: widget.borderColor,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Add Main Character',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: widget.textColor,
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            TextField(
+              controller: _nameController,
+              autofocus: true,
+              textInputAction: TextInputAction.next,
+              style: TextStyle(color: widget.textColor),
+              decoration: InputDecoration(
+                labelText: 'Character Name',
+                hintText: 'Enter character name',
+                labelStyle: TextStyle(color: widget.mutedColor),
+                hintStyle: TextStyle(color: widget.hintColor),
+                filled: true,
+                fillColor: widget.surfaceAlt,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: widget.borderColor),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: widget.borderColor),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(
+                    color: widget.accentColor,
+                    width: 1.4,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _descriptionController,
+              minLines: 3,
+              maxLines: 5,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _submit(),
+              style: TextStyle(color: widget.textColor),
+              decoration: InputDecoration(
+                labelText: 'Character Description',
+                hintText:
+                    'Describe personality, role, goal, appearance, or important details',
+                alignLabelWithHint: true,
+                labelStyle: TextStyle(color: widget.mutedColor),
+                hintStyle: TextStyle(color: widget.hintColor),
+                filled: true,
+                fillColor: widget.surfaceAlt,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: widget.borderColor),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: widget.borderColor),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(
+                    color: widget.accentColor,
+                    width: 1.4,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: _canAdd ? _submit : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: widget.accentColor,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: widget.accentSoftColor,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                child: const Text(
+                  'Add Character',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
