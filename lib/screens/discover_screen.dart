@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../services/realtime_db_manager.dart';
+import 'story_detail_screen.dart';
 
 typedef DiscoverSubscriptionCheck = bool Function();
 typedef DiscoverLockedTap = Future<void> Function();
@@ -1096,32 +1097,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
     if (!mounted) return;
 
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  story.title?.isNotEmpty == true
-                      ? story.title!
-                      : 'Story',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                if (story.summary?.isNotEmpty == true) ...[
-                  const SizedBox(height: 10),
-                  Text(story.summary!),
-                ],
-              ],
-            ),
-          ),
-        );
-      },
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => StoryDetailScreen(
+          story: story,
+        ),
+      ),
     );
   }
 
