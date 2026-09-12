@@ -27,7 +27,8 @@ class StoryDetailScreen extends StatefulWidget {
 }
 
 class _StoryDetailScreenState extends State<StoryDetailScreen> {
-  static const Color _purple = Color(0xFF8C52FF);
+  static const Color _lightAccent = Color(0xFFFF6435);
+  static const Color _darkAccent = Color(0xFFF540B3);
 
   final AudioPlayer _audioPlayer = AudioPlayer();
   final ScreenshotController _screenshotController = ScreenshotController();
@@ -248,6 +249,9 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
+  // NovelAI accent rule: Light Mode = Orange, Dark Mode = Magenta.
+  Color get _accent => _isDark ? _darkAccent : _lightAccent;
+
   Color get _background =>
       _isDark ? const Color(0xFF19102A) : const Color(0xFFF8F8F8);
 
@@ -398,6 +402,18 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
             fontWeight: FontWeight.w700,
           ),
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Share',
+            onPressed: _showShareOptions,
+            icon: Icon(
+              Icons.ios_share_rounded,
+              color: _accent,
+              size: 23,
+            ),
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: SafeArea(
         top: false,
@@ -422,9 +438,9 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                   const SizedBox(height: 8),
                   Divider(height: 1, thickness: 1, color: _divider),
                   if (_isTranslating)
-                    const LinearProgressIndicator(
+                    LinearProgressIndicator(
                       minHeight: 2,
-                      color: _purple,
+                      color: _accent,
                     ),
                   const SizedBox(height: 20),
                   Padding(
@@ -438,8 +454,8 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
               Positioned.fill(
                 child: ColoredBox(
                   color: Colors.black.withOpacity(0.34),
-                  child: const Center(
-                    child: CircularProgressIndicator(color: _purple),
+                  child: Center(
+                    child: CircularProgressIndicator(color: _accent),
                   ),
                 ),
               ),
@@ -485,8 +501,8 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                   textAlign: TextAlign.center,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFFBA8CFF),
+                  style: TextStyle(
+                    color: _accent,
                     fontSize: 25,
                     fontWeight: FontWeight.w800,
                     height: 1.18,
@@ -522,9 +538,9 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
         return Container(
           color: _surface,
           alignment: Alignment.center,
-          child: const CircularProgressIndicator(
+          child: CircularProgressIndicator(
             strokeWidth: 2.5,
-            color: _purple,
+            color: _accent,
           ),
         );
       },
@@ -539,7 +555,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
       child: Icon(
         Icons.auto_stories_rounded,
         size: 70,
-        color: _purple.withOpacity(0.75),
+        color: _accent.withOpacity(0.75),
       ),
     );
   }
@@ -550,9 +566,9 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
       child: ElevatedButton(
         onPressed: _isExporting ? null : _showDownloadOptions,
         style: ElevatedButton.styleFrom(
-          backgroundColor: _purple,
+          backgroundColor: _accent,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: _purple.withOpacity(0.45),
+          disabledBackgroundColor: _accent.withOpacity(0.45),
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
@@ -619,11 +635,6 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                 : (_selectedTrack?.name ?? 'Music'),
             width: 74,
             onTap: _showMusicOptions,
-          ),
-          _action(
-            icon: Icons.ios_share_rounded,
-            label: 'Share',
-            onTap: _showShareOptions,
           ),
         ],
       ),
@@ -799,9 +810,9 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                               ),
                             ),
                             trailing: _fontName == font
-                                ? const Icon(
+                                ? Icon(
                                     Icons.check_circle_rounded,
-                                    color: _purple,
+                                    color: _accent,
                                   )
                                 : null,
                             onTap: () async {
@@ -878,7 +889,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                             min: 14,
                             max: 34,
                             divisions: 20,
-                            activeColor: _purple,
+                            activeColor: _accent,
                             onChanged: (value) {
                               setSheetState(() {
                                 _fontSize = value;
@@ -994,18 +1005,18 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
 
                           return ListTile(
                             contentPadding: EdgeInsets.zero,
-                            leading: const Icon(
+                            leading: Icon(
                               Icons.translate_rounded,
-                              color: _purple,
+                              color: _accent,
                             ),
                             title: Text(
                               name,
                               style: TextStyle(color: _text),
                             ),
                             trailing: _selectedLanguage == name
-                                ? const Icon(
+                                ? Icon(
                                     Icons.check_circle_rounded,
-                                    color: _purple,
+                                    color: _accent,
                                   )
                                 : null,
                             onTap: () {
@@ -1256,9 +1267,9 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.music_note_rounded,
-                              color: _purple,
+                              color: _accent,
                             ),
                             const SizedBox(width: 10),
                             Expanded(
@@ -1288,7 +1299,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                                 _isMusicPlaying
                                     ? Icons.pause_circle_filled_rounded
                                     : Icons.play_circle_fill_rounded,
-                                color: _purple,
+                                color: _accent,
                                 size: 31,
                               ),
                             ),
@@ -1349,10 +1360,10 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                           return ListTile(
                             contentPadding: EdgeInsets.zero,
                             leading: CircleAvatar(
-                              backgroundColor: _purple.withOpacity(0.14),
-                              child: const Icon(
+                              backgroundColor: _accent.withOpacity(0.14),
+                              child: Icon(
                                 Icons.music_note_rounded,
-                                color: _purple,
+                                color: _accent,
                               ),
                             ),
                             title: Text(
@@ -1365,13 +1376,13 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                               ),
                             ),
                             trailing: selected
-                                ? const Icon(
+                                ? Icon(
                                     Icons.equalizer_rounded,
-                                    color: _purple,
+                                    color: _accent,
                                   )
-                                : const Icon(
+                                : Icon(
                                     Icons.play_arrow_rounded,
-                                    color: _purple,
+                                    color: _accent,
                                   ),
                             onTap: () async {
                               await _selectAndPlayTrack(track);
@@ -1514,12 +1525,12 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: _purple.withOpacity(0.15),
+                  color: _accent.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(13),
                 ),
                 child: Icon(
                   icon,
-                  color: _purple,
+                  color: _accent,
                   size: 25,
                 ),
               ),
