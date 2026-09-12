@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "670715273416",
+    "firebase_url": "https://novel-ai-90da3-default-rtdb.firebaseio.com",
+    "project_id": "novel-ai-90da3",
+    "storage_bucket": "novel-ai-90da3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:670715273416:android:aa12e6e02b47040ac785fd",
+        "android_client_info": {
+          "package_name": "com.aventralabs.novelai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "670715273416-rn32qr1851bf5q6kd3bacdbpa2f972n3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQfBX49dr53OX_BIomcSfYbP_bMM8YXTc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "670715273416-rn32qr1851bf5q6kd3bacdbpa2f972n3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "670715273416-2k1tb6s9tk308edhtc3c6kog31bbv0g6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.hejazapps.storymaker",
+                "app_store_id": "6748270137"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
