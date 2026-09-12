@@ -1,4 +1,4 @@
-package com.example.novel_ai
+package com.aventralabs.novelai
 
 import io.flutter.embedding.android.FlutterActivity
 
