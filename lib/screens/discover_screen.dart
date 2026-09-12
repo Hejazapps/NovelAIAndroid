@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../services/realtime_db_manager.dart';
 import 'story_detail_screen.dart';
+import 'book_chapter_reader_screen.dart';
 
 typedef DiscoverSubscriptionCheck = bool Function();
 typedef DiscoverLockedTap = Future<void> Function();
@@ -987,38 +988,19 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       return;
     }
 
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.book.title,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 8),
-                Text(item.book.authorName),
-                const SizedBox(height: 16),
-                const Text(
-                  'Book data loaded successfully. '
-                  'Connect onBookTap to your Flutter reader screen.',
-                ),
-                const SizedBox(height: 12),
-                SelectableText(
-                  url,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BookChapterReaderScreen(
+          bookId: item.book.id,
+          bookTitle: item.book.title,
+          bookAuthor: item.book.authorName,
+          bookUrl: url,
+          bookCoverUrl: item.book.coverUrl,
+          bookUrls: item.book.formats.values
+              .where((value) => value.trim().isNotEmpty)
+              .toList(),
+        ),
+      ),
     );
   }
 
