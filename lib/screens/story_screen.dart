@@ -25,13 +25,13 @@ Color _storyHint(BuildContext context) =>
     _storyIsDark(context) ? const Color(0xFF81758F) : const Color(0xFFA39BAA);
 
 Color _storyAccent(BuildContext context) =>
-    _storyIsDark(context) ? const Color(0xFF9146E8) : const Color(0xFF7C3AED);
+    _storyIsDark(context) ? const Color(0xFF9146E8) : const Color(0xFFFF6435);
 
 Color _storyAccentSoft(BuildContext context) =>
-    _storyIsDark(context) ? const Color(0xFF432464) : const Color(0xFFF0E8FF);
+    _storyIsDark(context) ? const Color(0xFF432464) : const Color(0xFFFFF0EA);
 
 Color _storyAccentSoft2(BuildContext context) =>
-    _storyIsDark(context) ? const Color(0xFF2D1A43) : const Color(0xFFF5EEFF);
+    _storyIsDark(context) ? const Color(0xFF2D1A43) : const Color(0xFFFFF0EA);
 
 
 class StoryScreen extends StatefulWidget {
