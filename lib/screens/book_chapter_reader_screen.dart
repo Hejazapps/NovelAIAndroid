@@ -51,7 +51,7 @@ class BookChapterReaderScreen extends StatefulWidget {
 
 class _BookChapterReaderScreenState extends State<BookChapterReaderScreen> {
   static const Color _lightAccent = Color(0xFFFF6435);
-  static const Color _darkAccent = Color(0xFFF540B3);
+  static const Color _darkAccent = Color(0xFF9146E8);
 
   final ScrollController _scrollController = ScrollController();
 

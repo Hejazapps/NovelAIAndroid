@@ -11,8 +11,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   static const Color _lightAccent = Color(0xFFFF6435);
-  // Same dark accent pattern used by the Home "Try now" buttons.
-  static const Color _darkAccent = Color(0xFF9B2CF2);
+  static const Color _darkAccent = Color(0xFF9146E8);
 
   final RealtimeDBManager _dbManager = RealtimeDBManager();
   final TextEditingController _promptController = TextEditingController();
@@ -22,51 +21,82 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _loadingStorytellers = true;
   String? _storytellerError;
 
-  int _currentStorytellerIndex = -1;
-  int _currentGenreIndex = 0;
-  int _lengthIndex = 0;
-  String _language = 'English';
-
-  final List<_GenreItem> _genres = const [
-    _GenreItem(name: 'Adventure', asset: 'assets/genres/adventure.png'),
-    _GenreItem(name: 'Fairy Tale', asset: 'assets/genres/fairy_tale.png'),
-    _GenreItem(name: 'Historical', asset: 'assets/genres/historical.png'),
-    _GenreItem(name: 'Comedy', asset: 'assets/genres/comedy.png'),
-    _GenreItem(name: 'Sad', asset: 'assets/genres/sad.png'),
-    _GenreItem(name: 'Non-Fiction', asset: 'assets/genres/non_fiction.png'),
-    _GenreItem(name: 'Drama', asset: 'assets/genres/drama.png'),
-    _GenreItem(name: 'Fantasy', asset: 'assets/genres/fantasy.png'),
-    _GenreItem(name: 'Mystery', asset: 'assets/genres/mystery.png'),
-    _GenreItem(name: 'Thriller', asset: 'assets/genres/thriller.png'),
-    _GenreItem(name: 'Horror', asset: 'assets/genres/horror.png'),
-    _GenreItem(name: 'Science Fiction', asset: 'assets/genres/science_fiction.png'),
-    _GenreItem(name: 'Romance', asset: 'assets/genres/romance.png'),
-    _GenreItem(name: 'Mythology', asset: 'assets/genres/mythology.png'),
-    _GenreItem(name: 'Superhero', asset: 'assets/genres/superhero.png'),
-    _GenreItem(name: 'Historical Fiction', asset: 'assets/genres/historical_fiction.png'),
-    _GenreItem(name: 'Crime', asset: 'assets/genres/crime.png'),
-  ];
+  int _selectedStorytellerIndex = -1;
+  int _selectedGenreIndex = 0;
+  int _selectedLengthIndex = 0;
+  String _selectedLanguage = 'English';
 
   static const List<String> _languages = [
-    'English', 'Bengali', 'Arabic', 'Chinese Simplified',
-    'Chinese Traditional', 'Czech', 'Danish', 'Dutch', 'Finnish', 'French',
-    'German', 'Greek', 'Hebrew', 'Hindi', 'Hungarian', 'Indonesian',
-    'Italian', 'Japanese', 'Korean', 'Malay', 'Polish', 'Portuguese',
-    'Romanian', 'Russian', 'Slovak', 'Spanish', 'Swedish', 'Thai',
-    'Turkish', 'Ukrainian', 'Vietnamese',
+    'English',
+    'Bengali',
+    'Arabic',
+    'Chinese Simplified',
+    'Chinese Traditional',
+    'Czech',
+    'Danish',
+    'Dutch',
+    'Finnish',
+    'French',
+    'German',
+    'Greek',
+    'Hebrew',
+    'Hindi',
+    'Hungarian',
+    'Indonesian',
+    'Italian',
+    'Japanese',
+    'Korean',
+    'Malay',
+    'Polish',
+    'Portuguese',
+    'Romanian',
+    'Russian',
+    'Slovak',
+    'Spanish',
+    'Swedish',
+    'Thai',
+    'Turkish',
+    'Ukrainian',
+    'Vietnamese',
+  ];
+
+  final List<_GenreItem> _genres = const [
+    _GenreItem(name: 'Horror', image: 'assets/genres/horror.png'),
+    _GenreItem(name: 'Comedy', image: 'assets/genres/comedy.png'),
+    _GenreItem(name: 'Sad', image: 'assets/genres/sad.png'),
+    _GenreItem(name: 'Romance', image: 'assets/genres/romance.png'),
+    _GenreItem(name: 'Adventure', image: 'assets/genres/adventure.png'),
+    _GenreItem(name: 'Fantasy', image: 'assets/genres/fantasy.png'),
+    _GenreItem(name: 'Mystery', image: 'assets/genres/mystery.png'),
+    _GenreItem(name: 'Thriller', image: 'assets/genres/thriller.png'),
+    _GenreItem(name: 'Drama', image: 'assets/genres/drama.png'),
+    _GenreItem(name: 'Crime', image: 'assets/genres/crime.png'),
+    _GenreItem(name: 'Science Fiction', image: 'assets/genres/science_fiction.png'),
+    _GenreItem(name: 'Mythology', image: 'assets/genres/mythology.png'),
+    _GenreItem(name: 'Superhero', image: 'assets/genres/superhero.png'),
+    _GenreItem(name: 'Fairy Tale', image: 'assets/genres/fairy_tale.png'),
+    _GenreItem(name: 'Historical', image: 'assets/genres/historical.png'),
+    _GenreItem(name: 'Historical Fiction', image: 'assets/genres/historical_fiction.png'),
+    _GenreItem(name: 'Non-Fiction', image: 'assets/genres/non_fiction.png'),
+    _GenreItem(name: 'Detective', image: 'assets/genres/detective.png'),
+    _GenreItem(name: 'Young Adult', image: 'assets/genres/young_adult.png'),
+    _GenreItem(name: 'Dystopian', image: 'assets/genres/dystopian.png'),
+    _GenreItem(name: 'Time Travel', image: 'assets/genres/time_travel.png'),
+    _GenreItem(name: 'Dark Fantasy', image: 'assets/genres/dark_fantasy.png'),
+    _GenreItem(name: 'Cyberpunk', image: 'assets/genres/cyberpunk.png'),
+    _GenreItem(name: 'Post-Apocalyptic', image: 'assets/genres/post_apocalyptic.png'),
+    _GenreItem(name: 'Spy', image: 'assets/genres/spy.png'),
   ];
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
   Color get _accent => _isDark ? _darkAccent : _lightAccent;
-  Color get _background =>
-      _isDark ? const Color(0xFF1D0B32) : const Color(0xFFF8F8F8);
-  Color get _surface =>
-      _isDark ? const Color(0xFF493A59) : Colors.white;
-  Color get _text => _isDark ? Colors.white : const Color(0xFF1D1A20);
-  Color get _subText =>
-      _isDark ? const Color(0xFFD8D0DF) : const Color(0xFF77717D);
-  Color get _border =>
-      _isDark ? Colors.white.withOpacity(.18) : Colors.black.withOpacity(.08);
+  Color get _page => _isDark ? const Color(0xFF140D20) : const Color(0xFFF9F9F9);
+  Color get _surface => _isDark ? const Color(0xFF21182E) : Colors.white;
+  Color get _surfaceAlt => _isDark ? const Color(0xFF2A1A3B) : const Color(0xFFF2F0F4);
+  Color get _text => _isDark ? Colors.white : const Color(0xFF111111);
+  Color get _muted => _isDark ? const Color(0xFFB9AEC8) : const Color(0xFF666166);
+  Color get _hint => _isDark ? const Color(0xFF81758F) : const Color(0xFFC4C1C5);
+  Color get _border => _isDark ? const Color(0xFF49305F) : const Color(0xFFE9E6EA);
 
   @override
   void initState() {
@@ -75,12 +105,10 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _loadStorytellers() async {
-    if (mounted) {
-      setState(() {
-        _loadingStorytellers = true;
-        _storytellerError = null;
-      });
-    }
+    setState(() {
+      _loadingStorytellers = true;
+      _storytellerError = null;
+    });
 
     try {
       final items = await _dbManager.fetchAllStoryTeller();
@@ -88,8 +116,8 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {
         _storytellers = List<StoryTellerItem>.from(items);
         _loadingStorytellers = false;
-        if (_storytellers.isNotEmpty && _currentStorytellerIndex < 0) {
-          _currentStorytellerIndex = 0;
+        if (_storytellers.isNotEmpty && _selectedStorytellerIndex < 0) {
+          _selectedStorytellerIndex = 0;
         }
       });
     } catch (error) {
@@ -112,82 +140,93 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _background,
+      backgroundColor: _page,
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.only(bottom: 110),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildTopSection(),
-              const SizedBox(height: 18),
-              _buildStorytellerSection(),
-              const SizedBox(height: 24),
-              _buildGenreSection(),
-              const SizedBox(height: 24),
-              _buildLengthSection(),
-              const SizedBox(height: 22),
-              _buildLanguageSection(),
-              const SizedBox(height: 22),
-              _buildPromptSection(),
-            ],
-          ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 190),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildTopBar(),
+                    const SizedBox(height: 22),
+                    _buildHero(),
+                    const SizedBox(height: 28),
+                    _buildPromptBox(),
+                    const SizedBox(height: 22),
+                    _buildLanguage(),
+                    const SizedBox(height: 30),
+                    _buildStorytellerSection(),
+                    const SizedBox(height: 34),
+                    _buildGenreSection(),
+                    const SizedBox(height: 30),
+                    _buildLengthSection(),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 24,
+              right: 24,
+              bottom: 18,
+              child: _buildBottomComposer(),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildTopSection() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Chat Box',
-              style: TextStyle(
-                  color: _text, fontSize: 28, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 12),
-          Text('Talk To your',
-              style: TextStyle(
-                  color: _subText, fontSize: 15, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 2),
-          Text('Story✨',
-              style: TextStyle(
-                  color: _text, fontSize: 24, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 8),
-          Text(
-            'Turn Your Favorite Memories Into Beautiful AI-Powered Talking Stories',
-            style: TextStyle(
-                color: _subText,
-                fontSize: 13,
-                height: 1.4,
-                fontWeight: FontWeight.w500),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _sectionHeader(String title, VoidCallback onSeeAll) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+  Widget _buildTopBar() {
+    return SizedBox(
+      height: 54,
       child: Row(
         children: [
-          Text(title,
-              style: TextStyle(
-                  color: _text, fontSize: 17, fontWeight: FontWeight.w800)),
-          const Spacer(),
-          InkWell(
-            onTap: onSeeAll,
-            borderRadius: BorderRadius.circular(8),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-              child: Text('See All',
-                  style: TextStyle(
-                      color: _accent,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700)),
+          SizedBox(
+            width: 48,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: _accent, width: 3),
+                ),
+                child: Icon(Icons.person_rounded, color: _accent, size: 26),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Center(
+              child: Text(
+                'Chat Box',
+                style: TextStyle(
+                  color: _text,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.2,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: Center(
+              child: IconButton(
+                onPressed: () {
+                  debugPrint('History tapped');
+                },
+                icon: Icon(
+                  Icons.history_rounded,
+                  color: _accent,
+                  size: 30,
+                ),
+              ),
             ),
           ),
         ],
@@ -195,25 +234,150 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Widget _buildHero() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Image.asset(
+          'assets/chaticons/Bot.png',
+          width: 112,
+          height: 112,
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => const SizedBox(height: 112),
+        ),
+        const SizedBox(height: 18),
+        Text(
+          'Talk To your',
+          style: TextStyle(
+            color: _text,
+            fontSize: 38,
+            fontWeight: FontWeight.w800,
+            height: 1.02,
+            letterSpacing: -1.3,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Story✨',
+          style: TextStyle(
+            color: _accent,
+            fontSize: 40,
+            fontWeight: FontWeight.w500,
+            height: 1,
+            letterSpacing: -1.2,
+          ),
+        ),
+        const SizedBox(height: 26),
+        Text(
+          'Turn Your Favorite Memories Into Beautiful AI-Powered\nTalking Stories',
+          style: TextStyle(
+            color: _muted,
+            fontSize: 17,
+            height: 1.18,
+            fontWeight: FontWeight.w400,
+            letterSpacing: -0.15,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPromptBox() {
+    return Container(
+      height: 178,
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(17),
+      ),
+      child: TextField(
+        controller: _promptController,
+        minLines: null,
+        maxLines: null,
+        expands: true,
+        textAlignVertical: TextAlignVertical.top,
+        style: TextStyle(color: _text, fontSize: 17, height: 1.35),
+        decoration: InputDecoration(
+          hintText: 'Describe your prompt here...',
+          hintStyle: TextStyle(
+            color: _hint,
+            fontSize: 17,
+            fontWeight: FontWeight.w400,
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.fromLTRB(28, 26, 24, 20),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguage() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Choose Language',
+          style: TextStyle(
+            color: _text,
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.35,
+          ),
+        ),
+        const SizedBox(height: 16),
+        GestureDetector(
+          onTap: _showLanguagePicker,
+          child: Container(
+            height: 62,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            decoration: BoxDecoration(
+              color: _surface,
+              borderRadius: BorderRadius.circular(17),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedLanguage == 'English'
+                        ? 'Choose Language'
+                        : _selectedLanguage,
+                    style: TextStyle(
+                      color: _selectedLanguage == 'English' ? _hint : _text,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+                Icon(Icons.keyboard_arrow_down_rounded, color: _text, size: 32),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildStorytellerSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionHeader('Storyteller', _showAllStorytellers),
-        const SizedBox(height: 12),
+        _sectionHeader(
+          title: 'Select Storyteller',
+          actionText: 'See All',
+          onAction: _showAllStorytellers,
+        ),
+        const SizedBox(height: 20),
         if (_loadingStorytellers)
           SizedBox(
-            height: 140,
+            height: 122,
             child: Center(child: CircularProgressIndicator(color: _accent)),
           )
         else if (_storytellerError != null)
           SizedBox(
-            height: 140,
+            height: 122,
             child: Center(
               child: TextButton(
                 onPressed: _loadStorytellers,
-                child: Text('Retry Storytellers',
-                    style: TextStyle(color: _accent)),
+                child: Text('Retry', style: TextStyle(color: _accent, fontSize: 15)),
               ),
             ),
           )
@@ -223,19 +387,55 @@ class _ChatScreenState extends State<ChatScreen> {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
               itemCount: _storytellers.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 4),
-              itemBuilder: (_, index) => _storytellerItem(index),
+              separatorBuilder: (_, __) => const SizedBox(width: 14),
+              itemBuilder: (_, index) => _buildStoryteller(index),
             ),
           ),
       ],
     );
   }
 
-  Widget _storytellerItem(int index) {
+  Widget _sectionHeader({
+    required String title,
+    required String actionText,
+    required VoidCallback onAction,
+  }) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            title,
+            style: TextStyle(
+              color: _text,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.4,
+            ),
+          ),
+        ),
+        InkWell(
+          onTap: onAction,
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+            child: Text(
+              actionText,
+              style: TextStyle(
+                color: _text,
+                fontSize: 17,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStoryteller(int index) {
     final item = _storytellers[index];
-    final selected = _currentStorytellerIndex == index;
+    final selected = index == _selectedStorytellerIndex;
     final locked = index > 1;
 
     return GestureDetector(
@@ -244,49 +444,56 @@ class _ChatScreenState extends State<ChatScreen> {
           _showProDialog();
           return;
         }
-        setState(() => _currentStorytellerIndex = index);
+        setState(() => _selectedStorytellerIndex = index);
       },
       child: SizedBox(
         width: 110,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Stack(
+              clipBehavior: Clip.none,
               children: [
-                Container(
-                  width: 92,
-                  height: 92,
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: 110,
+                  height: 88,
+                  padding: EdgeInsets.all(selected ? 2.5 : 0),
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                        color: selected ? _accent : Colors.transparent,
-                        width: 3),
+                    borderRadius: BorderRadius.circular(16),
+                    border: selected ? Border.all(color: _accent, width: 2) : null,
                   ),
-                  padding: const EdgeInsets.all(3),
-                  child: ClipOval(child: _networkStorytellerImage(item.imageUrl)),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: _storytellerImage(item.imageUrl),
+                  ),
                 ),
                 if (locked)
                   Positioned(
-                    right: 2,
-                    top: 2,
-                    child: Container(
-                      width: 24,
-                      height: 24,
-                      decoration:
-                          BoxDecoration(color: _accent, shape: BoxShape.circle),
-                      child: const Icon(Icons.workspace_premium_rounded,
-                          color: Colors.white, size: 14),
+                    top: 5,
+                    right: 5,
+                    child: CircleAvatar(
+                      radius: 11,
+                      backgroundColor: _accent,
+                      child: const Icon(
+                        Icons.workspace_premium_rounded,
+                        size: 13,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 7),
             Text(
               item.name.isEmpty ? 'Storyteller' : item.name,
-              maxLines: 2,
-              textAlign: TextAlign.center,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                  color: _text, fontSize: 12, fontWeight: FontWeight.w700),
+                color: selected ? _accent : _text,
+                fontSize: 12,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              ),
             ),
           ],
         ),
@@ -294,22 +501,23 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _networkStorytellerImage(String value) {
-    final url = _resolveImageUrl(value);
+  Widget _storytellerImage(String raw) {
+    final url = _resolveImageUrl(raw);
     if (url == null) {
       return Container(
-        color: _surface,
+        color: _surfaceAlt,
         alignment: Alignment.center,
-        child: Icon(Icons.person_rounded, color: _subText, size: 34),
+        child: Icon(Icons.person_rounded, color: _muted, size: 34),
       );
     }
+
     return Image.network(
       url,
       fit: BoxFit.cover,
       errorBuilder: (_, __, ___) => Container(
-        color: _surface,
+        color: _surfaceAlt,
         alignment: Alignment.center,
-        child: Icon(Icons.person_rounded, color: _subText, size: 34),
+        child: Icon(Icons.person_rounded, color: _muted, size: 34),
       ),
     );
   }
@@ -340,63 +548,89 @@ class _ChatScreenState extends State<ChatScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionHeader('Story Genre', _showAllGenres),
-        const SizedBox(height: 12),
+        _sectionHeader(
+          title: 'Story Genre',
+          actionText: 'View All',
+          onAction: _showAllGenres,
+        ),
+        const SizedBox(height: 16),
         SizedBox(
-          height: 140,
+          height: 115,
           child: ListView.separated(
             controller: _genreScrollController,
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: _genres.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 4),
-            itemBuilder: (_, index) => _genreItem(index),
+            separatorBuilder: (_, __) => const SizedBox(width: 11),
+            itemBuilder: (_, index) => _buildGenreItem(index),
           ),
         ),
       ],
     );
   }
 
-  Widget _genreItem(int index) {
-    final item = _genres[index];
-    final selected = _currentGenreIndex == index;
+  Widget _buildGenreItem(int index) {
+    final genre = _genres[index];
+    final selected = _selectedGenreIndex == index;
 
     return GestureDetector(
       onTap: () => _selectGenre(index),
       child: SizedBox(
-        width: 110,
+        width: 82,
         child: Column(
           children: [
-            Container(
-              width: 92,
-              height: 92,
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: 78,
+              height: 78,
+              padding: EdgeInsets.all(selected ? 3 : 0),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                    color: selected ? _accent : Colors.transparent, width: 3),
+                borderRadius: BorderRadius.circular(17),
+                border: selected ? Border.all(color: _accent, width: 2) : null,
               ),
-              padding: const EdgeInsets.all(3),
-              child: ClipOval(
-                child: Image.asset(
-                  item.asset,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: _surface,
-                    alignment: Alignment.center,
-                    child:
-                        Icon(Icons.auto_stories_rounded, color: _subText, size: 30),
-                  ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(selected ? 13 : 16),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset(
+                      genre.image,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: _surfaceAlt,
+                        alignment: Alignment.center,
+                        child: Icon(Icons.auto_stories_outlined, color: _muted),
+                      ),
+                    ),
+                    if (selected)
+                      Positioned(
+                        top: 5,
+                        right: 5,
+                        child: CircleAvatar(
+                          radius: 9,
+                          backgroundColor: _accent,
+                          child: const Icon(
+                            Icons.check_rounded,
+                            color: Colors.white,
+                            size: 12,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            Text(item.name,
-                maxLines: 2,
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    color: _text, fontSize: 12, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 7),
+            Text(
+              genre.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                color: selected ? _accent : _text,
+              ),
+            ),
           ],
         ),
       ),
@@ -404,74 +638,160 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _selectGenre(int index) {
-    setState(() => _currentGenreIndex = index);
+    setState(() => _selectedGenreIndex = index);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_genreScrollController.hasClients || !mounted) return;
-      const itemWidth = 114.0;
-      final width = MediaQuery.sizeOf(context).width;
-      double target = index * itemWidth - ((width - 110) / 2);
-      target = target.clamp(
-          0.0, _genreScrollController.position.maxScrollExtent);
-      _genreScrollController.animateTo(target,
-          duration: const Duration(milliseconds: 380),
-          curve: Curves.easeInOutCubic);
+      const itemExtent = 93.0;
+      const itemWidth = 82.0;
+      final screenWidth = MediaQuery.sizeOf(context).width;
+      double targetOffset = (index * itemExtent) - ((screenWidth - itemWidth) / 2);
+      targetOffset = targetOffset.clamp(
+        0.0,
+        _genreScrollController.position.maxScrollExtent,
+      );
+      _genreScrollController.animateTo(
+        targetOffset,
+        duration: const Duration(milliseconds: 420),
+        curve: Curves.easeInOutCubic,
+      );
     });
   }
 
-  void _showAllGenres() {
-    _showSelectionGrid<_GenreItem>(
-      title: 'Story Genre',
-      items: _genres,
-      nameOf: (item) => item.name,
-      imageBuilder: (item) => Image.asset(
-        item.asset,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Container(
+  Widget _buildLengthSection() {
+    const values = ['Short', 'Medium', 'Long'];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Story Length',
+          style: TextStyle(
+            color: _text,
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.4,
+          ),
+        ),
+        const SizedBox(height: 14),
+        Container(
+          height: 50,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: _surfaceAlt,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            children: List.generate(values.length, (index) {
+              final selected = _selectedLengthIndex == index;
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _selectedLengthIndex = index),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: selected ? _surface : Colors.transparent,
+                      borderRadius: BorderRadius.circular(11),
+                      boxShadow: selected
+                          ? [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(_isDark ? 0.22 : 0.07),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Text(
+                      values[index],
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                        color: selected ? _accent : _muted,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomComposer() {
+    return Container(
+      height: 72,
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(34),
+        gradient: LinearGradient(
+          colors: [
+            _isDark ? _darkAccent : const Color(0xFF00C63B),
+            _accent,
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(_isDark ? 0.22 : 0.09),
+            blurRadius: 18,
+            offset: const Offset(0, 7),
+          ),
+        ],
+      ),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(22, 0, 7, 0),
+        decoration: BoxDecoration(
           color: _surface,
-          alignment: Alignment.center,
-          child: Icon(Icons.auto_stories_rounded, color: _subText),
+          borderRadius: BorderRadius.circular(32),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.auto_awesome_rounded, color: _accent, size: 24),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Text(
+                "Let's create a story...",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: _hint,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: _startStory,
+              child: Container(
+                width: 58,
+                height: 58,
+                decoration: BoxDecoration(
+                  color: _accent,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Colors.white,
+                  size: 34,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
-      selectedIndex: _currentGenreIndex,
-      onSelected: (index) => _selectGenre(index),
-      isLocked: (_) => false,
     );
   }
 
-  void _showAllStorytellers() {
-    if (_loadingStorytellers) return;
-    _showSelectionGrid<StoryTellerItem>(
-      title: 'Storyteller',
-      items: _storytellers,
-      nameOf: (item) => item.name.isEmpty ? 'Storyteller' : item.name,
-      imageBuilder: (item) => _networkStorytellerImage(item.imageUrl),
-      selectedIndex: _currentStorytellerIndex,
-      onSelected: (index) {
-        if (index > 1) {
-          _showProDialog();
-          return;
-        }
-        setState(() => _currentStorytellerIndex = index);
-      },
-      isLocked: (index) => index > 1,
-    );
-  }
-
-  void _showSelectionGrid<T>({
-    required String title,
-    required List<T> items,
-    required String Function(T) nameOf,
-    required Widget Function(T) imageBuilder,
-    required int selectedIndex,
-    required ValueChanged<int> onSelected,
-    required bool Function(int) isLocked,
-  }) {
+  void _showLanguagePicker() {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: _background,
+      backgroundColor: _surface,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
       builder: (sheetContext) {
         return SafeArea(
           child: SizedBox(
@@ -483,90 +803,168 @@ class _ChatScreenState extends State<ChatScreen> {
                   width: 42,
                   height: 5,
                   decoration: BoxDecoration(
-                      color: _border, borderRadius: BorderRadius.circular(10)),
+                    color: _border,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
-                  child: Row(
-                    children: [
-                      Text(title,
-                          style: TextStyle(
-                              color: _text,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800)),
-                      const Spacer(),
-                      IconButton(
-                        onPressed: () => Navigator.pop(sheetContext),
-                        icon: Icon(Icons.close_rounded, color: _text),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Choose Language',
+                      style: TextStyle(
+                        color: _text,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
                       ),
-                    ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _languages.length,
+                    itemBuilder: (_, index) {
+                      final language = _languages[index];
+                      return ListTile(
+                        title: Text(
+                          language,
+                          style: TextStyle(
+                            color: _text,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        trailing: _selectedLanguage == language
+                            ? Icon(Icons.check_rounded, color: _accent)
+                            : null,
+                        onTap: () {
+                          setState(() => _selectedLanguage = language);
+                          Navigator.pop(sheetContext);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showAllStorytellers() {
+    if (_loadingStorytellers || _storytellers.isEmpty) return;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: _surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: SizedBox(
+            height: MediaQuery.sizeOf(context).height * .58,
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                Container(
+                  width: 42,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: _border,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 15),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Select Storyteller',
+                      style: TextStyle(
+                        color: _text,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ),
                 Expanded(
                   child: GridView.builder(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
                       mainAxisSpacing: 18,
-                      crossAxisSpacing: 14,
-                      childAspectRatio: .78,
+                      crossAxisSpacing: 15,
+                      childAspectRatio: 1.35,
                     ),
-                    itemCount: items.length,
+                    itemCount: _storytellers.length,
                     itemBuilder: (_, index) {
-                      final selected = selectedIndex == index;
-                      final locked = isLocked(index);
+                      final item = _storytellers[index];
+                      final selected = index == _selectedStorytellerIndex;
+                      final locked = index > 1;
+
                       return GestureDetector(
                         onTap: () {
-                          if (!locked) Navigator.pop(sheetContext);
-                          Future.delayed(const Duration(milliseconds: 100),
-                              () => onSelected(index));
+                          if (locked) {
+                            _showProDialog();
+                            return;
+                          }
+                          Navigator.pop(sheetContext);
+                          setState(() => _selectedStorytellerIndex = index);
                         },
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
                               child: Stack(
+                                fit: StackFit.expand,
                                 children: [
                                   Container(
+                                    padding: EdgeInsets.all(selected ? 3 : 0),
                                     decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                          color: selected
-                                              ? _accent
-                                              : Colors.transparent,
-                                          width: 3),
+                                      borderRadius: BorderRadius.circular(18),
+                                      border: selected
+                                          ? Border.all(color: _accent, width: 2)
+                                          : null,
                                     ),
-                                    padding: const EdgeInsets.all(3),
-                                    child: ClipOval(
-                                      child: SizedBox.expand(
-                                          child: imageBuilder(items[index])),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(14),
+                                      child: _storytellerImage(item.imageUrl),
                                     ),
                                   ),
                                   if (locked)
                                     Positioned(
-                                      right: 3,
-                                      top: 3,
+                                      top: 6,
+                                      right: 6,
                                       child: CircleAvatar(
-                                        radius: 11,
+                                        radius: 10,
                                         backgroundColor: _accent,
                                         child: const Icon(
-                                            Icons.workspace_premium_rounded,
-                                            color: Colors.white,
-                                            size: 13),
+                                          Icons.workspace_premium_rounded,
+                                          color: Colors.white,
+                                          size: 12,
+                                        ),
                                       ),
                                     ),
                                 ],
                               ),
                             ),
                             const SizedBox(height: 7),
-                            Text(nameOf(items[index]),
-                                maxLines: 2,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                    color: _text,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700)),
+                            Text(
+                              item.name.isEmpty ? 'Storyteller' : item.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: selected ? _accent : _text,
+                                fontSize: 12,
+                                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                              ),
+                            ),
                           ],
                         ),
                       );
@@ -581,230 +979,185 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildLengthSection() {
-    const titles = ['Short', 'Medium', 'Long'];
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Story Length',
-              style: TextStyle(
-                  color: _text, fontSize: 17, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 12),
-          Container(
-            height: 48,
-            decoration: BoxDecoration(
-                color: _surface,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: _border)),
-            padding: const EdgeInsets.all(4),
-            child: Row(
-              children: List.generate(titles.length, (index) {
-                final selected = _lengthIndex == index;
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _lengthIndex = index),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      decoration: BoxDecoration(
-                          color: selected ? _accent : Colors.transparent,
-                          borderRadius: BorderRadius.circular(11)),
-                      alignment: Alignment.center,
-                      child: Text(titles[index],
-                          style: TextStyle(
-                              color: selected ? Colors.white : _text,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700)),
-                    ),
-                  ),
-                );
-              }),
-            ),
-          ),
-        ],
+  void _showAllGenres() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: _surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
-    );
-  }
-
-  Widget _buildLanguageSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Choose Language',
-              style: TextStyle(
-                  color: _text, fontSize: 17, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 12),
-          GestureDetector(
-            onTap: _showLanguagePicker,
-            child: Container(
-              height: 54,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                  color: _surface,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: _border)),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(_language,
-                        style: TextStyle(
-                            color: _text,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700)),
-                  ),
-                  Icon(Icons.keyboard_arrow_down_rounded, color: _text),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPromptSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("Let's create a story...",
-              style: TextStyle(
-                  color: _text, fontSize: 17, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 12),
-          Container(
-            decoration: BoxDecoration(
-                color: _surface,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: _accent, width: 1.2)),
-            padding: const EdgeInsets.all(14),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: SizedBox(
+            height: MediaQuery.sizeOf(context).height * .56,
             child: Column(
               children: [
-                TextField(
-                  controller: _promptController,
-                  minLines: 5,
-                  maxLines: 8,
-                  style: TextStyle(color: _text, fontSize: 14, height: 1.45),
-                  decoration: InputDecoration(
-                      hintText: 'Describe your prompt here…',
-                      hintStyle: TextStyle(color: _subText),
-                      border: InputBorder.none),
-                ),
                 const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Container(
-                      width: 42,
-                      height: 42,
-                      decoration:
-                          BoxDecoration(color: _accent, shape: BoxShape.circle),
-                      child: const Icon(Icons.image_outlined,
-                          color: Colors.white, size: 20),
-                    ),
-                    const Spacer(),
-                    GestureDetector(
-                      onTap: _startStory,
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                            color: _accent, shape: BoxShape.circle),
-                        child: const Icon(Icons.arrow_forward_rounded,
-                            color: Colors.white, size: 24),
+                Container(
+                  width: 42,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: _border,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 15),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Select Genre',
+                      style: TextStyle(
+                        color: _text,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                  ],
+                  ),
+                ),
+                Expanded(
+                  child: GridView.builder(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      mainAxisSpacing: 18,
+                      crossAxisSpacing: 15,
+                      childAspectRatio: .82,
+                    ),
+                    itemCount: _genres.length,
+                    itemBuilder: (_, index) {
+                      final genre = _genres[index];
+                      final selected = index == _selectedGenreIndex;
+
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.pop(sheetContext);
+                          Future.delayed(const Duration(milliseconds: 120), () {
+                            if (mounted) _selectGenre(index);
+                          });
+                        },
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                padding: EdgeInsets.all(selected ? 3 : 0),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: selected
+                                      ? Border.all(color: _accent, width: 2)
+                                      : null,
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      Image.asset(
+                                        genre.image,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) => Container(
+                                          color: _surfaceAlt,
+                                          alignment: Alignment.center,
+                                          child: Icon(
+                                            Icons.auto_stories_outlined,
+                                            color: _muted,
+                                          ),
+                                        ),
+                                      ),
+                                      if (selected)
+                                        Positioned(
+                                          top: 6,
+                                          right: 6,
+                                          child: CircleAvatar(
+                                            radius: 10,
+                                            backgroundColor: _accent,
+                                            child: const Icon(
+                                              Icons.check_rounded,
+                                              size: 13,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 7),
+                            Text(
+                              genre.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                                color: selected ? _accent : _text,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  void _showLanguagePicker() {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: _background,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
-      builder: (sheetContext) => SafeArea(
-        child: SizedBox(
-          height: MediaQuery.sizeOf(context).height * .62,
-          child: Column(
-            children: [
-              const SizedBox(height: 10),
-              Container(
-                width: 38,
-                height: 4,
-                decoration: BoxDecoration(
-                    color: _border, borderRadius: BorderRadius.circular(50)),
-              ),
-              const SizedBox(height: 12),
-              Text('Choose Language',
-                  style: TextStyle(
-                      color: _text, fontSize: 18, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 8),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _languages.length,
-                  itemBuilder: (_, index) {
-                    final language = _languages[index];
-                    return ListTile(
-                      title: Text(language,
-                          style: TextStyle(
-                              color: _text, fontWeight: FontWeight.w600)),
-                      trailing: _language == language
-                          ? Icon(Icons.check_rounded, color: _accent)
-                          : null,
-                      onTap: () {
-                        setState(() => _language = language);
-                        Navigator.pop(sheetContext);
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   void _showProDialog() {
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: _surface,
-        title: Text('Unlock PRO', style: TextStyle(color: _text)),
-        content: Text('This storyteller is available for PRO users.',
-            style: TextStyle(color: _subText)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text('Close', style: TextStyle(color: _accent)),
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: _surface,
+          title: Text('Unlock PRO', style: TextStyle(color: _text)),
+          content: Text(
+            'This storyteller is available for PRO users.',
+            style: TextStyle(color: _muted),
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text('Close', style: TextStyle(color: _accent)),
+            ),
+          ],
+        );
+      },
     );
   }
 
   void _startStory() {
     if (_promptController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter something before continuing.')));
+        const SnackBar(content: Text('Please enter something before continuing.')),
+      );
+      return;
     }
+
+    debugPrint('==============================================');
+    debugPrint('CHAT STORY');
+    debugPrint('Prompt      : ${_promptController.text.trim()}');
+    debugPrint('Language    : $_selectedLanguage');
+    debugPrint('Genre       : ${_genres[_selectedGenreIndex].name}');
+    debugPrint('Length      : ${['Short', 'Medium', 'Long'][_selectedLengthIndex]}');
+
+    if (_selectedStorytellerIndex >= 0 &&
+        _selectedStorytellerIndex < _storytellers.length) {
+      debugPrint('Storyteller : ${_storytellers[_selectedStorytellerIndex].name}');
+      debugPrint('AI Prompt   : ${_storytellers[_selectedStorytellerIndex].prompt}');
+    }
+    debugPrint('==============================================');
   }
 }
 
 class _GenreItem {
-  const _GenreItem({required this.name, required this.asset});
+  const _GenreItem({required this.name, required this.image});
+
   final String name;
-  final String asset;
+  final String image;
 }

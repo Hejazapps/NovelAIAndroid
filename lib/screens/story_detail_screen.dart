@@ -28,7 +28,7 @@ class StoryDetailScreen extends StatefulWidget {
 
 class _StoryDetailScreenState extends State<StoryDetailScreen> {
   static const Color _lightAccent = Color(0xFFFF6435);
-  static const Color _darkAccent = Color(0xFFF540B3);
+  static const Color _darkAccent = Color(0xFF9146E8);
 
   final AudioPlayer _audioPlayer = AudioPlayer();
   final ScreenshotController _screenshotController = ScreenshotController();
@@ -1671,8 +1671,8 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
           children: [
             Text(
               _storyTitle,
-              style: const TextStyle(
-                color: Color(0xFF8C52FF),
+              style: TextStyle(
+                color: _accent,
                 fontSize: 34,
                 fontWeight: FontWeight.w800,
               ),
