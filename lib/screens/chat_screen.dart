@@ -23,6 +23,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final ImagePicker _imagePicker = ImagePicker();
 
   String? _profileImagePath;
+  String? _selectedAvatarAsset;
 
   List<StoryTellerItem> _storytellers = const [];
   bool _loadingStorytellers = true;
@@ -321,12 +322,21 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _loadProfileImage() async {
     final prefs = await SharedPreferences.getInstance();
     final savedPath = prefs.getString('ChatScreen.profileImagePath');
+    final savedAvatar = prefs.getString('ChatScreen.selectedAvatarAsset');
 
     if (!mounted) return;
 
-    if (savedPath != null && savedPath.isNotEmpty && File(savedPath).existsSync()) {
-      setState(() => _profileImagePath = savedPath);
-    }
+    setState(() {
+      if (savedPath != null &&
+          savedPath.isNotEmpty &&
+          File(savedPath).existsSync()) {
+        _profileImagePath = savedPath;
+      }
+
+      if (savedAvatar != null && savedAvatar.isNotEmpty) {
+        _selectedAvatarAsset = savedAvatar;
+      }
+    });
   }
 
   Future<void> _pickProfileImage(ImageSource source) async {
@@ -341,9 +351,13 @@ class _ChatScreenState extends State<ChatScreen> {
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('ChatScreen.profileImagePath', picked.path);
+      await prefs.remove('ChatScreen.selectedAvatarAsset');
 
       if (!mounted) return;
-      setState(() => _profileImagePath = picked.path);
+      setState(() {
+        _profileImagePath = picked.path;
+        _selectedAvatarAsset = null;
+      });
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -355,9 +369,119 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _removeProfileImage() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('ChatScreen.profileImagePath');
+    await prefs.remove('ChatScreen.selectedAvatarAsset');
 
     if (!mounted) return;
-    setState(() => _profileImagePath = null);
+    setState(() {
+      _profileImagePath = null;
+      _selectedAvatarAsset = null;
+    });
+  }
+
+  Future<void> _selectAvatar(String assetPath) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('ChatScreen.selectedAvatarAsset', assetPath);
+    await prefs.remove('ChatScreen.profileImagePath');
+
+    if (!mounted) return;
+    setState(() {
+      _selectedAvatarAsset = assetPath;
+      _profileImagePath = null;
+    });
+  }
+
+  void _showAvatarPicker() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: _surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: SizedBox(
+            height: MediaQuery.sizeOf(context).height * 0.62,
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                Container(
+                  width: 42,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: _border,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Choose Avatar',
+                          style: TextStyle(
+                            color: _text,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(sheetContext),
+                        icon: Icon(Icons.close_rounded, color: _text),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: GridView.builder(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      crossAxisSpacing: 14,
+                      mainAxisSpacing: 14,
+                    ),
+                    itemCount: 30,
+                    itemBuilder: (_, index) {
+                      final asset = 'assets/avatars/Avatar$index.png';
+                      final selected = _selectedAvatarAsset == asset;
+
+                      return GestureDetector(
+                        onTap: () async {
+                          await _selectAvatar(asset);
+                          if (sheetContext.mounted) {
+                            Navigator.pop(sheetContext);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: selected ? _accent : _border,
+                              width: selected ? 3 : 1,
+                            ),
+                          ),
+                          child: ClipOval(
+                            child: Image.asset(
+                              asset,
+                              fit: BoxFit.cover,
+                              filterQuality: FilterQuality.high,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _showProfileImageOptions() {
@@ -404,7 +528,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         },
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: _profileOption(
                         icon: Icons.photo_library_rounded,
@@ -415,9 +539,23 @@ class _ChatScreenState extends State<ChatScreen> {
                         },
                       ),
                     ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _profileOption(
+                        icon: Icons.face_rounded,
+                        title: 'Avatar',
+                        onTap: () {
+                          Navigator.pop(sheetContext);
+                          Future.delayed(
+                            const Duration(milliseconds: 150),
+                            _showAvatarPicker,
+                          );
+                        },
+                      ),
+                    ),
                   ],
                 ),
-                if (_profileImagePath != null) ...[
+                if (_profileImagePath != null || _selectedAvatarAsset != null) ...[
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
@@ -448,7 +586,7 @@ class _ChatScreenState extends State<ChatScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        height: 92,
+        height: 84,
         decoration: BoxDecoration(
           color: _surfaceAlt,
           borderRadius: BorderRadius.circular(16),
@@ -548,17 +686,24 @@ class _ChatScreenState extends State<ChatScreen> {
                         ? Image.file(
                             File(_profileImagePath!),
                             fit: BoxFit.cover,
+                            filterQuality: FilterQuality.high,
                             errorBuilder: (_, __, ___) => Icon(
                               Icons.person_rounded,
                               color: _accent,
                               size: 25,
                             ),
                           )
-                        : Icon(
-                            Icons.person_rounded,
-                            color: _accent,
-                            size: 25,
-                          ),
+                        : _selectedAvatarAsset != null
+                            ? Image.asset(
+                                _selectedAvatarAsset!,
+                                fit: BoxFit.cover,
+                                filterQuality: FilterQuality.high,
+                              )
+                            : Icon(
+                                Icons.person_rounded,
+                                color: _accent,
+                                size: 25,
+                              ),
                   ),
                 ),
               ),
@@ -579,16 +724,22 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           SizedBox(
             width: 48,
-            height: 48,
-            child: Center(
-              child: IconButton(
-                onPressed: () {
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: GestureDetector(
+                onTap: () {
                   debugPrint('History tapped');
                 },
-                icon: Icon(
-                  Icons.history_rounded,
-                  color: _accent,
-                  size: 36,
+                child: SizedBox(
+                  width: 38,
+                  height: 38,
+                  child: Center(
+                    child: Icon(
+                      Icons.access_time_rounded,
+                      color: _accent,
+                      size: 30,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -604,10 +755,12 @@ class _ChatScreenState extends State<ChatScreen> {
       children: [
         Image.asset(
           'assets/chaticons/Bot.png',
-          width: 112,
-          height: 112,
+          width: 84,
+          height: 84,
           fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) => const SizedBox(height: 112),
+          filterQuality: FilterQuality.high,
+          isAntiAlias: true,
+          errorBuilder: (_, __, ___) => const SizedBox(height: 84),
         ),
         const SizedBox(height: 18),
         Text(
@@ -813,40 +966,53 @@ class _ChatScreenState extends State<ChatScreen> {
       child: SizedBox(
         width: 82,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  width: 78,
-                  height: 78,
-                  padding: EdgeInsets.all(selected ? 3 : 0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(17),
-                    border: selected ? Border.all(color: _accent, width: 2) : null,
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(selected ? 13 : 16),
-                    child: _storytellerImage(item.imageUrl),
-                  ),
-                ),
-                if (locked)
-                  Positioned(
-                    top: 5,
-                    right: 5,
-                    child: CircleAvatar(
-                      radius: 9,
-                      backgroundColor: _accent,
-                      child: const Icon(
-                        Icons.workspace_premium_rounded,
-                        size: 11,
-                        color: Colors.white,
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: 78,
+              height: 78,
+              padding: EdgeInsets.all(selected ? 3 : 0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(17),
+                border: selected ? Border.all(color: _accent, width: 2) : null,
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(selected ? 13 : 16),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    _storytellerImage(item.imageUrl),
+                    if (selected)
+                      Positioned(
+                        top: 5,
+                        right: 5,
+                        child: CircleAvatar(
+                          radius: 9,
+                          backgroundColor: _accent,
+                          child: const Icon(
+                            Icons.check_rounded,
+                            color: Colors.white,
+                            size: 12,
+                          ),
+                        ),
+                      )
+                    else if (locked)
+                      Positioned(
+                        top: 5,
+                        right: 5,
+                        child: CircleAvatar(
+                          radius: 9,
+                          backgroundColor: _accent,
+                          child: const Icon(
+                            Icons.workspace_premium_rounded,
+                            size: 11,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-              ],
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 7),
             Text(
@@ -855,9 +1021,9 @@ class _ChatScreenState extends State<ChatScreen> {
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: selected ? _accent : _text,
                 fontSize: 11,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                color: selected ? _accent : _text,
               ),
             ),
           ],
@@ -1150,6 +1316,9 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _showLanguagePicker() {
+    final searchController = TextEditingController();
+    String query = '';
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -1158,65 +1327,153 @@ class _ChatScreenState extends State<ChatScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
       builder: (sheetContext) {
-        return SafeArea(
-          child: SizedBox(
-            height: MediaQuery.sizeOf(context).height * .62,
-            child: Column(
-              children: [
-                const SizedBox(height: 10),
-                Container(
-                  width: 42,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: _border,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Choose Language',
-                      style: TextStyle(
-                        color: _text,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            final filtered = _languages.where((language) {
+              if (query.trim().isEmpty) return true;
+              return language
+                  .toLowerCase()
+                  .contains(query.trim().toLowerCase());
+            }).toList();
+
+            return SafeArea(
+              child: SizedBox(
+                height: MediaQuery.sizeOf(context).height * .72,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 10),
+                    Container(
+                      width: 42,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: _border,
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                  ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: _languages.length,
-                    itemBuilder: (_, index) {
-                      final language = _languages[index];
-                      return ListTile(
-                        title: Text(
-                          language,
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Choose Language',
                           style: TextStyle(
                             color: _text,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
-                        trailing: _selectedLanguage == language
-                            ? Icon(Icons.check_rounded, color: _accent)
-                            : null,
-                        onTap: () {
-                          setState(() => _selectedLanguage = language);
-                          Navigator.pop(sheetContext);
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                      child: TextField(
+                        controller: searchController,
+                        autofocus: false,
+                        onChanged: (value) {
+                          setSheetState(() => query = value);
                         },
-                      );
-                    },
-                  ),
+                        style: TextStyle(
+                          color: _text,
+                          fontSize: 16,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Search language...',
+                          hintStyle: TextStyle(color: _hint),
+                          prefixIcon: Icon(
+                            Icons.search_rounded,
+                            color: _muted,
+                          ),
+                          suffixIcon: query.isNotEmpty
+                              ? IconButton(
+                                  onPressed: () {
+                                    searchController.clear();
+                                    setSheetState(() => query = '');
+                                  },
+                                  icon: Icon(
+                                    Icons.close_rounded,
+                                    color: _muted,
+                                  ),
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: _surfaceAlt,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(
+                              color: _accent,
+                              width: 1.5,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: filtered.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No language found',
+                                style: TextStyle(
+                                  color: _muted,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              keyboardDismissBehavior:
+                                  ScrollViewKeyboardDismissBehavior.onDrag,
+                              itemCount: filtered.length,
+                              itemBuilder: (_, index) {
+                                final language = filtered[index];
+                                final selected =
+                                    _selectedLanguage == language;
+
+                                return ListTile(
+                                  title: Text(
+                                    language,
+                                    style: TextStyle(
+                                      color: selected ? _accent : _text,
+                                      fontSize: 16,
+                                      fontWeight: selected
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
+                                    ),
+                                  ),
+                                  trailing: selected
+                                      ? Icon(
+                                          Icons.check_rounded,
+                                          color: _accent,
+                                        )
+                                      : null,
+                                  onTap: () {
+                                    setState(
+                                      () => _selectedLanguage = language,
+                                    );
+                                    Navigator.pop(sheetContext);
+                                  },
+                                );
+                              },
+                            ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
-    );
+    ).whenComplete(searchController.dispose);
   }
 
   void _showAllStorytellers() {
@@ -1262,10 +1519,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: GridView.builder(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
+                      crossAxisCount: 3,
                       mainAxisSpacing: 18,
                       crossAxisSpacing: 15,
-                      childAspectRatio: 1.35,
+                      childAspectRatio: .82,
                     ),
                     itemCount: _storytellers.length,
                     itemBuilder: (_, index) {
