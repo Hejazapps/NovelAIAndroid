@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/realtime_db_manager.dart';
 
@@ -16,6 +20,9 @@ class _ChatScreenState extends State<ChatScreen> {
   final RealtimeDBManager _dbManager = RealtimeDBManager();
   final TextEditingController _promptController = TextEditingController();
   final ScrollController _genreScrollController = ScrollController();
+  final ImagePicker _imagePicker = ImagePicker();
+
+  String? _profileImagePath;
 
   List<StoryTellerItem> _storytellers = const [];
   bool _loadingStorytellers = true;
@@ -27,37 +34,217 @@ class _ChatScreenState extends State<ChatScreen> {
   String _selectedLanguage = 'English';
 
   static const List<String> _languages = [
-    'English',
-    'Bengali',
+    'Afrikaans',
+    'Albanian',
+    'Amharic',
     'Arabic',
+    'Armenian',
+    'Assamese',
+    'Aymara',
+    'Azerbaijani',
+    'Bambara',
+    'Basque',
+    'Belarusian',
+    'Bengali',
+    'Bhojpuri',
+    'Bosnian',
+    'Bulgarian',
+    'Burmese',
+    'Catalan',
+    'Cebuano',
+    'Chichewa',
     'Chinese Simplified',
     'Chinese Traditional',
+    'Corsican',
+    'Croatian',
     'Czech',
     'Danish',
+    'Dhivehi',
+    'Dogri',
     'Dutch',
+    'English',
+    'Esperanto',
+    'Estonian',
+    'Ewe',
+    'Filipino',
     'Finnish',
     'French',
+    'Frisian',
+    'Galician',
+    'Georgian',
     'German',
     'Greek',
+    'Guarani',
+    'Gujarati',
+    'Haitian Creole',
+    'Hausa',
+    'Hawaiian',
     'Hebrew',
     'Hindi',
+    'Hmong',
     'Hungarian',
+    'Icelandic',
+    'Igbo',
+    'Ilocano',
     'Indonesian',
+    'Irish',
     'Italian',
     'Japanese',
+    'Javanese',
+    'Kannada',
+    'Kazakh',
+    'Khmer',
+    'Kinyarwanda',
+    'Konkani',
     'Korean',
+    'Krio',
+    'Kurdish',
+    'Kurdish (Sorani)',
+    'Kyrgyz',
+    'Lao',
+    'Latin',
+    'Latvian',
+    'Lingala',
+    'Lithuanian',
+    'Luganda',
+    'Luxembourgish',
+    'Macedonian',
+    'Maithili',
+    'Malagasy',
     'Malay',
+    'Malayalam',
+    'Maltese',
+    'Maori',
+    'Marathi',
+    'Meiteilon (Manipuri)',
+    'Mizo',
+    'Mongolian',
+    'Nepali',
+    'Norwegian',
+    'Norwegian Bokmål',
+    'Odia (Oriya)',
+    'Oromo',
+    'Pashto',
+    'Persian',
     'Polish',
     'Portuguese',
+    'Portuguese (Brazil)',
+    'Portuguese (Portugal)',
+    'Punjabi',
+    'Quechua',
     'Romanian',
     'Russian',
+    'Samoan',
+    'Sanskrit',
+    'Scots Gaelic',
+    'Sepedi',
+    'Serbian',
+    'Sesotho',
+    'Shona',
+    'Sindhi',
+    'Sinhala',
     'Slovak',
+    'Slovenian',
+    'Somali',
     'Spanish',
+    'Sundanese',
+    'Swahili',
     'Swedish',
+    'Tagalog',
+    'Tajik',
+    'Tamil',
+    'Tatar',
+    'Telugu',
     'Thai',
+    'Tigrinya',
+    'Tsonga',
     'Turkish',
+    'Turkmen',
+    'Twi',
     'Ukrainian',
+    'Urdu',
+    'Uyghur',
+    'Uzbek',
     'Vietnamese',
+    'Welsh',
+    'Xhosa',
+    'Yiddish',
+    'Yoruba',
+    'Zulu',
+    'Acehnese',
+    'Acholi',
+    'Afar',
+    'Alur',
+    'Awadhi',
+    'Balinese',
+    'Baluchi',
+    'Batak Karo',
+    'Batak Simalungun',
+    'Batak Toba',
+    'Bemba',
+    'Betawi',
+    'Bikol',
+    'Breton',
+    'Buryat',
+    'Cantonese',
+    'Chamorro',
+    'Chechen',
+    'Chuukese',
+    'Chuvash',
+    'Crimean Tatar',
+    'Dari',
+    'Dinka',
+    'Dombe',
+    'Dzongkha',
+    'Faroese',
+    'Fijian',
+    'Fon',
+    'Friulian',
+    'Ga',
+    'Greenlandic',
+    'Hakha Chin',
+    'Herero',
+    'Hiligaynon',
+    'Iban',
+    'Jingpo',
+    'Kalaallisut',
+    'Kanuri',
+    'Kapampangan',
+    'Khasi',
+    'Kituba',
+    'Kokborok',
+    'Komering',
+    'Limburgish',
+    'Lombard',
+    'Madurese',
+    'Makassar',
+    'Marshallese',
+    'Minangkabau',
+    'Ndebele (South)',
+    'NKo',
+    'Occitan',
+    'Ossetian',
+    'Pangasinan',
+    'Papiamento',
+    'Romani',
+    'Rundi',
+    'Sango',
+    'Santali',
+    'Seychellois Creole',
+    'Sicilian',
+    'Silesian',
+    'Swati',
+    'Tahitian',
+    'Tiv',
+    'Tok Pisin',
+    'Tshiluba',
+    'Tswana',
+    'Tulu',
+    'Venda',
+    'Waray',
+    'Wolof',
+    'Yakut',
+    'Zapotec',
   ];
 
   final List<_GenreItem> _genres = const [
@@ -101,6 +288,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    _loadProfileImage();
     _loadStorytellers();
   }
 
@@ -127,6 +315,162 @@ class _ChatScreenState extends State<ChatScreen> {
         _storytellerError = error.toString();
       });
     }
+  }
+
+
+  Future<void> _loadProfileImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPath = prefs.getString('ChatScreen.profileImagePath');
+
+    if (!mounted) return;
+
+    if (savedPath != null && savedPath.isNotEmpty && File(savedPath).existsSync()) {
+      setState(() => _profileImagePath = savedPath);
+    }
+  }
+
+  Future<void> _pickProfileImage(ImageSource source) async {
+    try {
+      final picked = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: 88,
+        maxWidth: 1200,
+      );
+
+      if (picked == null || !mounted) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('ChatScreen.profileImagePath', picked.path);
+
+      if (!mounted) return;
+      setState(() => _profileImagePath = picked.path);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Unable to select image: $error')),
+      );
+    }
+  }
+
+  Future<void> _removeProfileImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('ChatScreen.profileImagePath');
+
+    if (!mounted) return;
+    setState(() => _profileImagePath = null);
+  }
+
+  void _showProfileImageOptions() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: _surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 42,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: _border,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  'Profile Picture',
+                  style: TextStyle(
+                    color: _text,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _profileOption(
+                        icon: Icons.camera_alt_rounded,
+                        title: 'Camera',
+                        onTap: () {
+                          Navigator.pop(sheetContext);
+                          _pickProfileImage(ImageSource.camera);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _profileOption(
+                        icon: Icons.photo_library_rounded,
+                        title: 'Gallery',
+                        onTap: () {
+                          Navigator.pop(sheetContext);
+                          _pickProfileImage(ImageSource.gallery);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                if (_profileImagePath != null) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton.icon(
+                      onPressed: () {
+                        Navigator.pop(sheetContext);
+                        _removeProfileImage();
+                      },
+                      icon: const Icon(Icons.delete_outline_rounded),
+                      label: const Text('Remove Photo'),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _profileOption({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        height: 92,
+        decoration: BoxDecoration(
+          color: _surfaceAlt,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _border),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: _accent, size: 30),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                color: _text,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -160,7 +504,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     _buildLanguage(),
                     const SizedBox(height: 30),
                     _buildStorytellerSection(),
-                    const SizedBox(height: 34),
+                    const SizedBox(height: 18),
                     _buildGenreSection(),
                     const SizedBox(height: 30),
                     _buildLengthSection(),
@@ -189,14 +533,34 @@ class _ChatScreenState extends State<ChatScreen> {
             width: 48,
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: _accent, width: 3),
+              child: GestureDetector(
+                onTap: _showProfileImageOptions,
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: _accent, width: 2.5),
+                  ),
+                  child: ClipOval(
+                    child: _profileImagePath != null
+                        ? Image.file(
+                            File(_profileImagePath!),
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Icon(
+                              Icons.person_rounded,
+                              color: _accent,
+                              size: 25,
+                            ),
+                          )
+                        : Icon(
+                            Icons.person_rounded,
+                            color: _accent,
+                            size: 25,
+                          ),
+                  ),
                 ),
-                child: Icon(Icons.person_rounded, color: _accent, size: 26),
               ),
             ),
           ),
@@ -224,7 +588,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 icon: Icon(
                   Icons.history_rounded,
                   color: _accent,
-                  size: 30,
+                  size: 36,
                 ),
               ),
             ),
@@ -383,12 +747,12 @@ class _ChatScreenState extends State<ChatScreen> {
           )
         else
           SizedBox(
-            height: 140,
+            height: 115,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
               itemCount: _storytellers.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 14),
+              separatorBuilder: (_, __) => const SizedBox(width: 11),
               itemBuilder: (_, index) => _buildStoryteller(index),
             ),
           ),
@@ -447,24 +811,24 @@ class _ChatScreenState extends State<ChatScreen> {
         setState(() => _selectedStorytellerIndex = index);
       },
       child: SizedBox(
-        width: 110,
+        width: 82,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Stack(
               clipBehavior: Clip.none,
               children: [
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
-                  width: 110,
-                  height: 88,
-                  padding: EdgeInsets.all(selected ? 2.5 : 0),
+                  width: 78,
+                  height: 78,
+                  padding: EdgeInsets.all(selected ? 3 : 0),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(17),
                     border: selected ? Border.all(color: _accent, width: 2) : null,
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(selected ? 13 : 16),
                     child: _storytellerImage(item.imageUrl),
                   ),
                 ),
@@ -473,11 +837,11 @@ class _ChatScreenState extends State<ChatScreen> {
                     top: 5,
                     right: 5,
                     child: CircleAvatar(
-                      radius: 11,
+                      radius: 9,
                       backgroundColor: _accent,
                       child: const Icon(
                         Icons.workspace_premium_rounded,
-                        size: 13,
+                        size: 11,
                         color: Colors.white,
                       ),
                     ),
@@ -489,9 +853,10 @@ class _ChatScreenState extends State<ChatScreen> {
               item.name.isEmpty ? 'Storyteller' : item.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: selected ? _accent : _text,
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
