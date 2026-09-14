@@ -2,6 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
+import 'dart:io';
+
+import 'package:archive/archive.dart';
+import 'package:archive/archive_io.dart';
+import 'package:cross_file/cross_file.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -865,6 +872,19 @@ class _SaveVcState extends State<SaveVc> {
     _showMessage('Text has been copied to clipboard.');
   }
 
+  bool get _isBookOrScreenplayShare {
+    final type = widget.contentType.trim().toLowerCase();
+    return type == 'book' || type == 'screenplay' || widget.isBookMode;
+  }
+
+  String get _safeShareFileName {
+    final cleaned = _title
+        .trim()
+        .replaceAll(RegExp(r'[\\/:*?"<>|]'), '')
+        .replaceAll(RegExp(r'\s+'), '_');
+    return cleaned.isEmpty ? 'NovelAI' : cleaned;
+  }
+
   Future<void> _shareText() async {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
@@ -873,6 +893,912 @@ class _SaveVcState extends State<SaveVc> {
       text,
       subject: _title,
     );
+  }
+
+  Future<void> _showShareOptions() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty) {
+      _showMessage('There is no text to share.');
+      return;
+    }
+
+    final isLongForm = _isBookOrScreenplayShare;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        final isDark =
+            Theme.of(sheetContext).brightness == Brightness.dark;
+        final sheetColor =
+            isDark ? const Color(0xFF1C1C1E) : Colors.white;
+        final cardColor =
+            isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF5F5F7);
+        final muted =
+            isDark ? const Color(0xFFA9A9AF) : const Color(0xFF7A7A80);
+        final accent =
+            isDark ? const Color(0xFF9146E8) : const Color(0xFFFF6435);
+
+        Widget option({
+          required IconData icon,
+          required String title,
+          required String subtitle,
+          required Future<void> Function() onTap,
+        }) {
+          return InkWell(
+            onTap: () async {
+              Navigator.of(sheetContext).pop();
+              await onTap();
+            },
+            borderRadius: BorderRadius.circular(15),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 13,
+              ),
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(icon, color: accent, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: muted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: muted,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            color: sheetColor,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(26)),
+          ),
+          padding: const EdgeInsets.fromLTRB(18, 10, 18, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 38,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 14),
+                decoration: BoxDecoration(
+                  color: muted.withValues(alpha: 0.45),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Share as',
+                  style: TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // Story, poem, lyrics, article, etc. keep Image.
+              // Book and Screenplay intentionally do not show Image.
+              if (!isLongForm) ...[
+                option(
+                  icon: Icons.image_outlined,
+                  title: 'Image',
+                  subtitle: 'Create a clean image from your text',
+                  onTap: _shareAsImage,
+                ),
+                const SizedBox(height: 9),
+              ],
+
+              option(
+                icon: Icons.picture_as_pdf_outlined,
+                title: 'PDF',
+                subtitle: 'Export and share as a PDF document',
+                onTap: _shareAsPdf,
+              ),
+              const SizedBox(height: 9),
+
+              option(
+                icon: Icons.description_outlined,
+                title: 'Text',
+                subtitle: 'Share as a .txt file',
+                onTap: _shareAsTextFile,
+              ),
+              const SizedBox(height: 9),
+
+              option(
+                icon: Icons.menu_book_outlined,
+                title: 'EPUB',
+                subtitle: 'Export as an eBook file',
+                onTap: _shareAsEpub,
+              ),
+
+              if (!isLongForm) ...[
+                const SizedBox(height: 9),
+                option(
+                  icon: Icons.ios_share_rounded,
+                  title: 'Other',
+                  subtitle: 'Open the normal device share menu',
+                  onTap: _shareText,
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<File> _writeShareFile({
+    required String extension,
+    required List<int> bytes,
+  }) async {
+    final directory = Directory.systemTemp;
+    final stamp = DateTime.now().millisecondsSinceEpoch;
+    final file = File(
+      '${directory.path}/${_safeShareFileName}_$stamp.$extension',
+    );
+    await file.writeAsBytes(bytes, flush: true);
+    return file;
+  }
+
+  Future<void> _shareAsTextFile() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
+
+    try {
+      final body = _title.trim().isEmpty
+          ? text
+          : '${_title.trim()}\n\n$text';
+
+      final file = await _writeShareFile(
+        extension: 'txt',
+        bytes: utf8.encode(body),
+      );
+
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'text/plain')],
+        subject: _title,
+      );
+    } catch (error) {
+      debugPrint('Text export failed: $error');
+      if (mounted) {
+        _showMessage('Unable to create the text file.');
+      }
+    }
+  }
+
+  Future<void> _shareAsImage() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
+
+    try {
+      final bytes = await _renderStyledExportImage(
+        title: _title,
+        body: text,
+        maxHeight: 12000,
+      );
+
+      final file = await _writeShareFile(
+        extension: 'png',
+        bytes: bytes,
+      );
+
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'image/png')],
+        subject: _title,
+      );
+    } catch (error) {
+      debugPrint('Image export failed: $error');
+      if (mounted) {
+        _showMessage('Unable to create the image.');
+      }
+    }
+  }
+
+  TextDirection get _exportTextDirection {
+    final language = widget.selectedLanguage.trim().toLowerCase();
+    if (language.contains('arabic') ||
+        language.contains('urdu') ||
+        language.contains('hebrew') ||
+        language.contains('persian')) {
+      return TextDirection.rtl;
+    }
+    return TextDirection.ltr;
+  }
+
+  Color get _exportTextColor {
+    if (_forcedTextColor != null) {
+      return _forcedTextColor!.withValues(alpha: _textOpacity);
+    }
+    return _textColor.withValues(alpha: _textOpacity);
+  }
+
+  TextStyle _exportStyle(double size, {FontWeight? weight}) {
+    return TextStyle(
+      fontFamily: _fontFamily == 'sans-serif' ? null : _fontFamily,
+      fontSize: size,
+      fontWeight: weight ?? _fontWeight,
+      fontStyle: _fontStyle,
+      decoration:
+          _underline ? TextDecoration.underline : TextDecoration.none,
+      color: _exportTextColor,
+      height: _lineSpacing,
+      letterSpacing: _letterSpacing,
+    );
+  }
+
+  List<Color>? get _activeTextGradient {
+    const gradients = <List<Color>>[
+      [Color(0xFFFF6435), Color(0xFFFF2D55)],
+      [Color(0xFF9146E8), Color(0xFF5856D6)],
+      [Color(0xFF007AFF), Color(0xFF00C7BE)],
+      [Color(0xFF34C759), Color(0xFFFFCC00)],
+      [Color(0xFFFF9500), Color(0xFFFF3B30)],
+      [Color(0xFF111111), Color(0xFF8E8E93)],
+    ];
+
+    final index = _textGradientIndex;
+    if (index == null || index < 0 || index >= gradients.length) {
+      return null;
+    }
+    return gradients[index];
+  }
+
+  Future<void> _paintExportBackground(
+    Canvas canvas,
+    Size size,
+  ) async {
+    final rect = Offset.zero & size;
+
+    if (_backgroundGradient != null &&
+        _backgroundGradient!.isNotEmpty) {
+      canvas.drawRect(
+        rect,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: _backgroundGradient!,
+          ).createShader(rect),
+      );
+      return;
+    }
+
+    if (_backgroundColor != null) {
+      canvas.drawRect(rect, Paint()..color = _backgroundColor!);
+      return;
+    }
+
+    ui.Image? image;
+
+    if (_backgroundAsset != null &&
+        _backgroundAsset!.trim().isNotEmpty) {
+      try {
+        final data = await rootBundle.load(_backgroundAsset!);
+        final codec = await ui.instantiateImageCodec(
+          data.buffer.asUint8List(),
+        );
+        image = (await codec.getNextFrame()).image;
+      } catch (error) {
+        debugPrint('Unable to load export asset background: $error');
+      }
+    }
+
+    if (image == null &&
+        _backgroundNetworkUrl != null &&
+        _backgroundNetworkUrl!.trim().isNotEmpty) {
+      try {
+        final bundle = NetworkAssetBundle(
+          Uri.parse(_backgroundNetworkUrl!),
+        );
+        final data = await bundle.load(_backgroundNetworkUrl!);
+        final codec = await ui.instantiateImageCodec(
+          data.buffer.asUint8List(),
+        );
+        image = (await codec.getNextFrame()).image;
+      } catch (error) {
+        debugPrint('Unable to load export network background: $error');
+      }
+    }
+
+    if (image != null) {
+      final src = Rect.fromLTWH(
+        0,
+        0,
+        image.width.toDouble(),
+        image.height.toDouble(),
+      );
+      final srcAspect = image.width / image.height;
+      final dstAspect = size.width / size.height;
+      Rect crop;
+
+      if (srcAspect > dstAspect) {
+        final wantedWidth = image.height * dstAspect;
+        crop = Rect.fromLTWH(
+          (image.width - wantedWidth) / 2,
+          0,
+          wantedWidth.toDouble(),
+          image.height.toDouble(),
+        );
+      } else {
+        final wantedHeight = image.width / dstAspect;
+        crop = Rect.fromLTWH(
+          0,
+          (image.height - wantedHeight) / 2,
+          image.width.toDouble(),
+          wantedHeight.toDouble(),
+        );
+      }
+
+      canvas.drawImageRect(image, crop, rect, Paint());
+      return;
+    }
+
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..color = Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF111111)
+            : const Color(0xFFF7F7F7),
+    );
+  }
+
+  Future<void> _paintExportText({
+    required Canvas canvas,
+    required String text,
+    required Offset offset,
+    required double maxWidth,
+    required TextStyle style,
+  }) async {
+    Paint? foreground;
+
+    final gradient = _activeTextGradient;
+    if (gradient != null) {
+      foreground = Paint()
+        ..shader = LinearGradient(colors: gradient).createShader(
+          Rect.fromLTWH(offset.dx, offset.dy, maxWidth, 1800),
+        );
+    } else if (_textureIndex != null && _textTextureImage != null) {
+      foreground = Paint()
+        ..shader = ui.ImageShader(
+          _textTextureImage!,
+          TileMode.repeated,
+          TileMode.repeated,
+          Matrix4.identity().storage,
+        );
+    }
+
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: foreground == null
+            ? style
+            : style.copyWith(
+                foreground: foreground,
+                color: null,
+              ),
+      ),
+      textDirection: _exportTextDirection,
+      textAlign: _textAlign,
+    )..layout(maxWidth: maxWidth);
+
+    painter.paint(canvas, offset);
+  }
+
+  Future<Uint8List> _renderStyledExportImage({
+    required String title,
+    required String body,
+    required double maxHeight,
+  }) async {
+    const width = 1240.0;
+    final margin = (_pageMargins * 2.5).clamp(45.0, 180.0);
+
+    final titleStyle = _exportStyle(
+      (_fontSize * 1.65).clamp(28.0, 72.0),
+      weight: FontWeight.w800,
+    );
+    final bodyStyle = _exportStyle(
+      (_fontSize * 1.45).clamp(22.0, 56.0),
+    );
+
+    final titlePainter = TextPainter(
+      text: TextSpan(text: title, style: titleStyle),
+      textDirection: _exportTextDirection,
+      textAlign: _textAlign,
+    )..layout(maxWidth: width - margin * 2);
+
+    final bodyPainter = TextPainter(
+      text: TextSpan(text: body, style: bodyStyle),
+      textDirection: _exportTextDirection,
+      textAlign: _textAlign,
+    )..layout(maxWidth: width - margin * 2);
+
+    final paragraphCount =
+        RegExp(r'\n{2,}').allMatches(body).length;
+    final extraParagraphSpace =
+        paragraphCount * _paragraphSpacing * 1.4;
+
+    final calculatedHeight = margin +
+        (title.trim().isEmpty ? 0 : titlePainter.height + 44) +
+        bodyPainter.height +
+        extraParagraphSpace +
+        margin;
+
+    final height = calculatedHeight.clamp(1200.0, maxHeight);
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    await _paintExportBackground(canvas, Size(width, height));
+
+    var y = margin;
+
+    if (title.trim().isNotEmpty) {
+      await _paintExportText(
+        canvas: canvas,
+        text: title,
+        offset: Offset(margin, y),
+        maxWidth: width - margin * 2,
+        style: titleStyle,
+      );
+      y += titlePainter.height + 44;
+    }
+
+    canvas.save();
+    canvas.clipRect(
+      Rect.fromLTWH(
+        margin,
+        y,
+        width - margin * 2,
+        height - y - margin,
+      ),
+    );
+
+    await _paintExportText(
+      canvas: canvas,
+      text: body,
+      offset: Offset(margin, y),
+      maxWidth: width - margin * 2,
+      style: bodyStyle,
+    );
+
+    canvas.restore();
+
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(
+      width.toInt(),
+      height.toInt(),
+    );
+    final data = await image.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
+
+    if (data == null) {
+      throw Exception('Unable to encode export image');
+    }
+
+    return data.buffer.asUint8List();
+  }
+
+  Future<Uint8List> _renderPdfPage({
+    required String title,
+    required String body,
+    required int pageNumber,
+  }) async {
+    const width = 1240.0;
+    const height = 1754.0;
+    final margin = (_pageMargins * 2.3).clamp(55.0, 170.0);
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    await _paintExportBackground(
+      canvas,
+      const Size(width, height),
+    );
+
+    var y = margin;
+
+    if (title.trim().isNotEmpty && pageNumber == 1) {
+      final titleStyle = _exportStyle(
+        (_fontSize * 1.7).clamp(30.0, 72.0),
+        weight: FontWeight.w800,
+      );
+
+      final titlePainter = TextPainter(
+        text: TextSpan(text: title, style: titleStyle),
+        textDirection: _exportTextDirection,
+        textAlign: _textAlign,
+      )..layout(maxWidth: width - margin * 2);
+
+      await _paintExportText(
+        canvas: canvas,
+        text: title,
+        offset: Offset(margin, y),
+        maxWidth: width - margin * 2,
+        style: titleStyle,
+      );
+
+      y += titlePainter.height + 44;
+    }
+
+    final bodyStyle = _exportStyle(
+      (_fontSize * 1.32).clamp(20.0, 50.0),
+    );
+
+    canvas.save();
+    canvas.clipRect(
+      Rect.fromLTWH(
+        margin,
+        y,
+        width - margin * 2,
+        height - y - margin,
+      ),
+    );
+
+    await _paintExportText(
+      canvas: canvas,
+      text: body,
+      offset: Offset(margin, y),
+      maxWidth: width - margin * 2,
+      style: bodyStyle,
+    );
+
+    canvas.restore();
+
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(
+      width.toInt(),
+      height.toInt(),
+    );
+    final data = await image.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
+
+    if (data == null) {
+      throw Exception('Unable to encode PDF page');
+    }
+
+    return data.buffer.asUint8List();
+  }
+
+  List<String> _splitTextForPdf(String text) {
+    // Character-based chunks keep PDF memory/cost predictable.
+    // Page rendering still uses Flutter, so Bangla/Arabic/etc. remain visible.
+    const target = 2200;
+    final result = <String>[];
+    var remaining = text.trim();
+
+    while (remaining.isNotEmpty) {
+      if (remaining.length <= target) {
+        result.add(remaining);
+        break;
+      }
+
+      var cut = target;
+      final newline = remaining.lastIndexOf('\n', target);
+      final space = remaining.lastIndexOf(' ', target);
+
+      if (newline > target * 0.65) {
+        cut = newline;
+      } else if (space > target * 0.65) {
+        cut = space;
+      }
+
+      result.add(remaining.substring(0, cut).trim());
+      remaining = remaining.substring(cut).trim();
+    }
+
+    return result.isEmpty ? [''] : result;
+  }
+
+  Future<void> _shareAsPdf() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
+
+    try {
+      final document = pw.Document();
+      final pages = _splitTextForPdf(text);
+
+      for (var index = 0; index < pages.length; index++) {
+        final png = await _renderPdfPage(
+          title: _title,
+          body: pages[index],
+          pageNumber: index + 1,
+        );
+
+        final image = pw.MemoryImage(png);
+
+        document.addPage(
+          pw.Page(
+            pageFormat: PdfPageFormat.a4,
+            margin: pw.EdgeInsets.zero,
+            build: (_) => pw.FullPage(
+              ignoreMargins: true,
+              child: pw.Image(
+                image,
+                fit: pw.BoxFit.fill,
+              ),
+            ),
+          ),
+        );
+      }
+
+      final bytes = await document.save();
+      final file = await _writeShareFile(
+        extension: 'pdf',
+        bytes: bytes,
+      );
+
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'application/pdf')],
+        subject: _title,
+      );
+    } catch (error) {
+      debugPrint('PDF export failed: $error');
+      if (mounted) {
+        _showMessage('Unable to create the PDF.');
+      }
+    }
+  }
+
+  String _xmlEscape(String value) {
+    return value
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&apos;');
+  }
+
+  String _xhtmlBody(String text) {
+    return text
+        .split(RegExp(r'\n{2,}'))
+        .map((paragraph) => paragraph.trim())
+        .where((paragraph) => paragraph.isNotEmpty)
+        .map((paragraph) {
+          final escaped = _xmlEscape(paragraph)
+              .replaceAll('\n', '<br/>');
+          return '<p>$escaped</p>';
+        })
+        .join('\n');
+  }
+
+  String _cssColor(Color color) {
+    final value = color.value & 0xFFFFFF;
+    return '#${value.toRadixString(16).padLeft(6, '0').toUpperCase()}';
+  }
+
+  String _cssTextAlign(TextAlign align) {
+    switch (align) {
+      case TextAlign.center:
+        return 'center';
+      case TextAlign.right:
+        return 'right';
+      case TextAlign.justify:
+        return 'justify';
+      case TextAlign.end:
+        return 'end';
+      case TextAlign.start:
+        return 'start';
+      case TextAlign.left:
+        return 'left';
+    }
+  }
+
+  String _cssFontFamily(String family) {
+    final value = family.trim();
+    if (value.isEmpty || value.toLowerCase() == 'sans-serif') {
+      return 'sans-serif';
+    }
+    if (value.toLowerCase() == 'serif') return 'serif';
+    if (value.toLowerCase() == 'monospace') return 'monospace';
+    return '"${_xmlEscape(value)}", sans-serif';
+  }
+
+  Future<void> _shareAsEpub() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
+
+    try {
+      final title = _xmlEscape(
+        _title.trim().isEmpty ? 'NovelAI' : _title.trim(),
+      );
+
+      final identifier =
+          'novelai-${DateTime.now().microsecondsSinceEpoch}';
+
+      final mimetype = utf8.encode('application/epub+zip');
+
+      final containerXml = utf8.encode(
+        '''<?xml version="1.0" encoding="UTF-8"?>
+<container version="1.0"
+ xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+  <rootfiles>
+    <rootfile full-path="OEBPS/content.opf"
+     media-type="application/oebps-package+xml"/>
+  </rootfiles>
+</container>''',
+      );
+
+      final chapterXhtml = utf8.encode(
+        '''<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>$title</title>
+  <meta charset="UTF-8"/>
+  <style>
+    body {
+      font-family: ${_cssFontFamily(_fontFamily)};
+      font-size: ${_fontSize.toStringAsFixed(1)}px;
+      line-height: ${_lineSpacing.toStringAsFixed(2)};
+      letter-spacing: ${_letterSpacing.toStringAsFixed(1)}px;
+      color: ${_cssColor(_exportTextColor)};
+      background-color: ${_cssColor(
+        _backgroundColor ??
+            (_backgroundGradient?.isNotEmpty == true
+                ? _backgroundGradient!.first
+                : (Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF111111)
+                    : const Color(0xFFF7F7F7))),
+      )};
+      margin: ${_pageMargins.toStringAsFixed(1)}px;
+      text-align: ${_cssTextAlign(_textAlign)};
+      font-style: ${_fontStyle == FontStyle.italic ? 'italic' : 'normal'};
+      font-weight: ${_fontWeight == FontWeight.bold ? '700' : '500'};
+      text-decoration: ${_underline ? 'underline' : 'none'};
+      opacity: ${_textOpacity.toStringAsFixed(2)};
+      direction: ${_exportTextDirection == TextDirection.rtl ? 'rtl' : 'ltr'};
+    }
+    h1 {
+      line-height: 1.25;
+      text-align: ${_cssTextAlign(_textAlign)};
+      font-weight: 800;
+    }
+    p {
+      margin: 0 0 ${_paragraphSpacing.toStringAsFixed(1)}px 0;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>$title</h1>
+  ${_xhtmlBody(text)}
+</body>
+</html>''',
+      );
+
+      final navXhtml = utf8.encode(
+        '''<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+ xmlns:epub="http://www.idpf.org/2007/ops">
+<head><title>Navigation</title></head>
+<body>
+<nav epub:type="toc">
+  <ol>
+    <li><a href="content.xhtml">$title</a></li>
+  </ol>
+</nav>
+</body>
+</html>''',
+      );
+
+      final contentOpf = utf8.encode(
+        '''<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf"
+ unique-identifier="bookid" version="3.0">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier id="bookid">$identifier</dc:identifier>
+    <dc:title>$title</dc:title>
+    <dc:language>${_xmlEscape(widget.selectedLanguage)}</dc:language>
+    <meta property="dcterms:modified">${DateTime.now().toUtc().toIso8601String().split('.').first}Z</meta>
+  </metadata>
+  <manifest>
+    <item id="content" href="content.xhtml"
+      media-type="application/xhtml+xml"/>
+    <item id="nav" href="nav.xhtml"
+      media-type="application/xhtml+xml"
+      properties="nav"/>
+  </manifest>
+  <spine>
+    <itemref idref="content"/>
+  </spine>
+</package>''',
+      );
+
+      final archive = Archive();
+      archive.addFile(
+        ArchiveFile('mimetype', mimetype.length, mimetype),
+      );
+      archive.addFile(
+        ArchiveFile(
+          'META-INF/container.xml',
+          containerXml.length,
+          containerXml,
+        ),
+      );
+      archive.addFile(
+        ArchiveFile(
+          'OEBPS/content.xhtml',
+          chapterXhtml.length,
+          chapterXhtml,
+        ),
+      );
+      archive.addFile(
+        ArchiveFile(
+          'OEBPS/nav.xhtml',
+          navXhtml.length,
+          navXhtml,
+        ),
+      );
+      archive.addFile(
+        ArchiveFile(
+          'OEBPS/content.opf',
+          contentOpf.length,
+          contentOpf,
+        ),
+      );
+
+      final encoded = ZipEncoder().encode(archive);
+      if (encoded == null) {
+        throw Exception('Unable to encode EPUB');
+      }
+
+      final file = await _writeShareFile(
+        extension: 'epub',
+        bytes: encoded,
+      );
+
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'application/epub+zip')],
+        subject: _title,
+      );
+    } catch (error) {
+      debugPrint('EPUB export failed: $error');
+      if (mounted) {
+        _showMessage('Unable to create the EPUB.');
+      }
+    }
   }
 
   Future<void> _toggleFavorite() async {
@@ -2813,7 +3739,7 @@ class _SaveVcState extends State<SaveVc> {
                   ),
                   _topImageButton(
                     path: 'assets/images/share.png',
-                    onPressed: _shareText,
+                    onPressed: _showShareOptions,
                     tint: interfaceColor.withValues(
                       alpha: _isGenerating ? 0.35 : 1,
                     ),
