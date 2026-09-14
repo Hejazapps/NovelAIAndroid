@@ -88,6 +88,17 @@ class _SaveVcState extends State<SaveVc> {
   TextAlign _textAlign = TextAlign.left;
   bool _underline = false;
 
+  String _fontFamily = 'sans-serif';
+  double _textOpacity = 1.0;
+  double _lineSpacing = 1.6;
+  double _letterSpacing = 0.0;
+  double _paragraphSpacing = 0.0;
+  double _textWidth = 1.0;
+  double _pageMargins = 15.0;
+  Color _textColor = const Color(0xFF171717);
+  int? _textGradientIndex;
+  int _textEditorTab = 0;
+
   Color? _backgroundColor;
   List<Color>? _backgroundGradient;
   String? _backgroundAsset;
@@ -469,6 +480,15 @@ class _SaveVcState extends State<SaveVc> {
         'isUnderlined': _underline,
         'textAlignment': _textAlign.index,
         'textureIndex': _textureIndex ?? 0,
+        'fontFamily': _fontFamily,
+        'textOpacity': _textOpacity,
+        'lineSpacing': _lineSpacing,
+        'letterSpacing': _letterSpacing,
+        'paragraphSpacing': _paragraphSpacing,
+        'textWidth': _textWidth,
+        'pageMargins': _pageMargins,
+        'textColor': _textColor.value,
+        'textGradientIndex': _textGradientIndex,
       },
     });
 
@@ -526,6 +546,16 @@ class _SaveVcState extends State<SaveVc> {
       _fontStyle = FontStyle.normal;
       _textAlign = TextAlign.left;
       _underline = false;
+      _fontFamily = 'sans-serif';
+      _textOpacity = 1.0;
+      _lineSpacing = 1.6;
+      _letterSpacing = 0.0;
+      _paragraphSpacing = 0.0;
+      _textWidth = 1.0;
+      _pageMargins = 15.0;
+      _textColor = const Color(0xFF171717);
+      _textGradientIndex = null;
+      _textEditorTab = 0;
       _backgroundColor = null;
       _backgroundGradient = null;
       _backgroundAsset = null;
@@ -564,10 +594,30 @@ class _SaveVcState extends State<SaveVc> {
   }
 
   Future<void> _showTextStyleSheet() async {
+    final originalFontSize = _fontSize;
+    final originalFontWeight = _fontWeight;
+    final originalFontStyle = _fontStyle;
+    final originalTextAlign = _textAlign;
+    final originalUnderline = _underline;
+    final originalFontFamily = _fontFamily;
+    final originalTextOpacity = _textOpacity;
+    final originalLineSpacing = _lineSpacing;
+    final originalLetterSpacing = _letterSpacing;
+    final originalParagraphSpacing = _paragraphSpacing;
+    final originalTextWidth = _textWidth;
+    final originalPageMargins = _pageMargins;
+    final originalTextColor = _textColor;
+    final originalTextGradientIndex = _textGradientIndex;
+    final originalTextureIndex = _textureIndex;
+    final originalForcedTextColor = _forcedTextColor;
+
+    bool applied = false;
+
     await showModalBottomSheet<void>(
       context: context,
-      showDragHandle: true,
       isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (context, sheetSetState) {
@@ -576,17 +626,154 @@ class _SaveVcState extends State<SaveVc> {
               sheetSetState(() {});
             }
 
-            return SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            final sheetColor =
+                isDark ? const Color(0xFF1C1C1E) : Colors.white;
+            final cardColor = isDark
+                ? const Color(0xFF2C2C2E)
+                : const Color(0xFFF5F5F7);
+            final borderColor = isDark
+                ? const Color(0xFF3A3A3C)
+                : const Color(0xFFE5E5EA);
+            final primary = isDark
+                ? const Color(0xFF9146E8)
+                : const Color(0xFFFF6435);
+            final muted = isDark
+                ? const Color(0xFFA9A9AF)
+                : const Color(0xFF7A7A80);
+
+            final textColors = <Color>[
+              const Color(0xFF111111),
+              Colors.white,
+              const Color(0xFFFF3B30),
+              const Color(0xFFFF9500),
+              const Color(0xFFFFCC00),
+              const Color(0xFF34C759),
+              const Color(0xFF00C7BE),
+              const Color(0xFF007AFF),
+              const Color(0xFF5856D6),
+              const Color(0xFFAF52DE),
+              const Color(0xFFFF2D55),
+              const Color(0xFF8E8E93),
+            ];
+
+            final textGradients = <List<Color>>[
+              const [Color(0xFFFF6435), Color(0xFFFF2D55)],
+              const [Color(0xFF9146E8), Color(0xFF5856D6)],
+              const [Color(0xFF007AFF), Color(0xFF00C7BE)],
+              const [Color(0xFF34C759), Color(0xFFFFCC00)],
+              const [Color(0xFFFF9500), Color(0xFFFF3B30)],
+              const [Color(0xFF111111), Color(0xFF8E8E93)],
+            ];
+
+            Widget sectionTitle(String title) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            Widget valueSlider({
+              required String title,
+              required double value,
+              required double min,
+              required double max,
+              required int divisions,
+              required String Function(double) valueText,
+              required ValueChanged<double> onChanged,
+            }) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        valueText(value),
+                        style: TextStyle(fontSize: 13, color: muted),
+                      ),
+                    ],
+                  ),
+                  Slider(
+                    value: value.clamp(min, max),
+                    min: min,
+                    max: max,
+                    divisions: divisions,
+                    activeColor: primary,
+                    onChanged: onChanged,
+                  ),
+                ],
+              );
+            }
+
+            Widget iconChoice({
+              required IconData icon,
+              required bool selected,
+              required VoidCallback onTap,
+            }) {
+              return Expanded(
+                child: GestureDetector(
+                  onTap: onTap,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? primary.withValues(alpha: 0.14)
+                          : cardColor,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: selected ? primary : borderColor,
+                      ),
+                    ),
+                    child: Icon(
+                      icon,
+                      size: 20,
+                      color: selected ? primary : null,
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            return Container(
+              height: MediaQuery.sizeOf(context).height * 0.90,
+              decoration: BoxDecoration(
+                color: sheetColor,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(26)),
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 12, 12, 8),
+                    child: Row(
                       children: [
+                        IconButton(
+                          onPressed: () => Navigator.pop(sheetContext),
+                          icon: const Icon(Icons.close_rounded),
+                        ),
                         const Expanded(
                           child: Text(
-                            'Text Style',
+                            'Text Editor',
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
@@ -594,114 +781,461 @@ class _SaveVcState extends State<SaveVc> {
                           ),
                         ),
                         IconButton(
-                          onPressed: () => Navigator.pop(sheetContext),
-                          icon: const Icon(Icons.close),
+                          onPressed: () {
+                            applied = true;
+                            Navigator.pop(sheetContext);
+                          },
+                          icon: Icon(Icons.check_rounded, color: primary),
                         ),
                       ],
                     ),
-                    Row(
-                      children: [
-                        const Text('Size'),
-                        Expanded(
-                          child: Slider(
-                            min: 12,
-                            max: 30,
-                            value: _fontSize,
-                            onChanged: (value) {
-                              update(() => _fontSize = value);
-                            },
-                          ),
-                        ),
-                        Text(_fontSize.round().toString()),
-                      ],
+                  ),
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(18, 4, 18, 14),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: borderColor),
                     ),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _styleChoice(
-                          label: 'Bold',
-                          selected: _fontWeight == FontWeight.bold,
-                          onTap: () => update(() {
-                            _fontWeight = _fontWeight == FontWeight.bold
-                                ? FontWeight.w500
-                                : FontWeight.bold;
-                          }),
-                        ),
-                        _styleChoice(
-                          label: 'Italic',
-                          selected: _fontStyle == FontStyle.italic,
-                          onTap: () => update(() {
-                            _fontStyle = _fontStyle == FontStyle.italic
-                                ? FontStyle.normal
-                                : FontStyle.italic;
-                          }),
-                        ),
-                        _styleChoice(
-                          label: 'Underline',
-                          selected: _underline,
-                          onTap: () => update(() => _underline = !_underline),
-                        ),
-                        _styleChoice(
-                          label: 'Left',
-                          selected: _textAlign == TextAlign.left,
-                          onTap: () => update(() => _textAlign = TextAlign.left),
-                        ),
-                        _styleChoice(
-                          label: 'Center',
-                          selected: _textAlign == TextAlign.center,
-                          onTap: () => update(() => _textAlign = TextAlign.center),
-                        ),
-                        _styleChoice(
-                          label: 'Right',
-                          selected: _textAlign == TextAlign.right,
-                          onTap: () => update(() => _textAlign = TextAlign.right),
-                        ),
-                      ],
+                    child: Text(
+                      _textController.text.trim().isEmpty
+                          ? 'Your story text will look like this.'
+                          : _textController.text.trim().split('\n').first,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: _textAlign,
+                      style: _storyTextStyle,
                     ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: 76,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: 22,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
-                        itemBuilder: (context, index) {
-                          final selected = _textureIndex == index;
-                          return GestureDetector(
-                            onTap: () => update(() {
-                              _textureIndex = selected ? null : index;
-                            }),
-                            child: Container(
-                              width: 62,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  width: selected ? 2 : 1,
-                                  color: selected
-                                      ? Theme.of(context).colorScheme.primary
-                                      : Theme.of(context).dividerColor,
-                                ),
-                                image: DecorationImage(
-                                  image: AssetImage(
-                                    'assets/images/texture$index.png',
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(18, 0, 18, 28),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 42,
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: cardColor,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: ['Color', 'Gradient', 'Texture']
+                                  .asMap()
+                                  .entries
+                                  .map((entry) {
+                                final selected =
+                                    _textEditorTab == entry.key;
+                                return Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => update(
+                                      () => _textEditorTab = entry.key,
+                                    ),
+                                    child: AnimatedContainer(
+                                      duration:
+                                          const Duration(milliseconds: 160),
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: selected
+                                            ? sheetColor
+                                            : Colors.transparent,
+                                        borderRadius:
+                                            BorderRadius.circular(9),
+                                        boxShadow: selected
+                                            ? [
+                                                BoxShadow(
+                                                  color: Colors.black
+                                                      .withValues(alpha: 0.08),
+                                                  blurRadius: 5,
+                                                ),
+                                              ]
+                                            : null,
+                                      ),
+                                      child: Text(
+                                        entry.value,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: selected
+                                              ? FontWeight.w700
+                                              : FontWeight.w500,
+                                          color:
+                                              selected ? primary : muted,
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                  fit: BoxFit.cover,
-                                ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          if (_textEditorTab == 0)
+                            Wrap(
+                              spacing: 12,
+                              runSpacing: 12,
+                              children: textColors.map((color) {
+                                final selected =
+                                    _textGradientIndex == null &&
+                                        _textureIndex == null &&
+                                        _textColor.value == color.value;
+                                return GestureDetector(
+                                  onTap: () => update(() {
+                                    _textColor = color;
+                                    _textGradientIndex = null;
+                                    _textureIndex = null;
+                                    _forcedTextColor = color;
+                                  }),
+                                  child: Container(
+                                    width: 38,
+                                    height: 38,
+                                    decoration: BoxDecoration(
+                                      color: color,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        width: selected ? 3 : 1,
+                                        color: selected
+                                            ? primary
+                                            : borderColor,
+                                      ),
+                                    ),
+                                    child: selected
+                                        ? Icon(
+                                            Icons.check,
+                                            size: 17,
+                                            color: _readableColor(color),
+                                          )
+                                        : null,
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          if (_textEditorTab == 1)
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics:
+                                  const NeverScrollableScrollPhysics(),
+                              itemCount: textGradients.length,
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                mainAxisSpacing: 10,
+                                crossAxisSpacing: 10,
+                                childAspectRatio: 2.0,
+                              ),
+                              itemBuilder: (_, index) {
+                                final selected =
+                                    _textGradientIndex == index;
+                                return GestureDetector(
+                                  onTap: () => update(() {
+                                    _textGradientIndex = index;
+                                    _textureIndex = null;
+                                    _forcedTextColor = null;
+                                  }),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: textGradients[index],
+                                      ),
+                                      borderRadius:
+                                          BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: selected
+                                            ? primary
+                                            : Colors.transparent,
+                                        width: 2.5,
+                                      ),
+                                    ),
+                                    child: selected
+                                        ? const Icon(
+                                            Icons.check,
+                                            color: Colors.white,
+                                          )
+                                        : null,
+                                  ),
+                                );
+                              },
+                            ),
+                          if (_textEditorTab == 2)
+                            SizedBox(
+                              height: 74,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: 22,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(width: 9),
+                                itemBuilder: (_, index) {
+                                  final selected =
+                                      _textureIndex == index;
+                                  return GestureDetector(
+                                    onTap: () => update(() {
+                                      _textureIndex = index;
+                                      _textGradientIndex = null;
+                                      _forcedTextColor = null;
+                                    }),
+                                    child: Container(
+                                      width: 62,
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: selected
+                                              ? primary
+                                              : borderColor,
+                                          width: selected ? 2.5 : 1,
+                                        ),
+                                        image: DecorationImage(
+                                          image: AssetImage(
+                                            'assets/images/texture$index.png',
+                                          ),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      child: selected
+                                          ? const Icon(
+                                              Icons.check_circle,
+                                              color: Colors.white,
+                                            )
+                                          : null,
+                                    ),
+                                  );
+                                },
                               ),
                             ),
-                          );
-                        },
+                          const SizedBox(height: 22),
+                          sectionTitle('Font'),
+                          DropdownButtonFormField<String>(
+                            value: _fontFamily,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: cardColor,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    BorderSide(color: borderColor),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    BorderSide(color: borderColor),
+                              ),
+                              contentPadding:
+                                  const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'sans-serif',
+                                child: Text('Sans Serif'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'serif',
+                                child: Text('Serif'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'monospace',
+                                child: Text('Monospace'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'sans-serif-condensed',
+                                child: Text('Condensed'),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              if (value != null) {
+                                update(() => _fontFamily = value);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 18),
+                          valueSlider(
+                            title: 'Font Size',
+                            value: _fontSize,
+                            min: 12,
+                            max: 34,
+                            divisions: 22,
+                            valueText: (v) => '${v.round()}',
+                            onChanged: (v) =>
+                                update(() => _fontSize = v),
+                          ),
+                          const SizedBox(height: 4),
+                          sectionTitle('Font Alignment'),
+                          Row(
+                            children: [
+                              iconChoice(
+                                icon: Icons.format_align_left_rounded,
+                                selected:
+                                    _textAlign == TextAlign.left,
+                                onTap: () => update(
+                                  () => _textAlign = TextAlign.left,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              iconChoice(
+                                icon: Icons.format_align_center_rounded,
+                                selected:
+                                    _textAlign == TextAlign.center,
+                                onTap: () => update(
+                                  () => _textAlign = TextAlign.center,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              iconChoice(
+                                icon: Icons.format_align_right_rounded,
+                                selected:
+                                    _textAlign == TextAlign.right,
+                                onTap: () => update(
+                                  () => _textAlign = TextAlign.right,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              iconChoice(
+                                icon:
+                                    Icons.format_align_justify_rounded,
+                                selected:
+                                    _textAlign == TextAlign.justify,
+                                onTap: () => update(
+                                  () => _textAlign = TextAlign.justify,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 18),
+                          sectionTitle('Font Style'),
+                          Row(
+                            children: [
+                              iconChoice(
+                                icon: Icons.format_bold_rounded,
+                                selected:
+                                    _fontWeight == FontWeight.bold,
+                                onTap: () => update(() {
+                                  _fontWeight =
+                                      _fontWeight == FontWeight.bold
+                                          ? FontWeight.w500
+                                          : FontWeight.bold;
+                                }),
+                              ),
+                              const SizedBox(width: 8),
+                              iconChoice(
+                                icon: Icons.format_italic_rounded,
+                                selected:
+                                    _fontStyle == FontStyle.italic,
+                                onTap: () => update(() {
+                                  _fontStyle =
+                                      _fontStyle == FontStyle.italic
+                                          ? FontStyle.normal
+                                          : FontStyle.italic;
+                                }),
+                              ),
+                              const SizedBox(width: 8),
+                              iconChoice(
+                                icon:
+                                    Icons.format_underline_rounded,
+                                selected: _underline,
+                                onTap: () => update(
+                                  () => _underline = !_underline,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 18),
+                          valueSlider(
+                            title: 'Text Opacity',
+                            value: _textOpacity,
+                            min: 0.2,
+                            max: 1.0,
+                            divisions: 8,
+                            valueText: (v) =>
+                                '${(v * 100).round()}%',
+                            onChanged: (v) =>
+                                update(() => _textOpacity = v),
+                          ),
+                          valueSlider(
+                            title: 'Line Spacing',
+                            value: _lineSpacing,
+                            min: 1.0,
+                            max: 2.5,
+                            divisions: 15,
+                            valueText: (v) => v.toStringAsFixed(1),
+                            onChanged: (v) =>
+                                update(() => _lineSpacing = v),
+                          ),
+                          valueSlider(
+                            title: 'Letter Spacing',
+                            value: _letterSpacing,
+                            min: -1.0,
+                            max: 4.0,
+                            divisions: 20,
+                            valueText: (v) => v.toStringAsFixed(1),
+                            onChanged: (v) =>
+                                update(() => _letterSpacing = v),
+                          ),
+                          valueSlider(
+                            title: 'Paragraph Spacing',
+                            value: _paragraphSpacing,
+                            min: 0,
+                            max: 20,
+                            divisions: 20,
+                            valueText: (v) => '${v.round()}',
+                            onChanged: (v) =>
+                                update(() => _paragraphSpacing = v),
+                          ),
+                          valueSlider(
+                            title: 'Text Width',
+                            value: _textWidth,
+                            min: 0.65,
+                            max: 1.0,
+                            divisions: 7,
+                            valueText: (v) =>
+                                '${(v * 100).round()}%',
+                            onChanged: (v) =>
+                                update(() => _textWidth = v),
+                          ),
+                          valueSlider(
+                            title: 'Page Margins',
+                            value: _pageMargins,
+                            min: 8,
+                            max: 40,
+                            divisions: 16,
+                            valueText: (v) => '${v.round()}',
+                            onChanged: (v) =>
+                                update(() => _pageMargins = v),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             );
           },
         );
       },
     );
+
+    if (!applied && mounted) {
+      setState(() {
+        _fontSize = originalFontSize;
+        _fontWeight = originalFontWeight;
+        _fontStyle = originalFontStyle;
+        _textAlign = originalTextAlign;
+        _underline = originalUnderline;
+        _fontFamily = originalFontFamily;
+        _textOpacity = originalTextOpacity;
+        _lineSpacing = originalLineSpacing;
+        _letterSpacing = originalLetterSpacing;
+        _paragraphSpacing = originalParagraphSpacing;
+        _textWidth = originalTextWidth;
+        _pageMargins = originalPageMargins;
+        _textColor = originalTextColor;
+        _textGradientIndex = originalTextGradientIndex;
+        _textureIndex = originalTextureIndex;
+        _forcedTextColor = originalForcedTextColor;
+      });
+    }
   }
 
   Future<void> _showThemeSheet() async {
@@ -870,13 +1404,43 @@ class _SaveVcState extends State<SaveVc> {
   }
 
   TextStyle get _storyTextStyle {
+    Paint? foreground;
+
+    if (_textGradientIndex != null) {
+      const gradients = <List<Color>>[
+        [Color(0xFFFF6435), Color(0xFFFF2D55)],
+        [Color(0xFF9146E8), Color(0xFF5856D6)],
+        [Color(0xFF007AFF), Color(0xFF00C7BE)],
+        [Color(0xFF34C759), Color(0xFFFFCC00)],
+        [Color(0xFFFF9500), Color(0xFFFF3B30)],
+        [Color(0xFF111111), Color(0xFF8E8E93)],
+      ];
+
+      final index =
+          _textGradientIndex!.clamp(0, gradients.length - 1);
+
+      foreground = Paint()
+        ..shader = LinearGradient(
+          colors: gradients[index]
+              .map((c) => c.withValues(alpha: _textOpacity))
+              .toList(),
+        ).createShader(const Rect.fromLTWH(0, 0, 700, 100));
+    }
+
+    final baseColor =
+        (_forcedTextColor ?? _textColor).withValues(alpha: _textOpacity);
+
     return TextStyle(
+      fontFamily: _fontFamily,
       fontSize: _fontSize,
-      height: 1.6,
+      height: _lineSpacing + (_paragraphSpacing / 100),
+      letterSpacing: _letterSpacing,
       fontWeight: _fontWeight,
       fontStyle: _fontStyle,
-      color: _interfaceColor,
-      decoration: _underline ? TextDecoration.underline : TextDecoration.none,
+      color: foreground == null ? baseColor : null,
+      foreground: foreground,
+      decoration:
+          _underline ? TextDecoration.underline : TextDecoration.none,
     );
   }
 
@@ -1348,10 +1912,10 @@ class _SaveVcState extends State<SaveVc> {
 
     return Scaffold(
       backgroundColor: _pageBackground,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Column(
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Column(
               children: [
                 _buildTopBar(interfaceColor),
                 const SizedBox(height: 10),
@@ -1375,9 +1939,14 @@ class _SaveVcState extends State<SaveVc> {
                 ),
               ],
             ),
-            if (_isGenerating) _buildGeneratingOverlay(),
-          ],
-        ),
+          ),
+
+          // Show the blocking progress only while we are still waiting
+          // for the first streamed text. As soon as text starts arriving,
+          // the story itself becomes the progress indicator.
+          if (_isGenerating && _textController.text.trim().isEmpty)
+            _buildGeneratingOverlay(),
+        ],
       ),
     );
   }
@@ -1538,35 +2107,45 @@ class _SaveVcState extends State<SaveVc> {
   }
 
   Widget _buildStoryEditor(Color interfaceColor) {
-    if (_textureIndex != null) {
-      // Flutter TextField cannot directly paint a bitmap into glyphs like
-      // UIColor(patternImage:) on iOS. Keep the same selected texture available
-      // to the text editor UI; exact glyph texture rendering can be layered in
-      // later without changing this screen structure.
-    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth =
+            (constraints.maxWidth - (_pageMargins * 2))
+                .clamp(80.0, constraints.maxWidth);
+        final editorWidth = availableWidth * _textWidth;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(15, 10, 15, 15),
-      child: TextField(
-        controller: _textController,
-        scrollController: _scrollController,
-        expands: true,
-        maxLines: null,
-        minLines: null,
-        textAlign: _textAlign,
-        textAlignVertical: TextAlignVertical.top,
-        style: _storyTextStyle,
-        cursorColor: interfaceColor,
-        decoration: const InputDecoration(
-          border: InputBorder.none,
-          isCollapsed: true,
-        ),
-        onChanged: (_) {
-          if (!_isGenerating) {
-            _generationCompleted = _textController.text.trim().isNotEmpty;
-          }
-        },
-      ),
+        return Align(
+          alignment: Alignment.topCenter,
+          child: SizedBox(
+            width: editorWidth,
+            height: constraints.maxHeight,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: TextField(
+                controller: _textController,
+                scrollController: _scrollController,
+                expands: true,
+                maxLines: null,
+                minLines: null,
+                textAlign: _textAlign,
+                textAlignVertical: TextAlignVertical.top,
+                style: _storyTextStyle,
+                cursorColor: interfaceColor,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  isCollapsed: true,
+                ),
+                onChanged: (_) {
+                  if (!_isGenerating) {
+                    _generationCompleted =
+                        _textController.text.trim().isNotEmpty;
+                  }
+                },
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
