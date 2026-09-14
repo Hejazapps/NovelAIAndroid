@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'save_vc.dart';
+import '../services/easy_seek_api_manager.dart';
+
 class LetterScreen extends StatefulWidget {
   const LetterScreen({super.key});
 
@@ -759,14 +762,42 @@ class _LetterScreenState extends State<LetterScreen> {
     debugPrint('closing: $selectedClosing');
     debugPrint('length: $selectedLength');
 
-    final prompt = _buildLetterPrompt();
+    final generatedPrompt = _buildLetterPrompt();
 
     debugPrint('========== LETTER PROMPT ==========');
-    debugPrint(prompt);
+    debugPrint(generatedPrompt);
     debugPrint('===================================');
 
-    // API / generation logic later.
-    // Send `prompt` to your generation flow when ready.
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SaveVc(
+          textToGive: generatedPrompt,
+          mainTitle: subject.isEmpty ? 'AI Letter' : subject,
+          selectedLanguage: selectedLanguage,
+          genre: selectedLetterType,
+          hasTag: '$selectedLetterType,$selectedTone',
+          contentType: 'Letter',
+          shouldNeedToCall: true,
+          isFromSave: false,
+          isFromFav: false,
+          onGenerate: (prompt, onUpdate) async {
+            bool completedSuccessfully = false;
+
+            await EasySeekApiManager.shared.streamResponse(
+              message: prompt,
+              onUpdate: onUpdate,
+              onCompletion: (success) {
+                completedSuccessfully = success;
+              },
+            );
+
+            if (!completedSuccessfully) {
+              throw Exception('Letter generation failed');
+            }
+          },
+        ),
+      ),
+    );
   }
 
   String _optionalPromptValue(String value) {

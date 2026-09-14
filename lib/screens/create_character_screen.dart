@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'save_vc.dart';
+import '../services/easy_seek_api_manager.dart';
+
 class CreateCharacterScreen extends StatefulWidget {
   const CreateCharacterScreen({super.key});
 
@@ -932,7 +935,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
       return;
     }
 
-    final prompt = _buildCharacterPrompt();
+    final generatedPrompt = _buildCharacterPrompt();
 
     debugPrint('========== CHARACTER ==========');
     debugPrint('Character Name: $name');
@@ -946,10 +949,39 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     debugPrint('Weakness: ${_weaknessController.text.trim()}');
     debugPrint('Story Genre: $_storyGenre');
     debugPrint('========== GENERATED PROMPT ==========');
-    debugPrint(prompt);
+    debugPrint(generatedPrompt);
     debugPrint('======================================');
 
-    // API / generation screen connection can be added here later.
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SaveVc(
+          textToGive: generatedPrompt,
+          mainTitle: name.isEmpty ? 'AI Character' : name,
+          selectedLanguage: _language,
+          genre: _storyGenre,
+          hasTag: '$_roleInStory,$_personality',
+          contentType: 'Character',
+          shouldNeedToCall: true,
+          isFromSave: false,
+          isFromFav: false,
+          onGenerate: (prompt, onUpdate) async {
+            bool completedSuccessfully = false;
+
+            await EasySeekApiManager.shared.streamResponse(
+              message: prompt,
+              onUpdate: onUpdate,
+              onCompletion: (success) {
+                completedSuccessfully = success;
+              },
+            );
+
+            if (!completedSuccessfully) {
+              throw Exception('Character generation failed');
+            }
+          },
+        ),
+      ),
+    );
   }
 
   void _showWarning(String message) {
