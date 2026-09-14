@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'save_vc.dart';
+import '../services/easy_seek_api_manager.dart';
+
 class PoemScreen extends StatefulWidget {
   const PoemScreen({super.key});
 
@@ -796,7 +799,36 @@ class _PoemScreenState extends State<PoemScreen> {
     debugPrint(generatedPrompt);
     debugPrint('======================================');
 
-    // API / poem generation connection can be added here later.
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SaveVc(
+          textToGive: generatedPrompt,
+          mainTitle: 'AI Poem',
+          selectedLanguage: selectedLanguage,
+          genre: selectedPoemType,
+          hasTag: selectedTone,
+          contentType: 'Poem',
+          shouldNeedToCall: true,
+          isFromSave: false,
+          isFromFav: false,
+          onGenerate: (prompt, onUpdate) async {
+            bool completedSuccessfully = false;
+
+            await EasySeekApiManager.shared.streamResponse(
+              message: prompt,
+              onUpdate: onUpdate,
+              onCompletion: (success) {
+                completedSuccessfully = success;
+              },
+            );
+
+            if (!completedSuccessfully) {
+              throw Exception('Poem generation failed');
+            }
+          },
+        ),
+      ),
+    );
   }
 
   String _buildPoemPrompt({

@@ -319,6 +319,11 @@ class EasySeekApiManager {
         },
         onError: (Object error, StackTrace stackTrace) {
           if (completer.isCompleted) return;
+
+          print(
+            '❌ [EasySeekApiManager] Stream error for ${model.rawValue}: $error',
+          );
+
           if (_isCancelled(generation)) {
             completer.complete(_StreamAttemptResult.cancelled);
           } else if (_isRateLimitError(error) && !receivedAnyContent) {
@@ -345,6 +350,10 @@ class EasySeekApiManager {
 
       return await completer.future;
     } catch (error) {
+      print(
+        '❌ [EasySeekApiManager] Streaming request failed for ${model.rawValue}: $error',
+      );
+
       if (_isCancelled(generation)) return _StreamAttemptResult.cancelled;
       if (_isRateLimitError(error)) return _StreamAttemptResult.rateLimited;
       return _StreamAttemptResult.failed;
@@ -645,6 +654,35 @@ class _AIProxyTogetherService {
   final String partialKey;
   final String serviceUrl;
 
+  static const String _clientIdPrefsKey = 'aiproxy.client.id';
+
+  Future<String> _getClientId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final existing = prefs.getString(_clientIdPrefsKey)?.trim();
+    if (existing != null && existing.isNotEmpty) {
+      return existing;
+    }
+
+    final random = Random.secure();
+    final bytes = List<int>.generate(16, (_) => random.nextInt(256));
+
+    // UUID v4 bits.
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+    String hex(int value) => value.toRadixString(16).padLeft(2, '0');
+
+    final clientId =
+        '${bytes.sublist(0, 4).map(hex).join()}-'
+        '${bytes.sublist(4, 6).map(hex).join()}-'
+        '${bytes.sublist(6, 8).map(hex).join()}-'
+        '${bytes.sublist(8, 10).map(hex).join()}-'
+        '${bytes.sublist(10, 16).map(hex).join()}';
+
+    await prefs.setString(_clientIdPrefsKey, clientId);
+    return clientId;
+  }
+
   String get _chatUrl {
     final base = serviceUrl.endsWith('/')
         ? serviceUrl.substring(0, serviceUrl.length - 1)
@@ -661,13 +699,14 @@ class _AIProxyTogetherService {
   }) async {
     final client = http.Client();
     try {
+      final clientId = await _getClientId();
       final response = await client
           .post(
             Uri.parse(_chatUrl),
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
-              'Authorization': 'Bearer $partialKey',
+              'aiproxy-client-id': clientId,
             },
             body: jsonEncode({
               'messages': messages.map((e) => e.toJson()).toList(),
@@ -709,11 +748,12 @@ class _AIProxyTogetherService {
   }) async* {
     final client = http.Client();
     try {
+      final clientId = await _getClientId();
       final request = http.Request('POST', Uri.parse(_chatUrl));
       request.headers.addAll({
         'Content-Type': 'application/json',
         'Accept': 'text/event-stream',
-        'Authorization': 'Bearer $partialKey',
+        'aiproxy-client-id': clientId,
       });
       request.body = jsonEncode({
         'messages': messages.map((e) => e.toJson()).toList(),
@@ -724,8 +764,15 @@ class _AIProxyTogetherService {
       });
 
       final response = await client.send(request);
+      print(
+        '📡 [AIProxy] Streaming HTTP ${response.statusCode} | model=$model',
+      );
+
       if (response.statusCode < 200 || response.statusCode >= 300) {
         final body = await response.stream.bytesToString();
+        print(
+          '❌ [AIProxy] Streaming response body | model=$model | $body',
+        );
         throw _AIProxyRequestException(response.statusCode, body);
       }
 
