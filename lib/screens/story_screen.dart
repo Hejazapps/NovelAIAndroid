@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'save_vc.dart';
+import '../services/easy_seek_api_manager.dart';
 
 bool _storyIsDark(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark;
@@ -1176,9 +1178,39 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
     debugPrint(generatedPrompt);
     debugPrint('============================================================');
 
-    // Later you can navigate to your generation/result screen from this callback.
     widget.onGenerate?.call(
       request.copyWith(generatedPrompt: generatedPrompt),
+    );
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SaveVc(
+          textToGive: generatedPrompt,
+          mainTitle: request.title.isEmpty ? 'AI Story' : request.title,
+          selectedLanguage: request.settings.language,
+          genre: request.genre,
+          hasTag: request.genre,
+          contentType: 'Story',
+          shouldNeedToCall: true,
+          isFromSave: false,
+          isFromFav: false,
+          onGenerate: (prompt, onUpdate) async {
+            bool completedSuccessfully = false;
+
+            await EasySeekApiManager.shared.streamResponse(
+              message: prompt,
+              onUpdate: onUpdate,
+              onCompletion: (success) {
+                completedSuccessfully = success;
+              },
+            );
+
+            if (!completedSuccessfully) {
+              throw Exception('Story generation failed');
+            }
+          },
+        ),
+      ),
     );
   }
 

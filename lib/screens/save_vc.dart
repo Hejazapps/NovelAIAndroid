@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 typedef SaveVcGenerateCallback = Future<void> Function(
   String prompt,
@@ -886,6 +888,388 @@ class _SaveVcState extends State<SaveVc> {
         !_isGenerating;
   }
 
+  Future<void> logStoryLiked() async {
+    try {
+      final ref = FirebaseDatabase.instance
+          .ref()
+          .child('story_liked')
+          .child('counter');
+
+      final result = await ref.runTransaction((currentValue) {
+        final currentCount = currentValue is num ? currentValue.toInt() : 0;
+        return Transaction.success(currentCount + 1);
+      });
+
+      if (result.committed) {
+        debugPrint('Story liked count is now ${result.snapshot.value ?? 0}');
+      }
+    } catch (error) {
+      debugPrint('Transaction failed: $error');
+    }
+  }
+
+  Future<void> logStoryDisliked() async {
+    try {
+      final ref = FirebaseDatabase.instance
+          .ref()
+          .child('story_disliked')
+          .child('counter');
+
+      final result = await ref.runTransaction((currentValue) {
+        final currentCount = currentValue is num ? currentValue.toInt() : 0;
+        return Transaction.success(currentCount + 1);
+      });
+
+      if (result.committed) {
+        debugPrint('Story disliked count is now ${result.snapshot.value ?? 0}');
+      }
+    } catch (error) {
+      debugPrint('Transaction failed: $error');
+    }
+  }
+
+  Widget _iosStyleDialog({
+    required String title,
+    String? message,
+    Widget? content,
+    required List<Widget> actions,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final background = isDark
+        ? const Color(0xFF242424)
+        : const Color(0xFFF8F8F8);
+    final primaryText = isDark ? Colors.white : const Color(0xFF111111);
+    final secondaryText = isDark
+        ? const Color(0xFFB9B9B9)
+        : const Color(0xFF5F5F5F);
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 42),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          width: double.infinity,
+          color: background,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        height: 1.15,
+                        fontWeight: FontWeight.w700,
+                        color: primaryText,
+                      ),
+                    ),
+                    if (message != null && message.trim().isNotEmpty) ...[
+                      const SizedBox(height: 9),
+                      Text(
+                        message,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          height: 1.35,
+                          fontWeight: FontWeight.w400,
+                          color: secondaryText,
+                        ),
+                      ),
+                    ],
+                    if (content != null) ...[
+                      const SizedBox(height: 16),
+                      content,
+                    ],
+                  ],
+                ),
+              ),
+              ...actions,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _iosDialogAction({
+    required String title,
+    required VoidCallback onPressed,
+    bool destructive = false,
+    bool bold = false,
+    bool showTopDivider = true,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final divider = isDark
+        ? const Color(0xFF414141)
+        : const Color(0xFFD2D2D2);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showTopDivider)
+          Container(
+            height: 0.7,
+            color: divider,
+          ),
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: TextButton(
+            onPressed: onPressed,
+            style: TextButton.styleFrom(
+              shape: const RoundedRectangleBorder(),
+              padding: EdgeInsets.zero,
+            ),
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
+                color: destructive
+                    ? const Color(0xFFFF3B30)
+                    : const Color(0xFF0A84FF),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> gotoEditView() async {
+    if (!mounted) return;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) {
+        return _iosStyleDialog(
+          title: 'Your Opinion',
+          message: 'Do you like this story?',
+          actions: [
+            _iosDialogAction(
+              title: 'Like',
+              bold: true,
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                await logStoryLiked();
+                if (mounted) {
+                  _showMessage('Story liked successfully');
+                }
+              },
+            ),
+            _iosDialogAction(
+              title: 'Dislike',
+              destructive: true,
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                await logStoryDisliked();
+
+                if (mounted) {
+                  _showMessage('Story disliked');
+                  await askForDislikeReason();
+                }
+              },
+            ),
+            _iosDialogAction(
+              title: 'Cancel',
+              onPressed: () {
+                debugPrint('User cancelled opinion');
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> askForDislikeReason() async {
+    if (!mounted) return;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return _iosStyleDialog(
+          title: 'Would you like to tell us why?',
+          message: 'Your feedback helps us improve future stories.',
+          actions: [
+            _iosDialogAction(
+              title: 'No',
+              onPressed: () => Navigator.of(dialogContext).pop(),
+            ),
+            _iosDialogAction(
+              title: 'Yes',
+              bold: true,
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                Future.microtask(showReasonInput);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> showReasonInput() async {
+    if (!mounted) return;
+
+    final reasonController = TextEditingController();
+    final reasonFocusNode = FocusNode();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (reasonFocusNode.canRequestFocus) {
+            reasonFocusNode.requestFocus();
+          }
+        });
+
+        final fieldBackground = isDark
+            ? const Color(0xFF171717)
+            : Colors.white;
+        final fieldBorder = isDark
+            ? const Color(0xFF4A4A4A)
+            : const Color(0xFFD0D0D0);
+
+        return _iosStyleDialog(
+          title: 'Tell us the reason',
+          message: 'Your feedback helps improve the app',
+          content: TextField(
+            controller: reasonController,
+            focusNode: reasonFocusNode,
+            autofocus: true,
+            minLines: 2,
+            maxLines: 4,
+            textInputAction: TextInputAction.done,
+            style: TextStyle(
+              fontSize: 15,
+              color: isDark ? Colors.white : const Color(0xFF111111),
+            ),
+            decoration: InputDecoration(
+              hintText: 'Reason for dislike',
+              hintStyle: TextStyle(
+                color: isDark
+                    ? const Color(0xFF858585)
+                    : const Color(0xFF8E8E93),
+              ),
+              filled: true,
+              fillColor: fieldBackground,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: fieldBorder),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: Color(0xFF0A84FF),
+                  width: 1.4,
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            _iosDialogAction(
+              title: 'Cancel',
+              onPressed: () => Navigator.of(dialogContext).pop(),
+            ),
+            _iosDialogAction(
+              title: 'Send',
+              bold: true,
+              onPressed: () async {
+                final reason = reasonController.text.trim();
+
+                if (reason.isEmpty) {
+                  return;
+                }
+
+                Navigator.of(dialogContext).pop();
+                await sendReasonEmail(reason: reason);
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    reasonController.dispose();
+    reasonFocusNode.dispose();
+  }
+
+  Future<void> sendReasonEmail({required String reason}) async {
+    final emailUri = Uri(
+      scheme: 'mailto',
+      path: 'apaceapps2025@gmail.com',
+      queryParameters: {
+        'subject': 'Story Dislike Reason',
+        'body': 'User reason:\n\n$reason',
+      },
+    );
+
+    try {
+      final canOpenMail = await canLaunchUrl(emailUri);
+
+      if (!canOpenMail) {
+        if (mounted) {
+          await _showMailNotConfiguredDialog();
+        }
+        return;
+      }
+
+      final launched = await launchUrl(
+        emailUri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!launched && mounted) {
+        await _showMailNotConfiguredDialog();
+      }
+    } catch (error) {
+      debugPrint('Unable to open mail composer: $error');
+
+      if (mounted) {
+        await _showMailNotConfiguredDialog();
+      }
+    }
+  }
+
+  Future<void> _showMailNotConfiguredDialog() async {
+    if (!mounted) return;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return _iosStyleDialog(
+          title: 'Mail Not Configured',
+          message: 'Please set up a mail account in order to send email.',
+          actions: [
+            _iosDialogAction(
+              title: 'OK',
+              bold: true,
+              onPressed: () => Navigator.of(dialogContext).pop(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
@@ -1138,7 +1522,7 @@ class _SaveVcState extends State<SaveVc> {
                 child: IconButton(
                   padding: EdgeInsets.zero,
                   visualDensity: VisualDensity.compact,
-                  onPressed: _showTextStyleSheet,
+                  onPressed: gotoEditView,
                   icon: Icon(
                     Icons.thumb_up_alt_outlined,
                     color: interfaceColor,

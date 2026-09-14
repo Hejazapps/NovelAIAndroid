@@ -656,31 +656,28 @@ class _AIProxyTogetherService {
 
   static const String _clientIdPrefsKey = 'aiproxy.client.id';
 
-  Future<String> _getClientId() async {
+  Future<String> _getAIProxyClientId() async {
     final prefs = await SharedPreferences.getInstance();
     final existing = prefs.getString(_clientIdPrefsKey)?.trim();
-    if (existing != null && existing.isNotEmpty) {
-      return existing;
-    }
+    if (existing != null && existing.isNotEmpty) return existing;
 
     final random = Random.secure();
     final bytes = List<int>.generate(16, (_) => random.nextInt(256));
 
-    // UUID v4 bits.
     bytes[6] = (bytes[6] & 0x0f) | 0x40;
     bytes[8] = (bytes[8] & 0x3f) | 0x80;
 
     String hex(int value) => value.toRadixString(16).padLeft(2, '0');
 
-    final clientId =
+    final id =
         '${bytes.sublist(0, 4).map(hex).join()}-'
         '${bytes.sublist(4, 6).map(hex).join()}-'
         '${bytes.sublist(6, 8).map(hex).join()}-'
         '${bytes.sublist(8, 10).map(hex).join()}-'
         '${bytes.sublist(10, 16).map(hex).join()}';
 
-    await prefs.setString(_clientIdPrefsKey, clientId);
-    return clientId;
+    await prefs.setString(_clientIdPrefsKey, id);
+    return id;
   }
 
   String get _chatUrl {
@@ -699,7 +696,7 @@ class _AIProxyTogetherService {
   }) async {
     final client = http.Client();
     try {
-      final clientId = await _getClientId();
+      final clientId = await _getAIProxyClientId();
       final response = await client
           .post(
             Uri.parse(_chatUrl),
@@ -707,6 +704,7 @@ class _AIProxyTogetherService {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
               'aiproxy-client-id': clientId,
+              'aiproxy-partial-key': partialKey,
             },
             body: jsonEncode({
               'messages': messages.map((e) => e.toJson()).toList(),
@@ -748,12 +746,13 @@ class _AIProxyTogetherService {
   }) async* {
     final client = http.Client();
     try {
-      final clientId = await _getClientId();
+      final clientId = await _getAIProxyClientId();
       final request = http.Request('POST', Uri.parse(_chatUrl));
       request.headers.addAll({
         'Content-Type': 'application/json',
         'Accept': 'text/event-stream',
         'aiproxy-client-id': clientId,
+        'aiproxy-partial-key': partialKey,
       });
       request.body = jsonEncode({
         'messages': messages.map((e) => e.toJson()).toList(),
