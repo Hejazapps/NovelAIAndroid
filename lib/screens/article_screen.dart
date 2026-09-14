@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'save_vc.dart';
+import '../services/easy_seek_api_manager.dart';
 
 class ArticleScreen extends StatefulWidget {
   const ArticleScreen({super.key});
@@ -837,14 +839,14 @@ class _ArticleScreenState extends State<ArticleScreen> {
       return;
     }
 
-    final prompt = _buildArticlePrompt(
+    final generatedPrompt = _buildArticlePrompt(
       idea: articleIdea,
       targetReader: targetReader,
       keywords: keywords,
       sections: sectionValue,
     );
 
-    debugPrint('========== ARTICLE ==========');
+    debugPrint('================ ARTICLE ================');
     debugPrint('Idea: $articleIdea');
     debugPrint('Target Reader: $targetReader');
     debugPrint('Sections: $sectionValue');
@@ -854,11 +856,39 @@ class _ArticleScreenState extends State<ArticleScreen> {
     debugPrint('Keywords: $keywords');
     debugPrint('Language: $selectedLanguage');
     debugPrint('========== GENERATED PROMPT ==========');
-    debugPrint(prompt);
+    debugPrint(generatedPrompt);
     debugPrint('======================================');
 
-    // API / generation logic later.
-    // Send `prompt` to your generation screen/API when connected.
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SaveVc(
+          textToGive: generatedPrompt,
+          mainTitle: 'AI Article',
+          selectedLanguage: selectedLanguage,
+          genre: 'Article',
+          hasTag: '$selectedTone,$selectedDepth',
+          contentType: 'Article',
+          shouldNeedToCall: true,
+          isFromSave: false,
+          isFromFav: false,
+          onGenerate: (prompt, onUpdate) async {
+            bool completedSuccessfully = false;
+
+            await EasySeekApiManager.shared.streamResponse(
+              message: prompt,
+              onUpdate: onUpdate,
+              onCompletion: (success) {
+                completedSuccessfully = success;
+              },
+            );
+
+            if (!completedSuccessfully) {
+              throw Exception('Article generation failed');
+            }
+          },
+        ),
+      ),
+    );
   }
 
   String _buildArticlePrompt({

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'save_vc.dart';
+import '../services/easy_seek_api_manager.dart';
+
 class SpeechScreen extends StatefulWidget {
   const SpeechScreen({super.key});
 
@@ -320,7 +323,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
       return;
     }
 
-    final prompt = _buildSpeechPrompt(
+    final generatedPrompt = _buildSpeechPrompt(
       topic: topic,
       speaker: speaker,
       audience: audience,
@@ -329,7 +332,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
       minutes: minutes,
     );
 
-    debugPrint('========== SPEECH ==========');
+    debugPrint('================ SPEECH ================');
     debugPrint('Topic: $topic');
     debugPrint('Speaker: $speaker');
     debugPrint('Event: $_selectedEvent');
@@ -341,10 +344,39 @@ class _SpeechScreenState extends State<SpeechScreen> {
     debugPrint('Language: $_selectedLanguage');
     debugPrint('Duration: $minutes minutes');
     debugPrint('========== GENERATED PROMPT ==========');
-    debugPrint(prompt);
+    debugPrint(generatedPrompt);
     debugPrint('======================================');
 
-    // API / generation screen connection can be added here later.
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SaveVc(
+          textToGive: generatedPrompt,
+          mainTitle: topic.isEmpty ? 'AI Speech' : topic,
+          selectedLanguage: _selectedLanguage,
+          genre: _selectedEvent,
+          hasTag: '$_selectedEvent,$_selectedTone',
+          contentType: 'Speech',
+          shouldNeedToCall: true,
+          isFromSave: false,
+          isFromFav: false,
+          onGenerate: (prompt, onUpdate) async {
+            bool completedSuccessfully = false;
+
+            await EasySeekApiManager.shared.streamResponse(
+              message: prompt,
+              onUpdate: onUpdate,
+              onCompletion: (success) {
+                completedSuccessfully = success;
+              },
+            );
+
+            if (!completedSuccessfully) {
+              throw Exception('Speech generation failed');
+            }
+          },
+        ),
+      ),
+    );
   }
 
   void _showWarning(String message) {
