@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
@@ -10,6 +11,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/easy_seek_api_manager.dart';
+import '../services/realtime_db_manager.dart';
 
 typedef SaveVcGenerateCallback = Future<void> Function(
   String prompt,
@@ -18,6 +20,9 @@ typedef SaveVcGenerateCallback = Future<void> Function(
 
 typedef SaveVcVoidCallback = Future<void> Function();
 typedef SaveVcTextCallback = Future<void> Function(String text);
+
+final ValueNotifier<int> saveVcHistoryRevision = ValueNotifier<int>(0);
+final ValueNotifier<int> saveVcOpenHistoryRequest = ValueNotifier<int>(0);
 
 class SaveVc extends StatefulWidget {
   const SaveVc({
@@ -111,9 +116,14 @@ class _SaveVcState extends State<SaveVc> {
   Color? _backgroundColor;
   List<Color>? _backgroundGradient;
   String? _backgroundAsset;
+  String? _backgroundNetworkUrl;
 
   Color? _forcedTextColor;
   int? _textureIndex;
+
+  Timer? _historyAutosaveTimer;
+  bool _historyStateReady = false;
+  bool _isNavigatingToHistory = false;
 
   Color get _pageBackground =>
       Theme.of(context).brightness == Brightness.dark
@@ -150,9 +160,22 @@ class _SaveVcState extends State<SaveVc> {
 
     _configureAndroidTts();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+
+      if (widget.isFromSave) {
+        await _restoreHistoryEntry();
+        if (!mounted) return;
+
+        _historyStateReady = true;
+        setState(() {
+          _generationCompleted = _textController.text.trim().isNotEmpty;
+        });
+        return;
+      }
+
       if (widget.shouldNeedToCall && widget.onGenerate != null) {
-        _startGeneration(widget.textToGive);
+        await _startGeneration(widget.textToGive);
       } else {
         setState(() {
           _generationCompleted = true;
@@ -162,7 +185,25 @@ class _SaveVcState extends State<SaveVc> {
   }
 
   @override
+  void setState(VoidCallback fn) {
+    super.setState(fn);
+
+    if (widget.isFromSave && _historyStateReady) {
+      _scheduleHistoryAutosave();
+    }
+  }
+
+  void _scheduleHistoryAutosave() {
+    _historyAutosaveTimer?.cancel();
+    _historyAutosaveTimer = Timer(const Duration(milliseconds: 250), () async {
+      if (!mounted || !widget.isFromSave || !_historyStateReady) return;
+      await _updateExistingEntry();
+    });
+  }
+
+  @override
   void dispose() {
+    _historyAutosaveTimer?.cancel();
     _flutterTts.stop();
     _textController.dispose();
     _scrollController.dispose();
@@ -608,6 +649,57 @@ class _SaveVcState extends State<SaveVc> {
     await _updateExistingFavoriteState();
   }
 
+  Future<void> _openHistoryAndCloseEditors() async {
+    if (!mounted) return;
+
+    saveVcHistoryRevision.value++;
+    saveVcOpenHistoryRequest.value++;
+
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  Future<void> _handleBackToHistory() async {
+    if (_isNavigatingToHistory) return;
+    _isNavigatingToHistory = true;
+
+    _historyAutosaveTimer?.cancel();
+
+    if (_isGenerating) {
+      try {
+        EasySeekApiManager.shared.stopStreaming();
+      } catch (_) {}
+
+      if (mounted) {
+        setState(() {
+          _isGenerating = false;
+        });
+      }
+    }
+
+    final text = _textController.text.trim();
+
+    if (text.isNotEmpty) {
+      if (widget.isFromSave) {
+        await _updateExistingEntry();
+      } else {
+        final fallbackTitle = _title.trim().isEmpty
+            ? (widget.contentType.toLowerCase() == 'poem'
+                ? 'AI Poem'
+                : 'AI Story')
+            : _title.trim();
+
+        await _saveNewEntry(title: fallbackTitle);
+      }
+
+      if (widget.onSaved != null) {
+        await widget.onSaved!();
+      }
+    }
+
+    if (!mounted) return;
+    await _openHistoryAndCloseEditors();
+  }
+
   Future<void> _save() async {
     final text = _textController.text.trim();
     if (text.isEmpty) {
@@ -631,36 +723,45 @@ class _SaveVcState extends State<SaveVc> {
     }
 
     if (!mounted) return;
-    _showMessage(widget.isFromSave ? 'Updated!' : 'Saved!');
+    await _openHistoryAndCloseEditors();
   }
 
   Future<String?> _askForStoryTitle() async {
-    final controller = TextEditingController(
-      text: _title == 'AI Story' ? '' : _title,
-    );
+    String typedTitle = _title == 'AI Story' ? '' : _title;
 
-    final value = await showDialog<String>(
+    return showDialog<String>(
       context: context,
-      builder: (context) {
+      barrierDismissible: false,
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Story Title'),
-          content: TextField(
-            controller: controller,
+          content: TextFormField(
+            initialValue: typedTitle,
             autofocus: true,
+            textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(
               hintText: 'Enter Title',
             ),
+            onChanged: (value) {
+              typedTitle = value;
+            },
+            onFieldSubmitted: (value) {
+              final title = value.trim();
+              if (title.isNotEmpty) {
+                Navigator.of(dialogContext).pop(title);
+              }
+            },
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                final title = controller.text.trim();
+                final title = typedTitle.trim();
                 if (title.isNotEmpty) {
-                  Navigator.pop(context, title);
+                  Navigator.of(dialogContext).pop(title);
                 }
               },
               child: const Text('Save'),
@@ -669,9 +770,6 @@ class _SaveVcState extends State<SaveVc> {
         );
       },
     );
-
-    controller.dispose();
-    return value;
   }
 
   Future<List<Map<String, dynamic>>> _readEntries() async {
@@ -700,6 +798,161 @@ class _SaveVcState extends State<SaveVc> {
     await prefs.setString(_entriesKey, jsonEncode(entries));
   }
 
+  Map<String, dynamic> _currentTextStyleData() {
+    return {
+      'fontName': 'PlusJakartaSans-Medium',
+      'fontSize': _fontSize,
+      'isBold': _fontWeight == FontWeight.bold,
+      'isItalic': _fontStyle == FontStyle.italic,
+      'isUnderlined': _underline,
+      'textAlignment': _textAlign.index,
+      'textureIndex': _textureIndex,
+      'fontFamily': _fontFamily,
+      'textOpacity': _textOpacity,
+      'lineSpacing': _lineSpacing,
+      'letterSpacing': _letterSpacing,
+      'paragraphSpacing': _paragraphSpacing,
+      'textWidth': _textWidth,
+      'pageMargins': _pageMargins,
+      'textColor': _textColor.value,
+      'textGradientIndex': _textGradientIndex,
+    };
+  }
+
+  Map<String, dynamic> _currentDesignData() {
+    return {
+      'backgroundColor': _backgroundColor?.value,
+      'backgroundGradient':
+          _backgroundGradient?.map((color) => color.value).toList(),
+      'backgroundAsset': _backgroundAsset,
+      'backgroundNetworkUrl': _backgroundNetworkUrl,
+      'forcedTextColor': _forcedTextColor?.value,
+    };
+  }
+
+  double _doubleValue(dynamic value, double fallback) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? fallback;
+  }
+
+  int? _nullableInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
+  }
+
+  Future<void> _restoreHistoryEntry() async {
+    final entries = await _readEntries();
+
+    if (widget.currentIndex < 0 || widget.currentIndex >= entries.length) {
+      return;
+    }
+
+    final entry = entries[widget.currentIndex];
+    final styleRaw = entry['textStyle'];
+    final designRaw = entry['design'];
+
+    final style = styleRaw is Map
+        ? Map<String, dynamic>.from(styleRaw)
+        : <String, dynamic>{};
+
+    final design = designRaw is Map
+        ? Map<String, dynamic>.from(designRaw)
+        : <String, dynamic>{};
+
+    final restoredTextureIndex = _nullableInt(style['textureIndex']);
+    final restoredGradientIndex = _nullableInt(style['textGradientIndex']);
+
+    final alignmentIndex =
+        (_nullableInt(style['textAlignment']) ?? TextAlign.left.index)
+            .clamp(0, TextAlign.values.length - 1);
+
+    final backgroundColorValue = _nullableInt(design['backgroundColor']);
+    final forcedTextColorValue = _nullableInt(design['forcedTextColor']);
+
+    List<Color>? restoredBackgroundGradient;
+    final gradientRaw = design['backgroundGradient'];
+    if (gradientRaw is List && gradientRaw.isNotEmpty) {
+      restoredBackgroundGradient = gradientRaw
+          .map(_nullableInt)
+          .whereType<int>()
+          .map(Color.new)
+          .toList();
+
+      if (restoredBackgroundGradient.isEmpty) {
+        restoredBackgroundGradient = null;
+      }
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _textController.text = (entry['text'] ?? widget.textToGive).toString();
+      _title = (entry['title'] ?? widget.mainTitle).toString();
+      _isFavorite = entry['isFav'] == true;
+      _themeId = (entry['themeId'] ?? widget.themeId).toString();
+
+      _fontSize = _doubleValue(style['fontSize'], 16);
+      _fontWeight =
+          style['isBold'] == true ? FontWeight.bold : FontWeight.w500;
+      _fontStyle =
+          style['isItalic'] == true ? FontStyle.italic : FontStyle.normal;
+      _underline = style['isUnderlined'] == true;
+      _textAlign = TextAlign.values[alignmentIndex];
+
+      final savedFontFamily = style['fontFamily']?.toString().trim();
+      _fontFamily =
+          savedFontFamily == null || savedFontFamily.isEmpty
+              ? 'sans-serif'
+              : savedFontFamily;
+
+      _textOpacity =
+          _doubleValue(style['textOpacity'], 1.0).clamp(0.1, 1.0);
+      _lineSpacing =
+          _doubleValue(style['lineSpacing'], 1.6).clamp(0.8, 3.0);
+      _letterSpacing =
+          _doubleValue(style['letterSpacing'], 0.0).clamp(-2.0, 10.0);
+      _paragraphSpacing =
+          _doubleValue(style['paragraphSpacing'], 0.0).clamp(0.0, 60.0);
+      _textWidth =
+          _doubleValue(style['textWidth'], 1.0).clamp(0.4, 1.0);
+      _pageMargins =
+          _doubleValue(style['pageMargins'], 15.0).clamp(0.0, 80.0);
+
+      final textColorValue = _nullableInt(style['textColor']);
+      _textColor = textColorValue == null
+          ? const Color(0xFF171717)
+          : Color(textColorValue);
+
+      _textGradientIndex = restoredGradientIndex;
+      _textureIndex = restoredTextureIndex;
+
+      _backgroundColor = backgroundColorValue == null
+          ? null
+          : Color(backgroundColorValue);
+      _backgroundGradient = restoredBackgroundGradient;
+      _backgroundAsset = design['backgroundAsset']?.toString();
+      if (_backgroundAsset != null && _backgroundAsset!.trim().isEmpty) {
+        _backgroundAsset = null;
+      }
+
+      _backgroundNetworkUrl = design['backgroundNetworkUrl']?.toString();
+      if (_backgroundNetworkUrl != null &&
+          _backgroundNetworkUrl!.trim().isEmpty) {
+        _backgroundNetworkUrl = null;
+      }
+
+      _forcedTextColor = forcedTextColorValue == null
+          ? null
+          : Color(forcedTextColorValue);
+    });
+
+    if (restoredTextureIndex != null) {
+      await _loadTextTexture(restoredTextureIndex);
+    }
+  }
+
   Future<void> _saveNewEntry({required String title}) async {
     final prefs = await SharedPreferences.getInstance();
     final entries = await _readEntries();
@@ -721,27 +974,12 @@ class _SaveVcState extends State<SaveVc> {
       'contentType': widget.contentType,
       'themeId': _themeId,
       'colortype': '0',
-      'textStyle': {
-        'fontName': 'PlusJakartaSans-Medium',
-        'fontSize': _fontSize,
-        'isBold': _fontWeight == FontWeight.bold,
-        'isItalic': _fontStyle == FontStyle.italic,
-        'isUnderlined': _underline,
-        'textAlignment': _textAlign.index,
-        'textureIndex': _textureIndex ?? 0,
-        'fontFamily': _fontFamily,
-        'textOpacity': _textOpacity,
-        'lineSpacing': _lineSpacing,
-        'letterSpacing': _letterSpacing,
-        'paragraphSpacing': _paragraphSpacing,
-        'textWidth': _textWidth,
-        'pageMargins': _pageMargins,
-        'textColor': _textColor.value,
-        'textGradientIndex': _textGradientIndex,
-      },
+      'textStyle': _currentTextStyleData(),
+      'design': _currentDesignData(),
     });
 
     await _writeEntries(entries);
+    saveVcHistoryRevision.value++;
   }
 
   Future<void> _updateExistingEntry() async {
@@ -757,17 +995,11 @@ class _SaveVcState extends State<SaveVc> {
     entry['isFav'] = _isFavorite;
     entry['themeId'] = _themeId;
     entry['font'] = 'PlusJakartaSans-Medium';
-    entry['textStyle'] = {
-      'fontName': 'PlusJakartaSans-Medium',
-      'fontSize': _fontSize,
-      'isBold': _fontWeight == FontWeight.bold,
-      'isItalic': _fontStyle == FontStyle.italic,
-      'isUnderlined': _underline,
-      'textAlignment': _textAlign.index,
-      'textureIndex': _textureIndex ?? 0,
-    };
+    entry['textStyle'] = _currentTextStyleData();
+    entry['design'] = _currentDesignData();
 
     await _writeEntries(entries);
+    saveVcHistoryRevision.value++;
   }
 
   Future<void> _updateExistingEntryTitle(String title) async {
@@ -777,6 +1009,7 @@ class _SaveVcState extends State<SaveVc> {
     }
     entries[widget.currentIndex]['title'] = title;
     await _writeEntries(entries);
+    saveVcHistoryRevision.value++;
   }
 
   Future<void> _updateExistingFavoriteState() async {
@@ -786,6 +1019,7 @@ class _SaveVcState extends State<SaveVc> {
     }
     entries[widget.currentIndex]['isFav'] = _isFavorite;
     await _writeEntries(entries);
+    saveVcHistoryRevision.value++;
   }
 
   void _resetDesign() {
@@ -1507,119 +1741,62 @@ class _SaveVcState extends State<SaveVc> {
       return;
     }
 
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) {
-        final colors = <Color>[
-          Colors.white,
-          const Color(0xFFFFF4E9),
-          const Color(0xFFE9F7FF),
-          const Color(0xFFF2EBFF),
-          const Color(0xFF161616),
-        ];
-
-        final gradients = <List<Color>>[
-          const [Color(0xFF01AC84), Color(0xFF00A6D1)],
-          const [Color(0xFFFF9966), Color(0xFFFF5E62)],
-          const [Color(0xFF7F7FD5), Color(0xFF86A8E7), Color(0xFF91EAE4)],
-        ];
-
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    const Expanded(
-                      child: Text(
-                        'Background',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          _backgroundColor = null;
-                          _backgroundGradient = null;
-                          _backgroundAsset = null;
-                          _themeId = 'none';
-                        });
-                        Navigator.pop(sheetContext);
-                      },
-                      child: const Text('None'),
-                    ),
-                  ],
-                ),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: colors.map((color) {
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _backgroundColor = color;
-                          _backgroundGradient = null;
-                          _backgroundAsset = null;
-                          _themeId =
-                              'color:${color.value.toRadixString(16).substring(2).toUpperCase()}';
-                        });
-                        Navigator.pop(sheetContext);
-                      },
-                      child: Container(
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: color,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Theme.of(context).dividerColor,
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: gradients.map((gradient) {
-                    return Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: GestureDetector(
-                          onTap: () {
-                            final index = gradients.indexOf(gradient);
-                            setState(() {
-                              _backgroundColor = null;
-                              _backgroundGradient = gradient;
-                              _backgroundAsset = null;
-                              _themeId = 'gradient:$index';
-                            });
-                            Navigator.pop(sheetContext);
-                          },
-                          child: Container(
-                            height: 58,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(colors: gradient),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+    final result = await Navigator.of(context).push<_ThemeSelection>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => const _ThemePickerScreen(),
+      ),
     );
+
+    if (result == null || !mounted) return;
+
+    setState(() {
+      switch (result.type) {
+        case _ThemeSelectionType.none:
+          _backgroundColor = null;
+          _backgroundGradient = null;
+          _backgroundAsset = null;
+          _backgroundNetworkUrl = null;
+          _forcedTextColor = null;
+          _themeId = 'none';
+          break;
+
+        case _ThemeSelectionType.color:
+          _backgroundColor = result.color;
+          _backgroundGradient = null;
+          _backgroundAsset = null;
+          _backgroundNetworkUrl = null;
+          _forcedTextColor = null;
+
+          final value = result.color?.value ?? Colors.white.value;
+          _themeId =
+              'color:${value.toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
+          break;
+
+        case _ThemeSelectionType.gradient:
+          _backgroundColor = null;
+          _backgroundGradient = result.gradient;
+          _backgroundAsset = null;
+          _backgroundNetworkUrl = null;
+          _forcedTextColor = null;
+          _themeId = 'gradient:${result.gradientIndex ?? 0}';
+          break;
+
+        case _ThemeSelectionType.theme:
+          _backgroundColor = null;
+          _backgroundGradient = null;
+          _backgroundAsset = null;
+          _backgroundNetworkUrl = result.themeUrl;
+          _themeId = 'theme:${result.themeId ?? ''}';
+
+          // Same iOS rule: Firebase theme name "white" means white interface.
+          _forcedTextColor =
+              result.themeName?.toLowerCase() == 'white'
+                  ? Colors.white
+                  : Colors.black;
+          break;
+      }
+    });
   }
 
   Widget _styleChoice({
@@ -1641,6 +1818,16 @@ class _SaveVcState extends State<SaveVc> {
   }
 
   Decoration _storyBackgroundDecoration() {
+    if (_backgroundNetworkUrl != null &&
+        _backgroundNetworkUrl!.trim().isNotEmpty) {
+      return BoxDecoration(
+        image: DecorationImage(
+          image: NetworkImage(_themeDisplayUrl(_backgroundNetworkUrl!, width: 2000)),
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+
     if (_backgroundAsset != null) {
       return BoxDecoration(
         image: DecorationImage(
@@ -2142,6 +2329,18 @@ class _SaveVcState extends State<SaveVc> {
 
   @override
   Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _handleBackToHistory();
+        }
+      },
+      child: _buildSaveContent(context),
+    );
+  }
+
+  Widget _buildSaveContent(BuildContext context) {
     final interfaceColor = _interfaceColor;
 
     if (_isFullScreen) {
@@ -2212,9 +2411,11 @@ class _SaveVcState extends State<SaveVc> {
 
     return Scaffold(
       backgroundColor: _pageBackground,
-      body: Stack(
-        children: [
-          SafeArea(
+      body: Container(
+        decoration: _storyBackgroundDecoration(),
+        child: Stack(
+          children: [
+            SafeArea(
             child: Column(
               children: [
                 _buildTopBar(interfaceColor),
@@ -2222,22 +2423,27 @@ class _SaveVcState extends State<SaveVc> {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(15, 0, 15, 20),
-                    child: AbsorbPointer(
-                      absorbing: _isGenerating,
-                      child: Opacity(
-                        opacity: _isGenerating ? 0.72 : 1,
-                        child: Container(
-                          clipBehavior: Clip.antiAlias,
-                          decoration: _storyBackgroundDecoration(),
-                          child: Column(
-                            children: [
-                              _buildStoryHeader(interfaceColor),
-                              Expanded(
+                    child: Opacity(
+                      opacity: _isGenerating ? 0.72 : 1,
+                      child: Container(
+                        clipBehavior: Clip.antiAlias,
+                        decoration: const BoxDecoration(
+                          color: Colors.transparent,
+                        ),
+                        child: Column(
+                          children: [
+                            AbsorbPointer(
+                              absorbing: _isGenerating,
+                              child: _buildStoryHeader(interfaceColor),
+                            ),
+                            Expanded(
+                              child: AbsorbPointer(
+                                absorbing: _isGenerating,
                                 child: _buildStoryEditor(interfaceColor),
                               ),
-                              _buildBottomBar(interfaceColor),
-                            ],
-                          ),
+                            ),
+                            _buildBottomBar(interfaceColor),
+                          ],
                         ),
                       ),
                     ),
@@ -2250,9 +2456,10 @@ class _SaveVcState extends State<SaveVc> {
           // Show the blocking progress only while we are still waiting
           // for the first streamed text. As soon as text starts arriving,
           // the story itself becomes the progress indicator.
-          if (_isGenerating && _textController.text.trim().isEmpty)
-            _buildGeneratingOverlay(),
-        ],
+            if (_isGenerating && _textController.text.trim().isEmpty)
+              _buildGeneratingOverlay(),
+          ],
+        ),
       ),
     );
   }
@@ -2267,9 +2474,7 @@ class _SaveVcState extends State<SaveVc> {
           // Back is intentionally the ONLY active control during generation.
           _topAssetButton(
             fallbackIcon: Icons.arrow_back_ios_new,
-            onPressed: () async {
-              await Navigator.maybePop(context);
-            },
+            onPressed: _handleBackToHistory,
             tint: interfaceColor,
           ),
 
@@ -2535,7 +2740,7 @@ class _SaveVcState extends State<SaveVc> {
           ),
           const SizedBox(width: 10),
           _bottomIconButton(
-            icon: Icons.image_outlined,
+            icon: Icons.wallpaper_rounded,
             onPressed: _isGenerating ? null : _showThemeSheet,
             tint: interfaceColor,
           ),
@@ -2577,31 +2782,34 @@ class _SaveVcState extends State<SaveVc> {
 
   Widget _buildGeneratingOverlay() {
     return Positioned.fill(
-      child: ColoredBox(
-        color: Colors.black.withValues(alpha: 0.18),
-        child: Center(
-          child: Container(
-            width: 250,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24,
-              vertical: 22,
-            ),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text(
-                  'Generating...',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
+      child: IgnorePointer(
+        ignoring: true,
+        child: ColoredBox(
+          color: Colors.black.withValues(alpha: 0.18),
+          child: Center(
+            child: Container(
+              width: 250,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 22,
+              ),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text(
+                    'Generating...',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -2710,6 +2918,747 @@ class _SaveVcState extends State<SaveVc> {
         onPressed: onPressed,
         icon: Icon(icon, color: tint),
       ),
+    );
+  }
+}
+
+
+
+String _googleDriveFileId(String url) {
+  final trimmed = url.trim();
+
+  try {
+    final uri = Uri.parse(trimmed);
+
+    // https://drive.google.com/uc?export=download&id=FILE_ID
+    final queryId = uri.queryParameters['id'];
+    if (queryId != null && queryId.isNotEmpty) {
+      return queryId;
+    }
+
+    // https://drive.google.com/file/d/FILE_ID/view
+    final segments = uri.pathSegments;
+    final dIndex = segments.indexOf('d');
+    if (dIndex >= 0 && dIndex + 1 < segments.length) {
+      return segments[dIndex + 1];
+    }
+
+    // https://drive.usercontent.google.com/download?id=FILE_ID...
+    if (uri.host.contains('drive.usercontent.google.com')) {
+      return queryId ?? '';
+    }
+  } catch (_) {
+    // Keep fallback below.
+  }
+
+  final match = RegExp(r'[?&]id=([^&]+)').firstMatch(trimmed);
+  return match?.group(1) ?? '';
+}
+
+String _themeDisplayUrl(
+  String original, {
+  int width = 1200,
+}) {
+  final fileId = _googleDriveFileId(original);
+
+  if (fileId.isEmpty) {
+    return original.trim();
+  }
+
+  // Google Drive "uc?export=download" frequently redirects to
+  // drive.usercontent.google.com and can close the connection midway.
+  // The thumbnail endpoint is intended for image delivery and is much
+  // more reliable for displaying Drive-hosted images in Flutter.
+  return Uri.https(
+    'drive.google.com',
+    '/thumbnail',
+    <String, String>{
+      'id': fileId,
+      'sz': 'w$width',
+    },
+  ).toString();
+}
+
+
+enum _ThemeSelectionType {
+  none,
+  color,
+  gradient,
+  theme,
+}
+
+class _ThemeSelection {
+  const _ThemeSelection._({
+    required this.type,
+    this.color,
+    this.gradient,
+    this.gradientIndex,
+    this.themeId,
+    this.themeName,
+    this.themeUrl,
+  });
+
+  const _ThemeSelection.none()
+      : this._(type: _ThemeSelectionType.none);
+
+  const _ThemeSelection.color(Color color)
+      : this._(
+          type: _ThemeSelectionType.color,
+          color: color,
+        );
+
+  const _ThemeSelection.gradient(
+    List<Color> gradient,
+    int index,
+  ) : this._(
+          type: _ThemeSelectionType.gradient,
+          gradient: gradient,
+          gradientIndex: index,
+        );
+
+  const _ThemeSelection.theme({
+    required String id,
+    required String name,
+    required String url,
+  }) : this._(
+          type: _ThemeSelectionType.theme,
+          themeId: id,
+          themeName: name,
+          themeUrl: url,
+        );
+
+  final _ThemeSelectionType type;
+  final Color? color;
+  final List<Color>? gradient;
+  final int? gradientIndex;
+  final String? themeId;
+  final String? themeName;
+  final String? themeUrl;
+}
+
+class _ThemePickerScreen extends StatefulWidget {
+  const _ThemePickerScreen();
+
+  @override
+  State<_ThemePickerScreen> createState() => _ThemePickerScreenState();
+}
+
+class _ThemePickerScreenState extends State<_ThemePickerScreen> {
+  final RealtimeDBManager _realtimeDBManager = RealtimeDBManager();
+
+  int _selectedTab = 0; // Video order: Theme, Color, Gradient.
+  bool _isLoadingThemes = true;
+  List<ThemeItem> _themes = const [];
+
+  static const List<Color> _colors = [
+    Color(0xFF000000),
+    Color(0xFFFFFFFF),
+    Color(0xFFF8B011),
+    Color(0xFFEA5D9A),
+    Color(0xFFF6864B),
+    Color(0xFFFFE07A),
+    Color(0xFF00A34C),
+    Color(0xFFF9DDAE),
+    Color(0xFFC7DB66),
+    Color(0xFFE1F179),
+    Color(0xFF00A6D1),
+    Color(0xFFC0EAF2),
+    Color(0xFF00B894),
+    Color(0xFF94FFEB),
+    Color(0xFF1F4CAD),
+    Color(0xFFCACDE8),
+    Color(0xFF019EDF),
+    Color(0xFF80D0FF),
+    Color(0xFFD21D8D),
+    Color(0xFFE1C2AD),
+    Color(0xFF6A5FAA),
+    Color(0xFF8C80F5),
+    Color(0xFFE62E34),
+    Color(0xFFE58090),
+    Color(0xFFEE5890),
+    Color(0xFF5BBD76),
+    Color(0xFF798D71),
+    Color(0xFFEFDDCC),
+    Color(0xFF01C0DF),
+    Color(0xFFF19EB8),
+    Color(0xFF8F786B),
+    Color(0xFFE7AB83),
+    Color(0xFF2A65B6),
+    Color(0xFFCA68A6),
+    Color(0xFFBFBFBF),
+    Color(0xFFB270FF),
+    Color(0xFFCFFFBD),
+    Color(0xFFF05E57),
+    Color(0xFFE7602C),
+    Color(0xFFFD5E7B),
+    Color(0xFF99EFFF),
+    Color(0xFFCFB395),
+    Color(0xFF91BF40),
+    Color(0xFFCAB1D2),
+    Color(0xFF898D81),
+    Color(0xFF01AC84),
+    Color(0xFFDAE9C3),
+    Color(0xFF8F6356),
+    Color(0xFF0174C1),
+    Color(0xFFDF9C7C),
+    Color(0xFFFEF8C3),
+    Color(0xFF7F3B9B),
+    Color(0xFFF7E289),
+    Color(0xFFB9E0F9),
+    Color(0xFFEE3584),
+    Color(0xFF8AC3D4),
+    Color(0xFFFF6B6B),
+    Color(0xFF4ECDC4),
+    Color(0xFFFFE66D),
+    Color(0xFFA78BFA),
+    Color(0xFF55EFC4),
+    Color(0xFFFF9E7D),
+    Color(0xFF6BD6FF),
+    Color(0xFFFFD166),
+    Color(0xFF7BEFB2),
+    Color(0xFFD4A5A5),
+    Color(0xFFFFDD59),
+    Color(0xFFA2D2FF),
+    Color(0xFFCDB4DB),
+    Color(0xFFFFAFCC),
+    Color(0xFFBDE0FE),
+    Color(0xFFFFC8DD),
+    Color(0xFFA0E7E5),
+    Color(0xFFFF85A1),
+    Color(0xFFFEE440),
+    Color(0xFF00BBF9),
+    Color(0xFFFF5E5B),
+    Color(0xFF9BF6FF),
+    Color(0xFFCAFFBF),
+    Color(0xFFFDFFB6),
+    Color(0xFFBDB2FF),
+    Color(0xFFFFC6FF),
+    Color(0xFFA0C4FF),
+    Color(0xFFFDFFAB),
+    Color(0xFFD9ED92),
+    Color(0xFFB5E48C),
+    Color(0xFF99D98C),
+    Color(0xFF76C893),
+    Color(0xFF52B69A),
+    Color(0xFF34A0A4),
+    Color(0xFF168AAD),
+    Color(0xFF1A759F),
+  ];
+
+  static const List<List<Color>> _gradients = [
+    [Color(0xFFEA84DD), Color(0xFF97E3EF)],
+    [Color(0xFFEB5372), Color(0xFFF3B39D)],
+    [Color(0xFFA9A0FF), Color(0xFFCD81E7)],
+    [Color(0xFFFFE3FB), Color(0xFFC4F7FF)],
+    [Color(0xFFF08AE7), Color(0xFFFF557C)],
+    [Color(0xFF6190E8), Color(0xFFA7BFE8)],
+    [Color(0xFF4AFAEF), Color(0xFFE0F793)],
+    [Color(0xFFDCEA7A), Color(0xFFBB9BF7)],
+    [Color(0xFFF6CD68), Color(0xFFFF9B6A)],
+    [Color(0xFFF2D850), Color(0xFFF657AA)],
+    [Color(0xFFFFB082), Color(0xFFFF67E2)],
+    [Color(0xFF8575FA), Color(0xFFD77CED)],
+    [Color(0xFF04BEFD), Color(0xFF86FBB7)],
+    [Color(0xFFEA8A97), Color(0xFFAEBBF3)],
+    [Color(0xFF37F0CB), Color(0xFFEEED40)],
+    [Color(0xFFF6C6F9), Color(0xFFAC93FF)],
+    [Color(0xFFFF8AAD), Color(0xFF9FFFAD)],
+    [Color(0xFF55BBF9), Color(0xFFA9FCB9)],
+    [Color(0xFFEF629F), Color(0xFFEECDA3)],
+    [Color(0xFF9CE9A4), Color(0xFFD6718E)],
+    [Color(0xFFEF85FC), Color(0xFF8686FF)],
+    [Color(0xFFFACCC1), Color(0xFFFDA7A7)],
+    [Color(0xFF7F8DC3), Color(0xFFED99AE)],
+    [Color(0xFFFDD648), Color(0xFFFA7C90)],
+    [Color(0xFFBA94F9), Color(0xFF8572F0)],
+    [Color(0xFF767AE5), Color(0xFFF3DCE4)],
+    [Color(0xFFFFD900), Color(0xFFFF6B90)],
+    [Color(0xFFFF7F66), Color(0xFFE03883)],
+    [Color(0xFF00B1C0), Color(0xFF95E587)],
+    [Color(0xFFF9C58D), Color(0xFFF492F0)],
+    [Color(0xFF9FEDF9), Color(0xFFF7C7C3)],
+    [Color(0xFFF0FD89), Color(0xFFA4E018)],
+    [Color(0xFFFF0097), Color(0xFFFC7373)],
+    [Color(0xFF6C94EE), Color(0xFF11CDF7)],
+    [Color(0xFFFF4370), Color(0xFFFFAF98)],
+    [Color(0xFF27B7E9), Color(0xFFE078F1)],
+    [Color(0xFF13E1F9), Color(0xFF8AE7AD)],
+    [Color(0xFFF7857E), Color(0xFFCCFAD2)],
+    [Color(0xFFFCBC9C), Color(0xFF6EE7A8)],
+    [Color(0xFFEFA2AC), Color(0xFFFED8DC)],
+    [Color(0xFFFA4545), Color(0xFFF57073)],
+    [Color(0xFFFA7099), Color(0xFFFF7040)],
+    [Color(0xFFF094FA), Color(0xFFF5576E)],
+    [Color(0xFFFF144E), Color(0xFFF17550)],
+    [Color(0xFFFF0845), Color(0xFF97E3EF)],
+    [Color(0xFFFF5208), Color(0xFFF29393)],
+    [Color(0xFFFA4545), Color(0xFFFAC74D)],
+    [Color(0xFFFF8C21), Color(0xFFFFE040)],
+    [Color(0xFFFF8C21), Color(0xFFF5576E)],
+    [Color(0xFFFF8C21), Color(0xFFFF6121)],
+    [Color(0xFFFF8C21), Color(0xFFFFB099)],
+    [Color(0xFFFF8C21), Color(0xFFE5F294)],
+    [Color(0xFFCCC938), Color(0xFFF2C754)],
+    [Color(0xFFA3DE61), Color(0xFFF0CF29)],
+    [Color(0xFFEBC43D), Color(0xFFFFD18F)],
+    [Color(0xFFF5ED47), Color(0xFF80F5E8)],
+    [Color(0xFFF5FFA6), Color(0xFFF5B080)],
+    [Color(0xFFF5FFA6), Color(0xFFF5E380)],
+    [Color(0xFFD4FC79), Color(0xFF96E6A1)],
+    [Color(0xFF84FAB0), Color(0xFF8FD3F4)],
+    [Color(0xFF2AF598), Color(0xFF009EFD)],
+    [Color(0xFF37ECBA), Color(0xFF72AFD3)],
+    [Color(0xFF37ECBA), Color(0xFF75D473)],
+    [Color(0xFF3A65D3), Color(0xFF75D473)],
+    [Color(0xFF0538FF), Color(0xFF70E3F5)],
+    [Color(0xFF0538FF), Color(0xFF40FFC7)],
+    [Color(0xFF0538FF), Color(0xFF6B57F5)],
+    [Color(0xFF1F4CFF), Color(0xFF6197E4)],
+    [Color(0xFF0538FF), Color(0xFF5799F7)],
+    [Color(0xFF0596FF), Color(0xFF5799F7)],
+    [Color(0xFF30D8EE), Color(0xFF3E89F5)],
+    [Color(0xFF3D8CFA), Color(0xFF40FFC7)],
+    [Color(0xFF94EDFA), Color(0xFF6B57F5)],
+    [Color(0xFF08F0FF), Color(0xFF3C89F6)],
+    [Color(0xFF08E3FF), Color(0xFF5799F7)],
+    [Color(0xFF08FFB8), Color(0xFF5799F7)],
+    [Color(0xFFC238CC), Color(0xFFB554F2)],
+    [Color(0xFFA6E8FF), Color(0xFFB280F5)],
+    [Color(0xFFB23DEB), Color(0xFFDE8FFF)],
+    [Color(0xFF3D73EB), Color(0xFFDE8FFF)],
+    [Color(0xFFCCFFA6), Color(0xFFB280F5)],
+    [Color(0xFFF3A6FF), Color(0xFFB280F5)],
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThemes();
+  }
+
+  Future<void> _loadThemes() async {
+    try {
+      final fetchedValues = await _realtimeDBManager.fetchAllThemes();
+      final values = List<ThemeItem>.of(fetchedValues);
+
+      values.sort((a, b) {
+        final ai = int.tryParse(a.id) ?? 1 << 30;
+        final bi = int.tryParse(b.id) ?? 1 << 30;
+        return ai.compareTo(bi);
+      });
+
+      if (!mounted) return;
+      setState(() {
+        _themes = values;
+        _isLoadingThemes = false;
+      });
+    } catch (error) {
+      debugPrint('Unable to load themes: $error');
+
+      if (!mounted) return;
+      setState(() {
+        _themes = const [];
+        _isLoadingThemes = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final background =
+        Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF111111)
+            : const Color(0xFFF7F7F7);
+
+    return Scaffold(
+      backgroundColor: background,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: background,
+        surfaceTintColor: Colors.transparent,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.chevron_left, size: 30),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: const Text(
+          'Themes',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 4),
+          _buildSegmentedControl(),
+          const SizedBox(height: 14),
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: switch (_selectedTab) {
+                0 => _buildThemeGrid(),
+                1 => _buildColorGrid(),
+                _ => _buildGradientGrid(),
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSegmentedControl() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final shell =
+        isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE9E9EB);
+    final selected =
+        isDark ? const Color(0xFF48484A) : Colors.white;
+
+    return Container(
+      height: 32,
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: shell,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _segmentItem('Theme', 0, selected),
+          _segmentItem('Color', 1, selected),
+          _segmentItem('Gradient', 2, selected),
+        ],
+      ),
+    );
+  }
+
+  Widget _segmentItem(
+    String title,
+    int index,
+    Color selectedColor,
+  ) {
+    final active = _selectedTab == index;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        if (_selectedTab == index) return;
+        setState(() {
+          _selectedTab = index;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: active ? selectedColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: active
+              ? [
+                  BoxShadow(
+                    blurRadius: 2,
+                    offset: const Offset(0, 1),
+                    color: Colors.black.withValues(alpha: 0.12),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _grid({
+    required int itemCount,
+    required Widget Function(BuildContext, int) itemBuilder,
+  }) {
+    return GridView.builder(
+      key: ValueKey(_selectedTab),
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 24),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 900 / 1600,
+      ),
+      itemCount: itemCount,
+      itemBuilder: itemBuilder,
+    );
+  }
+
+  Widget _buildThemeGrid() {
+    if (_isLoadingThemes) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    return _grid(
+      itemCount: _themes.length + 1,
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return InkWell(
+            onTap: () {
+              Navigator.of(context).pop(
+                const _ThemeSelection.none(),
+              );
+            },
+            borderRadius: BorderRadius.circular(2),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(
+                  color: Colors.black12,
+                ),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.block,
+                  size: 62,
+                  color: Colors.red,
+                ),
+              ),
+            ),
+          );
+        }
+
+        final theme = _themes[index - 1];
+
+        return InkWell(
+          onTap: () {
+            Navigator.of(context).pop(
+              _ThemeSelection.theme(
+                id: theme.id,
+                name: theme.name,
+                url: theme.url,
+              ),
+            );
+          },
+          child: ClipRect(
+            child: Image.network(
+              _themeDisplayUrl(theme.url, width: 900),
+              fit: BoxFit.cover,
+              loadingBuilder: (
+                context,
+                child,
+                loadingProgress,
+              ) {
+                if (loadingProgress == null) return child;
+                return const Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                  ),
+                );
+              },
+              errorBuilder: (_, error, ___) {
+                debugPrint(
+                  '❌ THEME IMAGE LOAD FAILED: ${theme.url}\n'
+                  '❌ DISPLAY URL: ${_themeDisplayUrl(theme.url, width: 900)}\n'
+                  '❌ IMAGE ERROR: $error',
+                );
+
+                return Container(
+                  color: Colors.black12,
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.broken_image_outlined,
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildColorGrid() {
+    return _grid(
+      itemCount: _colors.length + 1,
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return InkWell(
+            onTap: _openCustomColorPicker,
+            child: Container(
+              color: Colors.white,
+              alignment: Alignment.center,
+              child: const Icon(
+                Icons.palette,
+                size: 62,
+                color: Color(0xFFC52CE8),
+              ),
+            ),
+          );
+        }
+
+        final color = _colors[index - 1];
+
+        return InkWell(
+          onTap: () {
+            Navigator.of(context).pop(
+              _ThemeSelection.color(color),
+            );
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: color,
+              border: Border.all(
+                color: color == Colors.white
+                    ? Colors.black12
+                    : Colors.transparent,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGradientGrid() {
+    return _grid(
+      itemCount: _gradients.length,
+      itemBuilder: (context, index) {
+        final gradient = _gradients[index];
+
+        return InkWell(
+          onTap: () {
+            Navigator.of(context).pop(
+              _ThemeSelection.gradient(
+                gradient,
+                index,
+              ),
+            );
+          },
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: gradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _openCustomColorPicker() async {
+    double red = 197;
+    double green = 44;
+    double blue = 232;
+
+    final color = await showDialog<Color>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final preview = Color.fromARGB(
+              255,
+              red.round(),
+              green.round(),
+              blue.round(),
+            );
+
+            return AlertDialog(
+              title: const Text('Choose Color'),
+              content: SizedBox(
+                width: 320,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: preview,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    _rgbSlider(
+                      'R',
+                      red,
+                      (value) => setDialogState(() => red = value),
+                    ),
+                    _rgbSlider(
+                      'G',
+                      green,
+                      (value) => setDialogState(() => green = value),
+                    ),
+                    _rgbSlider(
+                      'B',
+                      blue,
+                      (value) => setDialogState(() => blue = value),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop(preview);
+                  },
+                  child: const Text('Done'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (color == null || !mounted) return;
+
+    Navigator.of(context).pop(
+      _ThemeSelection.color(color),
+    );
+  }
+
+  Widget _rgbSlider(
+    String label,
+    double value,
+    ValueChanged<double> onChanged,
+  ) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 22,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Slider(
+            value: value,
+            min: 0,
+            max: 255,
+            onChanged: onChanged,
+          ),
+        ),
+        SizedBox(
+          width: 34,
+          child: Text(
+            value.round().toString(),
+            textAlign: TextAlign.end,
+          ),
+        ),
+      ],
     );
   }
 }

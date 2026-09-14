@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'home_screen.dart';
 import 'history_screen.dart';
+import 'save_vc.dart';
 import 'discover_screen.dart';
 import 'chat_screen.dart';
 import 'settings_screen.dart';
@@ -15,6 +16,26 @@ class MainTabScreen extends StatefulWidget {
 
 class _MainTabScreenState extends State<MainTabScreen> {
   int selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    saveVcOpenHistoryRequest.addListener(_openHistoryTab);
+  }
+
+  @override
+  void dispose() {
+    saveVcOpenHistoryRequest.removeListener(_openHistoryTab);
+    super.dispose();
+  }
+
+  void _openHistoryTab() {
+    if (!mounted) return;
+
+    setState(() {
+      selectedIndex = 1;
+    });
+  }
 
   final List<Widget> pages = const [
     HomeScreen(),

@@ -806,7 +806,8 @@ class _PoemScreenState extends State<PoemScreen> {
           mainTitle: 'AI Poem',
           selectedLanguage: selectedLanguage,
           genre: selectedPoemType,
-          hasTag: selectedTone,
+          hasTag:
+              '$selectedPoemType,$selectedTone,$selectedLength,$selectedCreativity',
           contentType: 'Poem',
           shouldNeedToCall: true,
           isFromSave: false,
