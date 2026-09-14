@@ -36,6 +36,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
   bool _showFavorites = false;
   String _selectedType = 'All';
 
+  final ScrollController _typeScrollController = ScrollController();
+  late final List<GlobalKey> _typeChipKeys =
+      List.generate(_contentTypes.length, (_) => GlobalKey());
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +50,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   void dispose() {
     saveVcHistoryRevision.removeListener(_handleHistoryChanged);
+    _typeScrollController.dispose();
     super.dispose();
   }
 
@@ -108,6 +113,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   List<Map<String, dynamic>> get _rootEntries {
     return _filteredEntries(folder: '');
+  }
+
+  void _selectContentType(int index) {
+    setState(() {
+      _selectedType = _contentTypes[index];
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final chipContext = _typeChipKeys[index].currentContext;
+      if (chipContext == null) return;
+
+      Scrollable.ensureVisible(
+        chipContext,
+        alignment: 0.5,
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+      );
+    });
   }
 
   List<Map<String, dynamic>> _filteredEntries({required String folder}) {
@@ -561,8 +584,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return SizedBox(
       height: 76,
       child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 18),
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 18),
         children: [
           _FolderButton(
             label: '',
@@ -592,7 +615,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         isDark ? const Color(0xFF1D1D1F) : Colors.white;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 6, 14, 10),
+      padding: const EdgeInsets.fromLTRB(14, 6, 14, 16),
       child: Container(
         height: 42,
         padding: const EdgeInsets.all(3),
@@ -630,6 +653,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return SizedBox(
       height: 38,
       child: ListView.separated(
+        controller: _typeScrollController,
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 14),
         itemCount: _contentTypes.length,
@@ -639,8 +663,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
           final selected = type == _selectedType;
 
           return GestureDetector(
-            onTap: () => setState(() => _selectedType = type),
+            onTap: () => _selectContentType(index),
             child: Container(
+              key: _typeChipKeys[index],
               alignment: Alignment.center,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
@@ -650,7 +675,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               child: Text(
                 type,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight:
                       selected ? FontWeight.w700 : FontWeight.w500,
                   color: selected ? Colors.white : null,
@@ -889,31 +914,38 @@ class _FolderButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: SizedBox(
-        width: 58,
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 34,
-              color: color,
-            ),
-            if (label.isNotEmpty) ...[
-              const SizedBox(height: 3),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: textColor,
-                ),
+    return Padding(
+      padding: const EdgeInsets.only(right: 10),
+      child: GestureDetector(
+        onTap: onTap,
+        child: SizedBox(
+          width: 72,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(
+                icon,
+                size: 44,
+                color: color,
               ),
+              if (label.isNotEmpty) ...[
+                const SizedBox(height: 1),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    height: 1.0,
+                    color: textColor,
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -948,7 +980,7 @@ class _TopTabButton extends StatelessWidget {
           child: Text(
             title,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 13,
               fontWeight:
                   selected ? FontWeight.w700 : FontWeight.w600,
               color: selected ? Colors.white : null,
@@ -1006,7 +1038,7 @@ class _HistoryCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 14,
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -1016,7 +1048,7 @@ class _HistoryCard extends StatelessWidget {
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 12.5,
+                        fontSize: 13.5,
                         height: 1.35,
                       ),
                     ),
@@ -1027,7 +1059,7 @@ class _HistoryCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 10.5,
+                          fontSize: 11.5,
                           color: muted,
                         ),
                       ),

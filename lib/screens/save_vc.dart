@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -135,7 +136,22 @@ class _SaveVcState extends State<SaveVc> {
           ? const Color(0xFF1A1A1A)
           : Colors.white;
 
+  bool get _hasCustomStoryBackground =>
+      _backgroundColor != null ||
+      (_backgroundGradient != null && _backgroundGradient!.isNotEmpty) ||
+      _backgroundAsset != null ||
+      (_backgroundNetworkUrl != null &&
+          _backgroundNetworkUrl!.trim().isNotEmpty);
+
   Color get _interfaceColor {
+    // On the normal app background, UI controls must always follow
+    // the current Light/Dark app appearance. This also prevents an old
+    // saved white text color from making the whole UI disappear in Light Mode.
+    if (!_hasCustomStoryBackground) {
+      return Theme.of(context).colorScheme.onSurface;
+    }
+
+    // For a custom story background, keep an explicitly chosen text color.
     if (_forcedTextColor != null) return _forcedTextColor!;
 
     if (_backgroundColor != null) {
@@ -144,6 +160,15 @@ class _SaveVcState extends State<SaveVc> {
 
     if (_backgroundGradient != null && _backgroundGradient!.isNotEmpty) {
       return _readableColor(_backgroundGradient!.first);
+    }
+
+    // Image backgrounds do not have a single reliable sampled color.
+    // White is the safest existing behaviour unless the user explicitly
+    // selected another text color.
+    if (_backgroundAsset != null ||
+        (_backgroundNetworkUrl != null &&
+            _backgroundNetworkUrl!.trim().isNotEmpty)) {
+      return Colors.white;
     }
 
     return Theme.of(context).colorScheme.onSurface;
@@ -922,7 +947,9 @@ class _SaveVcState extends State<SaveVc> {
 
       final textColorValue = _nullableInt(style['textColor']);
       _textColor = textColorValue == null
-          ? const Color(0xFF171717)
+          ? (Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : const Color(0xFF171717))
           : Color(textColorValue);
 
       _textGradientIndex = restoredGradientIndex;
@@ -1036,14 +1063,23 @@ class _SaveVcState extends State<SaveVc> {
       _paragraphSpacing = 0.0;
       _textWidth = 1.0;
       _pageMargins = 15.0;
-      _textColor = const Color(0xFF171717);
+
+      // Reset follows the CURRENT app appearance immediately:
+      // Dark Mode  -> white text
+      // Light Mode -> black text
+      _textColor = Theme.of(context).brightness == Brightness.dark
+          ? Colors.white
+          : const Color(0xFF171717);
+
       _textGradientIndex = null;
       _textEditorTab = 0;
       _backgroundColor = null;
       _backgroundGradient = null;
       _backgroundAsset = null;
+      _backgroundNetworkUrl = null;
       _forcedTextColor = null;
       _textureIndex = null;
+      _textTextureImage = null;
       _themeId = 'none';
     });
   }
@@ -1822,7 +1858,9 @@ class _SaveVcState extends State<SaveVc> {
         _backgroundNetworkUrl!.trim().isNotEmpty) {
       return BoxDecoration(
         image: DecorationImage(
-          image: NetworkImage(_themeDisplayUrl(_backgroundNetworkUrl!, width: 2000)),
+          image: CachedNetworkImageProvider(
+            _themeDisplayUrl(_backgroundNetworkUrl!, width: 1200),
+          ),
           fit: BoxFit.cover,
         ),
       );
@@ -1914,8 +1952,30 @@ class _SaveVcState extends State<SaveVc> {
         ).createShader(const Rect.fromLTWH(0, 0, 700, 100));
     }
 
+    Color resolvedTextColor = _forcedTextColor ?? _textColor;
+
+    // History can contain a white forcedTextColor saved while the app was
+    // in Dark Mode. If the story is using the normal app background, that
+    // stale value must not be reused in Light Mode or the text becomes white
+    // on white. Treat the app's old default dark/white colors as automatic.
+    if (!_hasCustomStoryBackground) {
+      final forcedValue = _forcedTextColor?.value;
+      final textValue = _textColor.value;
+
+      final looksLikeAutomaticDefault =
+          forcedValue == null ||
+          forcedValue == Colors.white.value ||
+          forcedValue == const Color(0xFF171717).value ||
+          textValue == Colors.white.value ||
+          textValue == const Color(0xFF171717).value;
+
+      if (looksLikeAutomaticDefault) {
+        resolvedTextColor = Theme.of(context).colorScheme.onSurface;
+      }
+    }
+
     final baseColor =
-        (_forcedTextColor ?? _textColor).withValues(alpha: _textOpacity);
+        resolvedTextColor.withValues(alpha: _textOpacity);
 
     return TextStyle(
       fontFamily: _fontFamily,
@@ -3055,6 +3115,8 @@ class _ThemePickerScreen extends StatefulWidget {
 class _ThemePickerScreenState extends State<_ThemePickerScreen> {
   final RealtimeDBManager _realtimeDBManager = RealtimeDBManager();
 
+  static List<ThemeItem>? _cachedThemes;
+
   int _selectedTab = 0; // Video order: Theme, Color, Gradient.
   bool _isLoadingThemes = true;
   List<ThemeItem> _themes = const [];
@@ -3242,7 +3304,14 @@ class _ThemePickerScreenState extends State<_ThemePickerScreen> {
   @override
   void initState() {
     super.initState();
-    _loadThemes();
+
+    final cached = _cachedThemes;
+    if (cached != null && cached.isNotEmpty) {
+      _themes = List<ThemeItem>.of(cached);
+      _isLoadingThemes = false;
+    } else {
+      _loadThemes();
+    }
   }
 
   Future<void> _loadThemes() async {
@@ -3256,17 +3325,30 @@ class _ThemePickerScreenState extends State<_ThemePickerScreen> {
         return ai.compareTo(bi);
       });
 
+      _cachedThemes = List<ThemeItem>.of(values);
+
       if (!mounted) return;
       setState(() {
         _themes = values;
         _isLoadingThemes = false;
+      });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+
+        for (final theme in values.take(12)) {
+          precacheImage(
+            CachedNetworkImageProvider(_themeDisplayUrl(theme.url, width: 1200)),
+            context,
+          ).catchError((_) {});
+        }
       });
     } catch (error) {
       debugPrint('Unable to load themes: $error');
 
       if (!mounted) return;
       setState(() {
-        _themes = const [];
+        _themes = _cachedThemes ?? const [];
         _isLoadingThemes = false;
       });
     }
@@ -3443,7 +3525,20 @@ class _ThemePickerScreenState extends State<_ThemePickerScreen> {
         final theme = _themes[index - 1];
 
         return InkWell(
-          onTap: () {
+          onTap: () async {
+            final displayUrl = _themeDisplayUrl(theme.url, width: 1200);
+
+            try {
+              await precacheImage(
+                CachedNetworkImageProvider(displayUrl),
+                context,
+              );
+            } catch (error) {
+              debugPrint('Unable to precache selected theme: $error');
+            }
+
+            if (!mounted) return;
+
             Navigator.of(context).pop(
               _ThemeSelection.theme(
                 id: theme.id,
@@ -3453,25 +3548,20 @@ class _ThemePickerScreenState extends State<_ThemePickerScreen> {
             );
           },
           child: ClipRect(
-            child: Image.network(
-              _themeDisplayUrl(theme.url, width: 900),
+            child: CachedNetworkImage(
+              imageUrl: _themeDisplayUrl(theme.url, width: 1200),
               fit: BoxFit.cover,
-              loadingBuilder: (
-                context,
-                child,
-                loadingProgress,
-              ) {
-                if (loadingProgress == null) return child;
-                return const Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
-                );
-              },
-              errorBuilder: (_, error, ___) {
+              fadeInDuration: Duration.zero,
+              fadeOutDuration: Duration.zero,
+              placeholder: (_, __) => const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                ),
+              ),
+              errorWidget: (_, url, error) {
                 debugPrint(
                   '❌ THEME IMAGE LOAD FAILED: ${theme.url}\n'
-                  '❌ DISPLAY URL: ${_themeDisplayUrl(theme.url, width: 900)}\n'
+                  '❌ DISPLAY URL: $url\n'
                   '❌ IMAGE ERROR: $error',
                 );
 
