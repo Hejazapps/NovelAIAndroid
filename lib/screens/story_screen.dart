@@ -1189,7 +1189,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
           mainTitle: request.title.isEmpty ? 'AI Story' : request.title,
           selectedLanguage: request.settings.language,
           genre: request.genre,
-          hasTag: request.genre,
+          hasTag: '${request.genre},${request.length},${request.settings.ageGroup.split(' (').first}',
           contentType: 'Story',
           shouldNeedToCall: true,
           isFromSave: false,

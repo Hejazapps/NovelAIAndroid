@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:ui' as ui;
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -6,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../services/easy_seek_api_manager.dart';
 
 typedef SaveVcGenerateCallback = Future<void> Function(
   String prompt,
@@ -98,6 +101,7 @@ class _SaveVcState extends State<SaveVc> {
   Color _textColor = const Color(0xFF171717);
   int? _textGradientIndex;
   int _textEditorTab = 0;
+  ui.Image? _textTextureImage;
 
   Color? _backgroundColor;
   List<Color>? _backgroundGradient;
@@ -298,8 +302,11 @@ class _SaveVcState extends State<SaveVc> {
   }
 
   String get _formattedTags {
-    if (widget.hasTag.trim().isEmpty) return '';
-    return widget.hasTag
+    final raw = widget.hasTag.trim();
+    if (raw.isEmpty) return '';
+
+    return raw
+        .replaceAll('#', ',')
         .split(',')
         .map((e) => e.trim())
         .where((e) => e.isNotEmpty)
@@ -754,7 +761,7 @@ class _SaveVcState extends State<SaveVc> {
             }
 
             return Container(
-              height: MediaQuery.sizeOf(context).height * 0.90,
+              height: MediaQuery.sizeOf(context).height * 0.50,
               decoration: BoxDecoration(
                 color: sheetColor,
                 borderRadius:
@@ -885,6 +892,7 @@ class _SaveVcState extends State<SaveVc> {
                                     _textColor = color;
                                     _textGradientIndex = null;
                                     _textureIndex = null;
+                                    _textTextureImage = null;
                                     _forcedTextColor = color;
                                   }),
                                   child: Container(
@@ -931,6 +939,7 @@ class _SaveVcState extends State<SaveVc> {
                                   onTap: () => update(() {
                                     _textGradientIndex = index;
                                     _textureIndex = null;
+                                    _textTextureImage = null;
                                     _forcedTextColor = null;
                                   }),
                                   child: Container(
@@ -969,11 +978,15 @@ class _SaveVcState extends State<SaveVc> {
                                   final selected =
                                       _textureIndex == index;
                                   return GestureDetector(
-                                    onTap: () => update(() {
-                                      _textureIndex = index;
-                                      _textGradientIndex = null;
-                                      _forcedTextColor = null;
-                                    }),
+                                    onTap: () async {
+                                      update(() {
+                                        _textureIndex = index;
+                                        _textGradientIndex = null;
+                                        _forcedTextColor = null;
+                                      });
+                                      await _loadTextTexture(index);
+                                      sheetSetState(() {});
+                                    },
                                     child: Container(
                                       width: 62,
                                       decoration: BoxDecoration(
@@ -1235,6 +1248,14 @@ class _SaveVcState extends State<SaveVc> {
         _textureIndex = originalTextureIndex;
         _forcedTextColor = originalForcedTextColor;
       });
+
+      if (originalTextureIndex != null) {
+        await _loadTextTexture(originalTextureIndex);
+      } else if (mounted) {
+        setState(() {
+          _textTextureImage = null;
+        });
+      }
     }
   }
 
@@ -1403,10 +1424,48 @@ class _SaveVcState extends State<SaveVc> {
     );
   }
 
+  Future<void> _loadTextTexture(int index) async {
+    try {
+      final data = await rootBundle.load('assets/images/texture$index.png');
+      final codec = await ui.instantiateImageCodec(
+        data.buffer.asUint8List(),
+      );
+      final frame = await codec.getNextFrame();
+
+      if (!mounted) return;
+
+      setState(() {
+        _textTextureImage = frame.image;
+      });
+    } catch (error) {
+      debugPrint('Unable to load text texture $index: $error');
+
+      if (!mounted) return;
+
+      setState(() {
+        _textTextureImage = null;
+      });
+    }
+  }
+
   TextStyle get _storyTextStyle {
     Paint? foreground;
 
-    if (_textGradientIndex != null) {
+    if (_textureIndex != null && _textTextureImage != null) {
+      foreground = Paint()
+        ..shader = ui.ImageShader(
+          _textTextureImage!,
+          ui.TileMode.repeated,
+          ui.TileMode.repeated,
+          Float64List.fromList(const [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1,
+          ]),
+        )
+        ..color = Colors.white.withValues(alpha: _textOpacity);
+    } else if (_textGradientIndex != null) {
       const gradients = <List<Color>>[
         [Color(0xFFFF6435), Color(0xFFFF2D55)],
         [Color(0xFF9146E8), Color(0xFF5856D6)],
@@ -1416,8 +1475,7 @@ class _SaveVcState extends State<SaveVc> {
         [Color(0xFF111111), Color(0xFF8E8E93)],
       ];
 
-      final index =
-          _textGradientIndex!.clamp(0, gradients.length - 1);
+      final index = _textGradientIndex!.clamp(0, gradients.length - 1);
 
       foreground = Paint()
         ..shader = LinearGradient(
@@ -1922,17 +1980,26 @@ class _SaveVcState extends State<SaveVc> {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(15, 0, 15, 20),
-                    child: Container(
-                      clipBehavior: Clip.antiAlias,
-                      decoration: _storyBackgroundDecoration(),
-                      child: Column(
-                        children: [
-                          _buildStoryHeader(interfaceColor),
-                          Expanded(
-                            child: _buildStoryEditor(interfaceColor),
-                          ),
-                          _buildBottomBar(interfaceColor),
-                        ],
+                    child: Opacity(
+                      opacity: _isGenerating ? 0.72 : 1,
+                      child: Container(
+                        clipBehavior: Clip.antiAlias,
+                        decoration: _storyBackgroundDecoration(),
+                        child: Column(
+                          children: [
+                            AbsorbPointer(
+                              absorbing: _isGenerating,
+                              child: _buildStoryHeader(interfaceColor),
+                            ),
+                            Expanded(
+                              child: AbsorbPointer(
+                                absorbing: _isGenerating,
+                                child: _buildStoryEditor(interfaceColor),
+                              ),
+                            ),
+                            _buildBottomBar(interfaceColor),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -1957,45 +2024,70 @@ class _SaveVcState extends State<SaveVc> {
       child: Row(
         children: [
           const SizedBox(width: 8),
+
+          // Back is intentionally the ONLY active control during generation.
           _topAssetButton(
             fallbackIcon: Icons.arrow_back_ios_new,
-            onPressed: () => Navigator.maybePop(context),
+            onPressed: () async {
+              await Navigator.maybePop(context);
+            },
             tint: interfaceColor,
           ),
-          _topIconButton(
-            icon: Icons.refresh,
-            onPressed: _confirmResetDesign,
-            tint: interfaceColor,
-          ),
-          const Spacer(),
-          if (_showRegenerate)
-            TextButton(
-              onPressed: _regenerate,
-              child: Text(
-                'Regenerate',
-                style: TextStyle(
-                  color: interfaceColor,
-                  fontWeight: FontWeight.w600,
-                ),
+
+          Expanded(
+            child: AbsorbPointer(
+              absorbing: _isGenerating,
+              child: Row(
+                children: [
+                  _topIconButton(
+                    icon: Icons.refresh,
+                    onPressed: _confirmResetDesign,
+                    tint: interfaceColor.withValues(
+                      alpha: _isGenerating ? 0.35 : 1,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (_showRegenerate)
+                    TextButton(
+                      onPressed: _regenerate,
+                      child: Text(
+                        'Regenerate',
+                        style: TextStyle(
+                          color: interfaceColor.withValues(
+                            alpha: _isGenerating ? 0.35 : 1,
+                          ),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  if (widget.onMusic != null)
+                    _topIconButton(
+                      icon: Icons.music_note_outlined,
+                      onPressed: widget.onMusic,
+                      tint: interfaceColor.withValues(
+                        alpha: _isGenerating ? 0.35 : 1,
+                      ),
+                    ),
+                  _topImageButton(
+                    path: 'assets/images/edit.png',
+                    onPressed:
+                        widget.onOpenTextEditor ?? _showTextStyleSheet,
+                    tint: interfaceColor.withValues(
+                      alpha: _isGenerating ? 0.35 : 1,
+                    ),
+                  ),
+                  _topImageButton(
+                    path: 'assets/images/share.png',
+                    onPressed: _shareText,
+                    tint: interfaceColor.withValues(
+                      alpha: _isGenerating ? 0.35 : 1,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                ],
               ),
             ),
-          if (widget.onMusic != null)
-            _topIconButton(
-              icon: Icons.music_note_outlined,
-              onPressed: widget.onMusic,
-              tint: interfaceColor,
-            ),
-          _topImageButton(
-            path: 'assets/images/edit.png',
-            onPressed: widget.onOpenTextEditor ?? _showTextStyleSheet,
-            tint: interfaceColor,
           ),
-          _topImageButton(
-            path: 'assets/images/share.png',
-            onPressed: _shareText,
-            tint: interfaceColor,
-          ),
-          const SizedBox(width: 4),
         ],
       ),
     );
@@ -2127,6 +2219,7 @@ class _SaveVcState extends State<SaveVc> {
                 expands: true,
                 maxLines: null,
                 minLines: null,
+                readOnly: _isGenerating,
                 textAlign: _textAlign,
                 textAlignVertical: TextAlignVertical.top,
                 style: _storyTextStyle,
@@ -2149,6 +2242,47 @@ class _SaveVcState extends State<SaveVc> {
     );
   }
 
+  Future<void> _confirmStopStory() async {
+    if (!_isGenerating || !mounted) return;
+
+    final shouldStop = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Stop Story?'),
+          content: const Text(
+            'Do you want to stop generating this story?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text(
+                'Stop',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldStop != true || !mounted) return;
+
+    EasySeekApiManager.shared.stopStreaming();
+
+    setState(() {
+      _isGenerating = false;
+      _generationCompleted = _textController.text.trim().isNotEmpty;
+    });
+
+    _showMessage('Story generation stopped.');
+  }
+
   Widget _buildBottomBar(Color interfaceColor) {
     return SizedBox(
       height: 60,
@@ -2158,36 +2292,38 @@ class _SaveVcState extends State<SaveVc> {
             path: _isFavorite
                 ? 'assets/images/full.png'
                 : 'assets/images/empty.png',
-            onPressed: _toggleFavorite,
+            onPressed: _isGenerating ? null : _toggleFavorite,
             tint: interfaceColor,
           ),
           const SizedBox(width: 10),
           _bottomIconButton(
             icon: Icons.image_outlined,
-            onPressed: _showThemeSheet,
+            onPressed: _isGenerating ? null : _showThemeSheet,
             tint: interfaceColor,
           ),
           const SizedBox(width: 10),
           _bottomImageButton(
             path: 'assets/images/small.png',
-            onPressed: _showTextStyleSheet,
+            onPressed: _isGenerating ? null : _showTextStyleSheet,
             tint: interfaceColor,
           ),
           const Spacer(),
           _bottomImageButton(
             path: 'assets/images/vector_1.png',
-            onPressed: () async {
-              final text = _textController.text.trim();
-              if (text.isEmpty) return;
-              if (widget.onHearText != null) {
-                await widget.onHearText!(text);
-              }
-            },
+            onPressed: _isGenerating
+                ? null
+                : () async {
+                    final text = _textController.text.trim();
+                    if (text.isEmpty) return;
+                    if (widget.onHearText != null) {
+                      await widget.onHearText!(text);
+                    }
+                  },
             tint: interfaceColor,
           ),
           _bottomImageButton(
             path: 'assets/images/group_1000004153.png',
-            onPressed: _copyText,
+            onPressed: _isGenerating ? null : _copyText,
             tint: interfaceColor,
           ),
           _bottomImageButton(
@@ -2198,13 +2334,7 @@ class _SaveVcState extends State<SaveVc> {
           ),
           _bottomImageButton(
             path: 'assets/images/forbidden.png',
-            onPressed: _isGenerating
-                ? () async {
-                    setState(() {
-                      _isGenerating = false;
-                    });
-                  }
-                : null,
+            onPressed: _isGenerating ? _confirmStopStory : null,
             tint: interfaceColor,
             opacity: _isGenerating ? 1 : 0.35,
           ),
@@ -2215,31 +2345,34 @@ class _SaveVcState extends State<SaveVc> {
 
   Widget _buildGeneratingOverlay() {
     return Positioned.fill(
-      child: ColoredBox(
-        color: Colors.black.withValues(alpha: 0.18),
-        child: Center(
-          child: Container(
-            width: 250,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24,
-              vertical: 22,
-            ),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text(
-                  'Generating...',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
+      child: IgnorePointer(
+        ignoring: true,
+        child: ColoredBox(
+          color: Colors.black.withValues(alpha: 0.18),
+          child: Center(
+            child: Container(
+              width: 250,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 22,
+              ),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text(
+                    'Generating...',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
