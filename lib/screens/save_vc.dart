@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -76,6 +77,10 @@ class _SaveVcState extends State<SaveVc> {
 
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final FlutterTts _flutterTts = FlutterTts();
+
+  bool _isSpeaking = false;
+  String? _activeTtsLocale;
 
   late String _title;
   late bool _isFavorite;
@@ -143,6 +148,8 @@ class _SaveVcState extends State<SaveVc> {
     _themeId = widget.themeId;
     _textController.text = widget.textToGive;
 
+    _configureAndroidTts();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.shouldNeedToCall && widget.onGenerate != null) {
         _startGeneration(widget.textToGive);
@@ -156,6 +163,7 @@ class _SaveVcState extends State<SaveVc> {
 
   @override
   void dispose() {
+    _flutterTts.stop();
     _textController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -234,6 +242,240 @@ class _SaveVcState extends State<SaveVc> {
       if (!mounted) return;
       setState(() => _isGenerating = false);
       _showMessage('Regeneration failed. Please try again.');
+    }
+  }
+
+  Future<void> _configureAndroidTts() async {
+    await _flutterTts.setSpeechRate(0.48);
+    await _flutterTts.setVolume(1.0);
+    await _flutterTts.setPitch(1.0);
+
+    _flutterTts.setStartHandler(() {
+      if (!mounted) return;
+      setState(() {
+        _isSpeaking = true;
+      });
+    });
+
+    _flutterTts.setCompletionHandler(() {
+      if (!mounted) return;
+      setState(() {
+        _isSpeaking = false;
+      });
+    });
+
+    _flutterTts.setCancelHandler(() {
+      if (!mounted) return;
+      setState(() {
+        _isSpeaking = false;
+      });
+    });
+
+    _flutterTts.setErrorHandler((message) {
+      debugPrint('Android TTS error: $message');
+      if (!mounted) return;
+      setState(() {
+        _isSpeaking = false;
+      });
+      _showMessage('Unable to play this voice on your device.');
+    });
+  }
+
+  String? _ttsLocaleForLanguage(String language) {
+    final value = language.trim().toLowerCase();
+
+    const exact = <String, String>{
+      'afrikaans': 'af-ZA',
+      'albanian': 'sq-AL',
+      'amharic': 'am-ET',
+      'arabic': 'ar-SA',
+      'armenian': 'hy-AM',
+      'assamese': 'as-IN',
+      'azerbaijani': 'az-AZ',
+      'basque': 'eu-ES',
+      'belarusian': 'be-BY',
+      'bengali': 'bn-BD',
+      'bangla': 'bn-BD',
+      'bosnian': 'bs-BA',
+      'bulgarian': 'bg-BG',
+      'burmese': 'my-MM',
+      'catalan': 'ca-ES',
+      'chinese simplified': 'zh-CN',
+      'chinese traditional': 'zh-TW',
+      'croatian': 'hr-HR',
+      'czech': 'cs-CZ',
+      'danish': 'da-DK',
+      'dutch': 'nl-NL',
+      'english': 'en-US',
+      'estonian': 'et-EE',
+      'filipino': 'fil-PH',
+      'finnish': 'fi-FI',
+      'french': 'fr-FR',
+      'georgian': 'ka-GE',
+      'german': 'de-DE',
+      'greek': 'el-GR',
+      'gujarati': 'gu-IN',
+      'hebrew': 'he-IL',
+      'hindi': 'hi-IN',
+      'hungarian': 'hu-HU',
+      'icelandic': 'is-IS',
+      'indonesian': 'id-ID',
+      'irish': 'ga-IE',
+      'italian': 'it-IT',
+      'japanese': 'ja-JP',
+      'kannada': 'kn-IN',
+      'kazakh': 'kk-KZ',
+      'khmer': 'km-KH',
+      'korean': 'ko-KR',
+      'lao': 'lo-LA',
+      'latvian': 'lv-LV',
+      'lithuanian': 'lt-LT',
+      'macedonian': 'mk-MK',
+      'malay': 'ms-MY',
+      'malayalam': 'ml-IN',
+      'marathi': 'mr-IN',
+      'nepali': 'ne-NP',
+      'norwegian': 'nb-NO',
+      'norwegian bokmål': 'nb-NO',
+      'persian': 'fa-IR',
+      'polish': 'pl-PL',
+      'portuguese': 'pt-PT',
+      'portuguese (brazil)': 'pt-BR',
+      'portuguese (portugal)': 'pt-PT',
+      'punjabi': 'pa-IN',
+      'romanian': 'ro-RO',
+      'russian': 'ru-RU',
+      'serbian': 'sr-RS',
+      'slovak': 'sk-SK',
+      'slovenian': 'sl-SI',
+      'spanish': 'es-ES',
+      'swahili': 'sw-KE',
+      'swedish': 'sv-SE',
+      'tamil': 'ta-IN',
+      'telugu': 'te-IN',
+      'thai': 'th-TH',
+      'turkish': 'tr-TR',
+      'ukrainian': 'uk-UA',
+      'urdu': 'ur-PK',
+      'vietnamese': 'vi-VN',
+      'welsh': 'cy-GB',
+    };
+
+    if (exact.containsKey(value)) return exact[value];
+
+    if (value.contains('bengali') || value.contains('bangla')) return 'bn-BD';
+    if (value.contains('english')) return 'en-US';
+    if (value.contains('arabic')) return 'ar-SA';
+    if (value.contains('hindi')) return 'hi-IN';
+    if (value.contains('urdu')) return 'ur-PK';
+    if (value.contains('chinese') && value.contains('traditional')) {
+      return 'zh-TW';
+    }
+    if (value.contains('chinese')) return 'zh-CN';
+    if (value.contains('japanese')) return 'ja-JP';
+    if (value.contains('korean')) return 'ko-KR';
+    if (value.contains('portuguese') && value.contains('brazil')) {
+      return 'pt-BR';
+    }
+    if (value.contains('portuguese')) return 'pt-PT';
+
+    return null;
+  }
+
+  Future<bool> _isTtsLanguageAvailable(String locale) async {
+    try {
+      final result = await _flutterTts.isLanguageAvailable(locale);
+
+      if (result is bool) return result;
+      if (result is int) return result == 1;
+      if (result is String) {
+        final normalized = result.toLowerCase();
+        return normalized == 'true' || normalized == '1';
+      }
+
+      return result == true;
+    } catch (error) {
+      debugPrint('TTS language availability check failed: $error');
+      return false;
+    }
+  }
+
+  Future<void> _toggleHearText() async {
+    if (_isGenerating) return;
+
+    if (_isSpeaking) {
+      await _flutterTts.stop();
+
+      if (!mounted) return;
+      setState(() {
+        _isSpeaking = false;
+      });
+      return;
+    }
+
+    final storyText = _textController.text.trim();
+    if (storyText.isEmpty) return;
+
+    // Preserve the existing external callback if the caller supplied one.
+    if (widget.onHearText != null) {
+      await widget.onHearText!(storyText);
+      return;
+    }
+
+    final locale = _ttsLocaleForLanguage(widget.selectedLanguage);
+
+    if (locale == null) {
+      _showMessage(
+        'This language is not supported for voice playback on your device.',
+      );
+      return;
+    }
+
+    final available = await _isTtsLanguageAvailable(locale);
+
+    if (!available) {
+      _showMessage(
+        'This language is not supported for voice playback on your device.',
+      );
+      return;
+    }
+
+    try {
+      final languageResult = await _flutterTts.setLanguage(locale);
+
+      if (languageResult == 0 || languageResult == false) {
+        _showMessage(
+          'This language is not supported for voice playback on your device.',
+        );
+        return;
+      }
+
+      _activeTtsLocale = locale;
+
+      if (!mounted) return;
+      setState(() {
+        _isSpeaking = true;
+      });
+
+      final speakResult = await _flutterTts.speak(storyText);
+
+      if (speakResult == 0 && mounted) {
+        setState(() {
+          _isSpeaking = false;
+        });
+        _showMessage('Unable to play this voice on your device.');
+      }
+    } catch (error) {
+      debugPrint('Unable to start Android TTS: $error');
+
+      if (!mounted) return;
+      setState(() {
+        _isSpeaking = false;
+      });
+
+      _showMessage(
+        'This language is not supported for voice playback on your device.',
+      );
     }
   }
 
@@ -1980,25 +2222,22 @@ class _SaveVcState extends State<SaveVc> {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(15, 0, 15, 20),
-                    child: Opacity(
-                      opacity: _isGenerating ? 0.72 : 1,
-                      child: Container(
-                        clipBehavior: Clip.antiAlias,
-                        decoration: _storyBackgroundDecoration(),
-                        child: Column(
-                          children: [
-                            AbsorbPointer(
-                              absorbing: _isGenerating,
-                              child: _buildStoryHeader(interfaceColor),
-                            ),
-                            Expanded(
-                              child: AbsorbPointer(
-                                absorbing: _isGenerating,
+                    child: AbsorbPointer(
+                      absorbing: _isGenerating,
+                      child: Opacity(
+                        opacity: _isGenerating ? 0.72 : 1,
+                        child: Container(
+                          clipBehavior: Clip.antiAlias,
+                          decoration: _storyBackgroundDecoration(),
+                          child: Column(
+                            children: [
+                              _buildStoryHeader(interfaceColor),
+                              Expanded(
                                 child: _buildStoryEditor(interfaceColor),
                               ),
-                            ),
-                            _buildBottomBar(interfaceColor),
-                          ],
+                              _buildBottomBar(interfaceColor),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -2273,14 +2512,13 @@ class _SaveVcState extends State<SaveVc> {
 
     if (shouldStop != true || !mounted) return;
 
-    EasySeekApiManager.shared.stopStreaming();
+    try {
+      EasySeekApiManager.shared.stopStreaming();
+    } catch (_) {}
 
     setState(() {
       _isGenerating = false;
-      _generationCompleted = _textController.text.trim().isNotEmpty;
     });
-
-    _showMessage('Story generation stopped.');
   }
 
   Widget _buildBottomBar(Color interfaceColor) {
@@ -2309,16 +2547,10 @@ class _SaveVcState extends State<SaveVc> {
           ),
           const Spacer(),
           _bottomImageButton(
-            path: 'assets/images/vector_1.png',
-            onPressed: _isGenerating
-                ? null
-                : () async {
-                    final text = _textController.text.trim();
-                    if (text.isEmpty) return;
-                    if (widget.onHearText != null) {
-                      await widget.onHearText!(text);
-                    }
-                  },
+            path: _isSpeaking
+                ? 'assets/images/pause.png'
+                : 'assets/images/vector_1.png',
+            onPressed: _isGenerating ? null : _toggleHearText,
             tint: interfaceColor,
           ),
           _bottomImageButton(
@@ -2345,34 +2577,31 @@ class _SaveVcState extends State<SaveVc> {
 
   Widget _buildGeneratingOverlay() {
     return Positioned.fill(
-      child: IgnorePointer(
-        ignoring: true,
-        child: ColoredBox(
-          color: Colors.black.withValues(alpha: 0.18),
-          child: Center(
-            child: Container(
-              width: 250,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 22,
-              ),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text(
-                    'Generating...',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                    ),
+      child: ColoredBox(
+        color: Colors.black.withValues(alpha: 0.18),
+        child: Center(
+          child: Container(
+            width: 250,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 22,
+            ),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text(
+                  'Generating...',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
