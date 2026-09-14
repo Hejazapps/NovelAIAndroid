@@ -21,6 +21,8 @@ typedef SaveVcGenerateCallback = Future<void> Function(
 
 typedef SaveVcVoidCallback = Future<void> Function();
 typedef SaveVcTextCallback = Future<void> Function(String text);
+typedef SaveVcBookTextCallback = Future<void> Function(String text);
+typedef SaveVcBookNavigationCallback = Future<void> Function();
 
 final ValueNotifier<int> saveVcHistoryRevision = ValueNotifier<int>(0);
 final ValueNotifier<int> saveVcOpenHistoryRequest = ValueNotifier<int>(0);
@@ -40,6 +42,16 @@ class SaveVc extends StatefulWidget {
     this.shouldNeedToCall = true,
     this.isFromSave = false,
     this.isFromFav = false,
+    this.bookId = '',
+    this.bookChapterIndex = -1,
+    this.bookChapterNumber = 0,
+    this.bookChapterCount = 0,
+    this.isBookFullView = false,
+    this.hasBookPrevious = false,
+    this.hasBookNext = false,
+    this.onBookTextChanged,
+    this.onBookPrevious,
+    this.onBookNext,
     this.onGenerate,
     this.onRegenerate,
     this.onMusic,
@@ -62,6 +74,19 @@ class SaveVc extends StatefulWidget {
   final bool shouldNeedToCall;
   final bool isFromSave;
   final bool isFromFav;
+
+  final String bookId;
+  final int bookChapterIndex;
+  final int bookChapterNumber;
+  final int bookChapterCount;
+  final bool isBookFullView;
+  final bool hasBookPrevious;
+  final bool hasBookNext;
+  final SaveVcBookTextCallback? onBookTextChanged;
+  final SaveVcBookNavigationCallback? onBookPrevious;
+  final SaveVcBookNavigationCallback? onBookNext;
+
+  bool get isBookMode => bookId.trim().isNotEmpty;
 
   // Keep generation outside this UI class so it can use your existing
   // EasySeekApiManager without duplicating API logic here.
@@ -123,7 +148,10 @@ class _SaveVcState extends State<SaveVc> {
   int? _textureIndex;
 
   Timer? _historyAutosaveTimer;
+  Timer? _bookDesignAutosaveTimer;
+  Timer? _bookTextAutosaveTimer;
   bool _historyStateReady = false;
+  bool _bookStateReady = false;
   bool _isNavigatingToHistory = false;
 
   Color get _pageBackground =>
@@ -182,13 +210,20 @@ class _SaveVcState extends State<SaveVc> {
     _isFavorite = widget.isFromFav;
     _themeId = widget.themeId;
     _textController.text = widget.textToGive;
+    _textController.addListener(_handleBookTextChanged);
 
     _configureAndroidTts();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
 
-      if (widget.isFromSave) {
+      if (widget.isBookMode) {
+        await _restoreBookDesign();
+        if (!mounted) return;
+        _bookStateReady = true;
+      }
+
+      if (widget.isFromSave && !widget.isBookMode) {
         await _restoreHistoryEntry();
         if (!mounted) return;
 
@@ -213,8 +248,12 @@ class _SaveVcState extends State<SaveVc> {
   void setState(VoidCallback fn) {
     super.setState(fn);
 
-    if (widget.isFromSave && _historyStateReady) {
+    if (widget.isFromSave && _historyStateReady && !widget.isBookMode) {
       _scheduleHistoryAutosave();
+    }
+
+    if (widget.isBookMode && _bookStateReady) {
+      _scheduleBookDesignAutosave();
     }
   }
 
@@ -226,9 +265,178 @@ class _SaveVcState extends State<SaveVc> {
     });
   }
 
+  String get _bookDesignKey => 'bookDesignV1_${widget.bookId.trim()}';
+
+  void _handleBookTextChanged() {
+    if (!widget.isBookMode ||
+        widget.isBookFullView ||
+        !_bookStateReady ||
+        widget.onBookTextChanged == null) {
+      return;
+    }
+
+    _bookTextAutosaveTimer?.cancel();
+    _bookTextAutosaveTimer = Timer(
+      const Duration(milliseconds: 450),
+      () async {
+        if (!mounted || widget.onBookTextChanged == null) return;
+        await widget.onBookTextChanged!(_textController.text);
+      },
+    );
+  }
+
+  void _scheduleBookDesignAutosave() {
+    _bookDesignAutosaveTimer?.cancel();
+    _bookDesignAutosaveTimer = Timer(
+      const Duration(milliseconds: 250),
+      () async {
+        if (!mounted || !widget.isBookMode || !_bookStateReady) return;
+        await _saveBookDesign();
+      },
+    );
+  }
+
+  Future<void> _saveBookDesign() async {
+    if (!widget.isBookMode) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _bookDesignKey,
+      jsonEncode({
+        'themeId': _themeId,
+        'textStyle': _currentTextStyleData(),
+        'design': _currentDesignData(),
+      }),
+    );
+  }
+
+  Future<void> _restoreBookDesign() async {
+    if (!widget.isBookMode) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_bookDesignKey);
+    if (raw == null || raw.trim().isEmpty) return;
+
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) return;
+
+      final data = Map<String, dynamic>.from(decoded);
+      final styleRaw = data['textStyle'];
+      final designRaw = data['design'];
+
+      final style = styleRaw is Map
+          ? Map<String, dynamic>.from(styleRaw)
+          : <String, dynamic>{};
+      final design = designRaw is Map
+          ? Map<String, dynamic>.from(designRaw)
+          : <String, dynamic>{};
+
+      final alignmentIndex =
+          (_nullableInt(style['textAlignment']) ?? TextAlign.left.index)
+              .clamp(0, TextAlign.values.length - 1);
+
+      final backgroundColorValue = _nullableInt(design['backgroundColor']);
+      final forcedTextColorValue = _nullableInt(design['forcedTextColor']);
+      final textureIndex = _nullableInt(style['textureIndex']);
+
+      List<Color>? restoredGradient;
+      final gradientRaw = design['backgroundGradient'];
+      if (gradientRaw is List && gradientRaw.isNotEmpty) {
+        restoredGradient = gradientRaw
+            .map(_nullableInt)
+            .whereType<int>()
+            .map(Color.new)
+            .toList();
+        if (restoredGradient.isEmpty) restoredGradient = null;
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        _themeId = (data['themeId'] ?? widget.themeId).toString();
+
+        _fontSize = _doubleValue(style['fontSize'], 16);
+        _fontWeight =
+            style['isBold'] == true ? FontWeight.bold : FontWeight.w500;
+        _fontStyle =
+            style['isItalic'] == true ? FontStyle.italic : FontStyle.normal;
+        _underline = style['isUnderlined'] == true;
+        _textAlign = TextAlign.values[alignmentIndex];
+
+        final family = style['fontFamily']?.toString().trim();
+        _fontFamily =
+            family == null || family.isEmpty ? 'sans-serif' : family;
+
+        _textOpacity =
+            _doubleValue(style['textOpacity'], 1.0).clamp(0.1, 1.0);
+        _lineSpacing =
+            _doubleValue(style['lineSpacing'], 1.6).clamp(0.8, 3.0);
+        _letterSpacing =
+            _doubleValue(style['letterSpacing'], 0.0).clamp(-2.0, 10.0);
+        _paragraphSpacing =
+            _doubleValue(style['paragraphSpacing'], 0.0).clamp(0.0, 60.0);
+        _textWidth =
+            _doubleValue(style['textWidth'], 1.0).clamp(0.4, 1.0);
+        _pageMargins =
+            _doubleValue(style['pageMargins'], 15.0).clamp(0.0, 80.0);
+
+        final textColorValue = _nullableInt(style['textColor']);
+        _textColor = textColorValue == null
+            ? (Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : const Color(0xFF171717))
+            : Color(textColorValue);
+
+        _textGradientIndex = _nullableInt(style['textGradientIndex']);
+        _textureIndex = textureIndex;
+
+        _backgroundColor =
+            backgroundColorValue == null ? null : Color(backgroundColorValue);
+        _backgroundGradient = restoredGradient;
+
+        _backgroundAsset = design['backgroundAsset']?.toString();
+        if (_backgroundAsset != null && _backgroundAsset!.trim().isEmpty) {
+          _backgroundAsset = null;
+        }
+
+        _backgroundNetworkUrl = design['backgroundNetworkUrl']?.toString();
+        if (_backgroundNetworkUrl != null &&
+            _backgroundNetworkUrl!.trim().isEmpty) {
+          _backgroundNetworkUrl = null;
+        }
+
+        _forcedTextColor =
+            forcedTextColorValue == null ? null : Color(forcedTextColorValue);
+      });
+
+      if (textureIndex != null) {
+        await _loadTextTexture(textureIndex);
+      }
+    } catch (error) {
+      debugPrint('Unable to restore book design: $error');
+    }
+  }
+
+  Future<void> _flushBookState() async {
+    if (!widget.isBookMode) return;
+
+    _bookDesignAutosaveTimer?.cancel();
+    _bookTextAutosaveTimer?.cancel();
+
+    await _saveBookDesign();
+
+    if (widget.onBookTextChanged != null) {
+      await widget.onBookTextChanged!(_textController.text);
+    }
+  }
+
   @override
   void dispose() {
     _historyAutosaveTimer?.cancel();
+    _bookDesignAutosaveTimer?.cancel();
+    _bookTextAutosaveTimer?.cancel();
+    _textController.removeListener(_handleBookTextChanged);
     _flutterTts.stop();
     _textController.dispose();
     _scrollController.dispose();
@@ -684,6 +892,13 @@ class _SaveVcState extends State<SaveVc> {
   }
 
   Future<void> _handleBackToHistory() async {
+    if (widget.isBookMode) {
+      await _flushBookState();
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      return;
+    }
+
     if (_isNavigatingToHistory) return;
     _isNavigatingToHistory = true;
 
@@ -726,6 +941,13 @@ class _SaveVcState extends State<SaveVc> {
   }
 
   Future<void> _save() async {
+    if (widget.isBookMode) {
+      await _flushBookState();
+      if (!mounted) return;
+      _showMessage('Chapter and book design saved.');
+      return;
+    }
+
     final text = _textController.text.trim();
     if (text.isEmpty) {
       _showMessage('There is no text to save.');
@@ -2732,7 +2954,7 @@ class _SaveVcState extends State<SaveVc> {
                 expands: true,
                 maxLines: null,
                 minLines: null,
-                readOnly: _isGenerating,
+                readOnly: _isGenerating || widget.isBookFullView,
                 textAlign: _textAlign,
                 textAlignVertical: TextAlignVertical.top,
                 style: _storyTextStyle,
@@ -2795,8 +3017,68 @@ class _SaveVcState extends State<SaveVc> {
     });
   }
 
-  Widget _buildBottomBar(Color interfaceColor) {
+  Widget _buildBookChapterNavigation(Color interfaceColor) {
+    final muted = interfaceColor.withValues(alpha: 0.42);
+
     return SizedBox(
+      height: 48,
+      child: Row(
+        children: [
+          Expanded(
+            child: TextButton.icon(
+              onPressed: widget.hasBookPrevious &&
+                      widget.onBookPrevious != null &&
+                      !_isGenerating
+                  ? () async {
+                      await _flushBookState();
+                      if (!mounted) return;
+                      await widget.onBookPrevious!();
+                    }
+                  : null,
+              icon: const Icon(Icons.chevron_left_rounded),
+              label: const Text('Previous'),
+              style: TextButton.styleFrom(
+                foregroundColor:
+                    widget.hasBookPrevious ? interfaceColor : muted,
+              ),
+            ),
+          ),
+          if (widget.bookChapterCount > 0)
+            Text(
+              '${widget.bookChapterNumber} / ${widget.bookChapterCount}',
+              style: TextStyle(
+                color: interfaceColor.withValues(alpha: 0.72),
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          Expanded(
+            child: TextButton.icon(
+              onPressed: widget.hasBookNext &&
+                      widget.onBookNext != null &&
+                      !_isGenerating
+                  ? () async {
+                      await _flushBookState();
+                      if (!mounted) return;
+                      await widget.onBookNext!();
+                    }
+                  : null,
+              iconAlignment: IconAlignment.end,
+              icon: const Icon(Icons.chevron_right_rounded),
+              label: const Text('Next'),
+              style: TextButton.styleFrom(
+                foregroundColor:
+                    widget.hasBookNext ? interfaceColor : muted,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomBar(Color interfaceColor) {
+    final actionBar = SizedBox(
       height: 60,
       child: Row(
         children: [
@@ -2804,7 +3086,8 @@ class _SaveVcState extends State<SaveVc> {
             path: _isFavorite
                 ? 'assets/images/full.png'
                 : 'assets/images/empty.png',
-            onPressed: _isGenerating ? null : _toggleFavorite,
+            onPressed:
+                (_isGenerating || widget.isBookMode) ? null : _toggleFavorite,
             tint: interfaceColor,
           ),
           const SizedBox(width: 10),
@@ -2844,6 +3127,18 @@ class _SaveVcState extends State<SaveVc> {
             tint: interfaceColor,
             opacity: _isGenerating ? 1 : 0.35,
           ),
+        ],
+      ),
+    );
+
+    if (!widget.isBookMode || widget.isBookFullView) return actionBar;
+
+    return SizedBox(
+      height: 108,
+      child: Column(
+        children: [
+          _buildBookChapterNavigation(interfaceColor),
+          actionBar,
         ],
       ),
     );

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'save_vc.dart';
+import 'book_detail_screen.dart';
+import 'book_generation_manager.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -278,6 +280,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<void> _openEntry(Map<String, dynamic> entry) async {
+    final contentType =
+        (entry['contentType'] ?? 'Story').toString().trim().toLowerCase();
+    final bookId = (entry['bookId'] ?? '').toString().trim();
+
+    if (contentType == 'book' && bookId.isNotEmpty) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => BookDetailScreen(bookId: bookId),
+        ),
+      );
+      await _loadAll();
+      return;
+    }
+
     final storageIndex = (entry['_storageIndex'] as int?) ?? -1;
     if (storageIndex < 0) return;
 
@@ -388,6 +404,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
 
     if (confirmed != true) return;
+
+    final contentType =
+        (entry['contentType'] ?? '').toString().trim().toLowerCase();
+    final bookId = (entry['bookId'] ?? '').toString().trim();
+
+    if (contentType == 'book' && bookId.isNotEmpty) {
+      await BookGenerationManager.shared.deleteBook(bookId);
+      await _loadAll();
+      return;
+    }
 
     final storageIndex = (entry['_storageIndex'] as int?) ?? -1;
     final original = await _readOriginalEntries();

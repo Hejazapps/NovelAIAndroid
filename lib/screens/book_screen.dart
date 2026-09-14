@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'book_detail_screen.dart';
+import 'book_generation_manager.dart';
+import 'book_models.dart';
+
 class BookScreen extends StatefulWidget {
   const BookScreen({super.key});
 
@@ -19,6 +23,8 @@ class _BookScreenState extends State<BookScreen> {
   String selectedAgeGroup = 'Adults (18+)';
 
   int chapterCount = 4;
+
+  bool _isCreatingBook = false;
 
   final List<BookCharacterSpec> _characters = [];
 
@@ -1257,7 +1263,7 @@ class _BookScreenState extends State<BookScreen> {
           ],
         ),
         child: GestureDetector(
-          onTap: _createBook,
+          onTap: _isCreatingBook ? null : _createBook,
           child: Container(
             height: 54,
             decoration: BoxDecoration(
@@ -1265,53 +1271,54 @@ class _BookScreenState extends State<BookScreen> {
               borderRadius: BorderRadius.circular(16),
             ),
             alignment: Alignment.center,
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.auto_awesome_rounded,
-                  color: Colors.white,
-                  size: 18,
-                ),
-                SizedBox(width: 8),
-                Text(
-                  'Create',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+            child: _isCreatingBook
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.auto_awesome_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Create',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
           ),
         ),
       ),
     );
   }
 
-  void _createBook() {
+  Future<void> _createBook() async {
     final title = _titleController.text.trim();
     final author = _authorController.text.trim();
     final description = _descriptionController.text.trim();
 
     if (title.isEmpty) {
-      _showAlert(
-        'Missing Title',
-        'Please enter a book title.',
-      );
+      _showAlert('Missing Title', 'Please enter a book title.');
       return;
     }
 
     if (description.isEmpty) {
-      _showAlert(
-        'Missing Description',
-        'Please enter your book description.',
-      );
+      _showAlert('Missing Description', 'Please enter your book description.');
       return;
     }
-
-    final characters = List<BookCharacterSpec>.unmodifiable(_characters);
 
     final spec = BookGenerationSpec(
       title: title,
@@ -1323,38 +1330,41 @@ class _BookScreenState extends State<BookScreen> {
       length: selectedLength,
       chapterCount: chapterCount,
       ageGroup: selectedAgeGroup,
-      characters: characters,
+      characters: List<BookCharacterSpec>.unmodifiable(_characters),
     );
 
     final outlinePrompt = _buildOutlinePrompt(spec);
 
-    debugPrint('============= BOOK SPEC =============');
-    debugPrint('Title: ${spec.title}');
-    debugPrint('Author: ${spec.author}');
-    debugPrint('Description: ${spec.bookDescription}');
-    debugPrint('Chapter: ${spec.chapterCount}');
-    debugPrint('Genre: ${spec.category}');
-    debugPrint('Language: ${spec.language}');
-    debugPrint('Tone: ${spec.tone}');
-    debugPrint('Length: ${spec.length}');
-    debugPrint('Age Group: ${spec.ageGroup}');
-    debugPrint('Character Count: ${spec.characters.length}');
+    setState(() => _isCreatingBook = true);
 
-    for (var i = 0; i < spec.characters.length; i++) {
-      final character = spec.characters[i];
-      debugPrint('Character ${i + 1} Name: ${character.name}');
-      debugPrint(
-        'Character ${i + 1} Description: ${character.description}',
+    try {
+      final book = await BookGenerationManager.shared.createBook(
+        spec: spec,
+        outlinePrompt: outlinePrompt,
       );
+
+      if (!mounted) return;
+
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => BookDetailScreen(bookId: book.id),
+        ),
+      );
+
+      BookGenerationManager.shared
+          .generatePendingChapters(book.id)
+          .catchError((error) {
+        debugPrint('Book chapter generation stopped: $error');
+      });
+    } catch (error) {
+      if (!mounted) return;
+      _showAlert(
+        'Book Generation Failed',
+        error.toString().replaceFirst('Exception: ', ''),
+      );
+    } finally {
+      if (mounted) setState(() => _isCreatingBook = false);
     }
-
-    debugPrint('Chapter Target: ${_chapterTargetText(spec.length)}');
-    debugPrint('============= OUTLINE PROMPT =============');
-    debugPrint(outlinePrompt);
-    debugPrint('===========================================');
-
-    // Intentionally stops at prompt creation.
-    // Connect this prompt to your generation/API layer later.
   }
 
   String _charactersBlock(BookGenerationSpec spec) {
@@ -1946,41 +1956,6 @@ class BookGenre {
   });
 }
 
-class BookCharacterSpec {
-  final String name;
-  final String description;
-
-  const BookCharacterSpec({
-    required this.name,
-    required this.description,
-  });
-}
-
-class BookGenerationSpec {
-  final String title;
-  final String bookDescription;
-  final String author;
-  final String language;
-  final String tone;
-  final String category;
-  final String length;
-  final int chapterCount;
-  final String ageGroup;
-  final List<BookCharacterSpec> characters;
-
-  const BookGenerationSpec({
-    required this.title,
-    required this.bookDescription,
-    required this.author,
-    required this.language,
-    required this.tone,
-    required this.category,
-    required this.length,
-    required this.chapterCount,
-    required this.ageGroup,
-    required this.characters,
-  });
-}
 
 class _BookCharacterInputSheet extends StatefulWidget {
   const _BookCharacterInputSheet({
