@@ -1,6 +1,50 @@
 
 import 'package:flutter/material.dart';
 
+import 'save_vc.dart';
+import '../services/easy_seek_api_manager.dart';
+
+Future<void> _openLyricsGeneration({
+  required BuildContext context,
+  required String prompt,
+  required String title,
+  required String language,
+  required String genre,
+  required String tags,
+  required String contentType,
+}) async {
+  await Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => SaveVc(
+        textToGive: prompt,
+        mainTitle: title,
+        selectedLanguage: language,
+        genre: genre,
+        hasTag: tags,
+        contentType: contentType,
+        shouldNeedToCall: true,
+        isFromSave: false,
+        isFromFav: false,
+        onGenerate: (prompt, onUpdate) async {
+          bool completedSuccessfully = false;
+
+          await EasySeekApiManager.shared.streamResponse(
+            message: prompt,
+            onUpdate: onUpdate,
+            onCompletion: (success) {
+              completedSuccessfully = success;
+            },
+          );
+
+          if (!completedSuccessfully) {
+            throw Exception('$contentType generation failed');
+          }
+        },
+      ),
+    ),
+  );
+}
+
 bool _lyricsDark(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark;
 
@@ -819,6 +863,16 @@ Return only the finished lyrics. Do not explain your process, do not add notes, 
 ''';
 
     widget.onPromptCreated(prompt);
+
+    _openLyricsGeneration(
+      context: context,
+      prompt: prompt,
+      title: 'AI Lyrics',
+      language: _language!,
+      genre: 'Lyrics',
+      tags: '${_genre ?? 'Lyrics'},Lyrics',
+      contentType: 'Lyrics',
+    );
   }
 
   @override
@@ -930,6 +984,16 @@ Return only the chorus lyrics. Do not add explanations, headings, notes, analysi
 ''';
 
     widget.onPromptCreated(prompt);
+
+    _openLyricsGeneration(
+      context: context,
+      prompt: prompt,
+      title: 'AI Chorus',
+      language: _language!,
+      genre: 'Lyrics',
+      tags: '${_structure ?? 'Chorus'},${_length ?? 'Medium'}',
+      contentType: 'Lyrics',
+    );
   }
 
   @override
@@ -1044,6 +1108,16 @@ Return only the finished verse. No explanation, notes, headings, analysis, or co
 ''';
 
     widget.onPromptCreated(prompt);
+
+    _openLyricsGeneration(
+      context: context,
+      prompt: prompt,
+      title: 'AI Verse',
+      language: _language!,
+      genre: 'Lyrics',
+      tags: '${_genre ?? 'Verse'},Verse',
+      contentType: 'Lyrics',
+    );
   }
 
   @override
@@ -1150,6 +1224,16 @@ Return only the rhyming lyric options, one option per line. Do not explain the r
 ''';
 
     widget.onPromptCreated(prompt);
+
+    _openLyricsGeneration(
+      context: context,
+      prompt: prompt,
+      title: 'AI Rhyming',
+      language: _language!,
+      genre: 'Lyrics',
+      tags: '${_type ?? 'Rhyme'},${_structure ?? 'Flexible'}',
+      contentType: 'Lyrics',
+    );
   }
 
   @override
