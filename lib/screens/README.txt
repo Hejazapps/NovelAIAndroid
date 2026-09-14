@@ -1,18 +1,23 @@
-Shared Book + Screenplay generation lock
+Copy these files into lib/screens/:
+- chat_screen.dart (replace current file)
+- story_chat_screen.dart (new)
+- story_chat_history_screen.dart (new)
 
-Copy these 3 files to lib/screens/:
-- generation_coordinator.dart   (new)
-- book_screen.dart              (replace current Book screen)
-- screenplay_screen.dart        (replace current Screenplay screen)
+Your existing ChatScreen UI is preserved. Only behavior was wired.
 
-Behavior:
-- While a Book is generating, Create Screenplay/Create Book shows an alert.
-- While a Screenplay is generating, Create Book/Create Screenplay shows an alert.
-- Lock stays active during the entire sequential chapter/episode generation.
-- Lock releases when generation completes or fails.
-- No API request is made by the blocked Create action, so it also prevents accidental duplicate cost.
-
-Alert:
-Generation in Progress
-A book/screenplay is currently being created. Please wait until it finishes
-before starting another book or screenplay.
+Working features:
+- Existing history clock icon opens Chat History
+- Start arrow opens actual Story Chat
+- Initial prompt automatically starts the conversation
+- Language, genre, length, storyteller name and storyteller prompt are sent in AI context
+- Uses existing EasySeekApiManager
+- Streaming response
+- Stop generation
+- Conversation continuity
+- Local history persistence: storyChatHistoryV1
+- Open old chat and continue it
+- Delete history item
+- Copy AI response
+- Auto title generation
+- No subscription/paywall changes
+- No new packages required

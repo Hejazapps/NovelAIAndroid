@@ -5,6 +5,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/realtime_db_manager.dart';
+import 'story_chat_screen.dart';
+import 'story_chat_history_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -727,9 +729,7 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Align(
               alignment: Alignment.centerRight,
               child: GestureDetector(
-                onTap: () {
-                  debugPrint('History tapped');
-                },
+                onTap: _openChatHistory,
                 child: SizedBox(
                   width: 38,
                   height: 38,
@@ -1753,27 +1753,46 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  void _startStory() {
-    if (_promptController.text.trim().isEmpty) {
+  Future<void> _openChatHistory() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const StoryChatHistoryScreen(),
+      ),
+    );
+  }
+
+  Future<void> _startStory() async {
+    final prompt = _promptController.text.trim();
+    if (prompt.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter something before continuing.')),
       );
       return;
     }
 
-    debugPrint('==============================================');
-    debugPrint('CHAT STORY');
-    debugPrint('Prompt      : ${_promptController.text.trim()}');
-    debugPrint('Language    : $_selectedLanguage');
-    debugPrint('Genre       : ${_genres[_selectedGenreIndex].name}');
-    debugPrint('Length      : ${['Short', 'Medium', 'Long'][_selectedLengthIndex]}');
-
+    String storytellerName = '';
+    String storytellerPrompt = '';
     if (_selectedStorytellerIndex >= 0 &&
         _selectedStorytellerIndex < _storytellers.length) {
-      debugPrint('Storyteller : ${_storytellers[_selectedStorytellerIndex].name}');
-      debugPrint('AI Prompt   : ${_storytellers[_selectedStorytellerIndex].prompt}');
+      final storyteller = _storytellers[_selectedStorytellerIndex];
+      storytellerName = storyteller.name.trim();
+      storytellerPrompt = storyteller.prompt.trim();
     }
-    debugPrint('==============================================');
+
+    final config = StoryChatConfig(
+      initialPrompt: prompt,
+      language: _selectedLanguage,
+      genre: _genres[_selectedGenreIndex].name,
+      length: const ['Short', 'Medium', 'Long'][_selectedLengthIndex],
+      storytellerName: storytellerName,
+      storytellerPrompt: storytellerPrompt,
+    );
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => StoryChatScreen(config: config),
+      ),
+    );
   }
 }
 
