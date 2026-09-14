@@ -2344,67 +2344,76 @@ class _SaveVcState extends State<SaveVc> {
     final interfaceColor = _interfaceColor;
 
     if (_isFullScreen) {
+      final mediaPadding = MediaQuery.paddingOf(context);
+
       return Scaffold(
         backgroundColor: _backgroundColor ?? _pageBackground,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Container(
-                  decoration: _storyBackgroundDecoration(),
-                  padding: const EdgeInsets.fromLTRB(26, 24, 26, 24),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _title,
-                          style: TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.w700,
-                            color: interfaceColor,
-                          ),
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: Container(
+                decoration: _storyBackgroundDecoration(),
+              ),
+            ),
+            Positioned.fill(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  26,
+                  mediaPadding.top + 24,
+                  26,
+                  mediaPadding.bottom + 24,
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _title,
+                        style: TextStyle(
+                          fontSize: 19,
+                          fontWeight: FontWeight.w700,
+                          color: interfaceColor,
                         ),
-                        if (_formattedTags.isNotEmpty) ...[
-                          const SizedBox(height: 6),
-                          Text(
-                            _formattedTags,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              color: Color(0xFFFF6435),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
+                      ),
+                      if (_formattedTags.isNotEmpty) ...[
                         const SizedBox(height: 6),
                         Text(
-                          _dateText,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: interfaceColor.withValues(alpha: 0.65),
+                          _formattedTags,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Color(0xFFFF6435),
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(height: 24),
-                        Text(
-                          _textController.text,
-                          textAlign: _textAlign,
-                          style: _storyTextStyle,
-                        ),
                       ],
-                    ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _dateText,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: interfaceColor.withValues(alpha: 0.65),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        _textController.text,
+                        textAlign: _textAlign,
+                        style: _storyTextStyle,
+                      ),
+                    ],
                   ),
                 ),
               ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: IconButton.filledTonal(
-                  onPressed: () => setState(() => _isFullScreen = false),
-                  icon: const Icon(Icons.close),
-                ),
+            ),
+            Positioned(
+              top: mediaPadding.top + 8,
+              right: 8,
+              child: IconButton.filledTonal(
+                onPressed: () => setState(() => _isFullScreen = false),
+                icon: const Icon(Icons.close),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
