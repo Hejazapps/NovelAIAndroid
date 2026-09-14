@@ -35,6 +35,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   bool _isLoading = true;
   bool _showFavorites = false;
   String _selectedType = 'All';
+  String _selectedSort = 'Newest First';
 
   final ScrollController _typeScrollController = ScrollController();
   late final List<GlobalKey> _typeChipKeys =
@@ -134,7 +135,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   List<Map<String, dynamic>> _filteredEntries({required String folder}) {
-    return _entries.where((entry) {
+    final values = _entries.where((entry) {
       final entryFolder = (entry['folder'] ?? '').toString().trim();
       if (entryFolder != folder) return false;
 
@@ -151,6 +152,100 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
       return true;
     }).toList();
+
+    values.sort((a, b) {
+      switch (_selectedSort) {
+        case 'Oldest First':
+          final ai = (a['_storageIndex'] as int?) ?? 0;
+          final bi = (b['_storageIndex'] as int?) ?? 0;
+          return ai.compareTo(bi);
+        case 'A → Z':
+          final at = (a['title'] ?? '').toString().trim().toLowerCase();
+          final bt = (b['title'] ?? '').toString().trim().toLowerCase();
+          return at.compareTo(bt);
+        case 'Z → A':
+          final at = (a['title'] ?? '').toString().trim().toLowerCase();
+          final bt = (b['title'] ?? '').toString().trim().toLowerCase();
+          return bt.compareTo(at);
+        case 'Newest First':
+        default:
+          final ai = (a['_storageIndex'] as int?) ?? 0;
+          final bi = (b['_storageIndex'] as int?) ?? 0;
+          return bi.compareTo(ai);
+      }
+    });
+
+    return values;
+  }
+
+  Future<void> _showSortOptions() async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        final isDark =
+            Theme.of(sheetContext).brightness == Brightness.dark;
+        final sheetColor =
+            isDark ? const Color(0xFF242424) : Colors.white;
+        final primary =
+            isDark ? const Color(0xFF9146E8) : const Color(0xFFFF6435);
+
+        const options = <String>[
+          'Newest First',
+          'Oldest First',
+          'A → Z',
+          'Z → A',
+        ];
+
+        return SafeArea(
+          top: false,
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+            decoration: BoxDecoration(
+              color: sheetColor,
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(16, 16, 16, 10),
+                  child: Text(
+                    'Sort By',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const Divider(height: 1),
+                ...options.map(
+                  (option) => ListTile(
+                    leading: Icon(
+                      option == 'Newest First'
+                          ? Icons.arrow_downward_rounded
+                          : option == 'Oldest First'
+                              ? Icons.arrow_upward_rounded
+                              : Icons.sort_by_alpha_rounded,
+                    ),
+                    title: Text(option),
+                    trailing: _selectedSort == option
+                        ? Icon(Icons.check_rounded, color: primary)
+                        : null,
+                    onTap: () =>
+                        Navigator.of(sheetContext).pop(option),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (selected == null || selected == _selectedSort) return;
+    setState(() => _selectedSort = selected);
   }
 
   Future<List<Map<String, dynamic>>> _readOriginalEntries() async {
@@ -652,38 +747,64 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     return SizedBox(
       height: 38,
-      child: ListView.separated(
-        controller: _typeScrollController,
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        itemCount: _contentTypes.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 7),
-        itemBuilder: (context, index) {
-          final type = _contentTypes[index];
-          final selected = type == _selectedType;
+      child: Row(
+        children: [
+          Expanded(
+            child: ListView.separated(
+              controller: _typeScrollController,
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.only(left: 14, right: 7),
+              itemCount: _contentTypes.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 7),
+              itemBuilder: (context, index) {
+                final type = _contentTypes[index];
+                final selected = type == _selectedType;
 
-          return GestureDetector(
-            onTap: () => _selectContentType(index),
-            child: Container(
-              key: _typeChipKeys[index],
-              alignment: Alignment.center,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: selected ? primary : chipColor,
+                return GestureDetector(
+                  onTap: () => _selectContentType(index),
+                  child: Container(
+                    key: _typeChipKeys[index],
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: selected ? primary : chipColor,
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    child: Text(
+                      type,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight:
+                            selected ? FontWeight.w700 : FontWeight.w500,
+                        color: selected ? Colors.white : null,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 14),
+            child: Material(
+              color: chipColor,
+              borderRadius: BorderRadius.circular(7),
+              child: InkWell(
+                onTap: _showSortOptions,
                 borderRadius: BorderRadius.circular(7),
-              ),
-              child: Text(
-                type,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight:
-                      selected ? FontWeight.w700 : FontWeight.w500,
-                  color: selected ? Colors.white : null,
+                child: SizedBox(
+                  width: 38,
+                  height: 38,
+                  child: Icon(
+                    Icons.sort_rounded,
+                    size: 21,
+                    color: primary,
+                  ),
                 ),
               ),
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
