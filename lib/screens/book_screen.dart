@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'book_detail_screen.dart';
 import 'book_generation_manager.dart';
 import 'book_models.dart';
+import 'generation_coordinator.dart';
 
 class BookScreen extends StatefulWidget {
   const BookScreen({super.key});
@@ -1306,6 +1307,13 @@ class _BookScreenState extends State<BookScreen> {
   }
 
   Future<void> _createBook() async {
+    final coordinator = GenerationCoordinator.shared;
+
+    if (coordinator.isBusy) {
+      _showGenerationInProgressAlert();
+      return;
+    }
+
     final title = _titleController.text.trim();
     final author = _authorController.text.trim();
     final description = _descriptionController.text.trim();
@@ -1335,36 +1343,69 @@ class _BookScreenState extends State<BookScreen> {
 
     final outlinePrompt = _buildOutlinePrompt(spec);
 
+    if (!coordinator.tryStart(GenerationType.book)) {
+      _showGenerationInProgressAlert();
+      return;
+    }
+
     setState(() => _isCreatingBook = true);
 
+    var backgroundGenerationStarted = false;
+
     try {
-      final book = await BookGenerationManager.shared.createBook(
+      final generatedBook = await BookGenerationManager.shared.createBook(
         spec: spec,
         outlinePrompt: outlinePrompt,
       );
 
-      if (!mounted) return;
+      if (!mounted) {
+        coordinator.finish(GenerationType.book);
+        return;
+      }
 
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => BookDetailScreen(bookId: book.id),
+          builder: (_) => BookDetailScreen(bookId: generatedBook.id),
         ),
       );
 
+      backgroundGenerationStarted = true;
+
       BookGenerationManager.shared
-          .generatePendingChapters(book.id)
+          .generatePendingChapters(generatedBook.id)
           .catchError((error) {
         debugPrint('Book chapter generation stopped: $error');
+      }).whenComplete(() {
+        GenerationCoordinator.shared.finish(GenerationType.book);
       });
     } catch (error) {
+      coordinator.finish(GenerationType.book);
+
       if (!mounted) return;
       _showAlert(
         'Book Generation Failed',
         error.toString().replaceFirst('Exception: ', ''),
       );
     } finally {
-      if (mounted) setState(() => _isCreatingBook = false);
+      if (!backgroundGenerationStarted) {
+        coordinator.finish(GenerationType.book);
+      }
+
+      if (mounted) {
+        setState(() => _isCreatingBook = false);
+      }
     }
+  }
+
+  void _showGenerationInProgressAlert() {
+    final active = GenerationCoordinator.shared.activeLabel;
+    final runningText = active.isEmpty ? 'book or screenplay' : active;
+
+    _showAlert(
+      'Generation in Progress',
+      'A $runningText is currently being created. '
+          'Please wait until it finishes before starting another book or screenplay.',
+    );
   }
 
   String _charactersBlock(BookGenerationSpec spec) {

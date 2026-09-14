@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'screenplay_detail_screen.dart';
+import 'screenplay_generation_manager.dart';
+import 'screenplay_models.dart';
+import 'generation_coordinator.dart';
+
 class ScreenplayScreen extends StatefulWidget {
   const ScreenplayScreen({super.key});
 
@@ -25,6 +30,8 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
   String selectedContentRating = 'PG-13 – Ages 13+';
   String selectedSceneLength = 'Medium';
   int sceneCount = 4;
+
+  bool _isCreatingScreenplay = false;
 
   final List<ScreenplayGenre> genres = const [
     ScreenplayGenre(name: 'Horror', image: 'assets/genres/horror.png'),
@@ -1027,7 +1034,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
           ],
         ),
         child: GestureDetector(
-          onTap: _createScreenplay,
+          onTap: _isCreatingScreenplay ? null : _createScreenplay,
           child: Container(
             height: 54,
             decoration: BoxDecoration(
@@ -1035,29 +1042,48 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
               borderRadius: BorderRadius.circular(16),
             ),
             alignment: Alignment.center,
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.auto_awesome_rounded,
-                    color: Colors.white, size: 18),
-                SizedBox(width: 8),
-                Text(
-                  'Create',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+            child: _isCreatingScreenplay
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.auto_awesome_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Create',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
           ),
         ),
       ),
     );
   }
 
-  void _createScreenplay() {
+  Future<void> _createScreenplay() async {
+    final coordinator = GenerationCoordinator.shared;
+
+    if (coordinator.isBusy) {
+      _showGenerationInProgressAlert();
+      return;
+    }
+
     final title = _titleController.text.trim();
     final writtenBy = _authorController.text.trim();
     final storyLogline = _ideaController.text.trim();
@@ -1099,34 +1125,79 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
       characters: List<ScreenplayCharacterSpec>.unmodifiable(_characters),
     );
 
-    final systemPrompt = _outlineSystemPrompt();
-    final userPrompt = _outlinePrompt(spec);
+    if (!coordinator.tryStart(GenerationType.screenplay)) {
+      _showGenerationInProgressAlert();
+      return;
+    }
 
-    debugPrint('============= SCREENPLAY SPEC =============');
-    debugPrint('Title: ${spec.title}');
-    debugPrint('Written By: ${spec.writtenBy}');
-    debugPrint('Logline: ${spec.storyLogline}');
-    debugPrint('Synopsis: ${spec.synopsis}');
-    debugPrint('Genre: ${spec.genre}');
-    debugPrint('Tone: ${spec.tone}');
-    debugPrint('Script Format: ${spec.scriptFormat}');
-    debugPrint('Language: ${spec.language}');
-    debugPrint('Included Elements: ${spec.includedElements}');
-    debugPrint('Content Rating: ${spec.contentRating}');
-    debugPrint('Setting & Era: ${spec.settingAndEra}');
-    debugPrint('Scene Length: ${spec.sceneLength}');
-    debugPrint('Scene Count: ${spec.resolvedSceneCount}');
-    debugPrint('Character Count: ${spec.characters.length}');
-    debugPrint('Scene Word Target: ${spec.wordTargetText}');
-    debugPrint('============= SYSTEM PROMPT =============');
-    debugPrint(systemPrompt);
-    debugPrint('============= OUTLINE PROMPT ============');
-    debugPrint(userPrompt);
-    debugPrint('=========================================');
+    setState(() => _isCreatingScreenplay = true);
+    debugPrint('🎬 [Screenplay] Create pressed - building outline...');
 
-    // Intentionally stops at prompt creation.
-    // No API and no mock generation are used here.
-    // Connect these prompts to your generation layer later.
+    var backgroundGenerationStarted = false;
+
+    try {
+      final screenplay =
+          await ScreenplayGenerationManager.shared.createScreenplay(
+        spec: spec,
+        outlineSystemPrompt: _outlineSystemPrompt(),
+        outlinePrompt: _outlinePrompt(spec),
+      );
+
+      if (!mounted) {
+        coordinator.finish(GenerationType.screenplay);
+        return;
+      }
+
+      debugPrint(
+        '✅ [Screenplay] Outline ready - opening ${screenplay.id}',
+      );
+
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ScreenplayDetailScreen(
+            screenplayId: screenplay.id,
+          ),
+        ),
+      );
+
+      backgroundGenerationStarted = true;
+
+      ScreenplayGenerationManager.shared
+          .generatePendingEpisodes(screenplay.id)
+          .catchError((error) {
+        debugPrint('Screenplay episode generation stopped: $error');
+      }).whenComplete(() {
+        GenerationCoordinator.shared.finish(GenerationType.screenplay);
+      });
+    } catch (error) {
+      coordinator.finish(GenerationType.screenplay);
+
+      debugPrint('❌ [Screenplay] Create failed: $error');
+      if (!mounted) return;
+      _showAlert(
+        'Screenplay Generation Failed',
+        error.toString().replaceFirst('Exception: ', ''),
+      );
+    } finally {
+      if (!backgroundGenerationStarted) {
+        coordinator.finish(GenerationType.screenplay);
+      }
+
+      if (mounted) {
+        setState(() => _isCreatingScreenplay = false);
+      }
+    }
+  }
+
+  void _showGenerationInProgressAlert() {
+    final active = GenerationCoordinator.shared.activeLabel;
+    final runningText = active.isEmpty ? 'book or screenplay' : active;
+
+    _showAlert(
+      'Generation in Progress',
+      'A $runningText is currently being created. '
+          'Please wait until it finishes before starting another book or screenplay.',
+    );
   }
 
   String _outlineSystemPrompt() {
@@ -1520,80 +1591,6 @@ class ScreenplayGenre {
   final String image;
 
   const ScreenplayGenre({required this.name, required this.image});
-}
-
-class ScreenplayCharacterSpec {
-  final String name;
-  final String description;
-
-  const ScreenplayCharacterSpec({
-    required this.name,
-    required this.description,
-  });
-}
-
-class ScreenplayGenerationSpec {
-  final String title;
-  final String writtenBy;
-  final String storyLogline;
-  final String synopsis;
-  final String tone;
-  final String scriptFormat;
-  final String language;
-  final String includedElements;
-  final String contentRating;
-  final String settingAndEra;
-  final String genre;
-  final String sceneLength;
-  final int sceneCount;
-  final List<ScreenplayCharacterSpec> characters;
-
-  const ScreenplayGenerationSpec({
-    required this.title,
-    required this.writtenBy,
-    required this.storyLogline,
-    required this.synopsis,
-    required this.tone,
-    required this.scriptFormat,
-    required this.language,
-    required this.includedElements,
-    required this.contentRating,
-    required this.settingAndEra,
-    required this.genre,
-    required this.sceneLength,
-    required this.sceneCount,
-    required this.characters,
-  });
-
-  int get resolvedSceneCount => sceneCount > 0 ? sceneCount : 10;
-
-  String get wordTargetText {
-    final normalized = sceneLength.toLowerCase();
-    if (normalized.contains('short')) return '200-300 words';
-    if (normalized.contains('long')) return '700-900 words';
-    return '400-600 words';
-  }
-
-  int get characterCap {
-    final normalized = sceneLength.toLowerCase();
-    if (normalized.contains('short')) return 2600;
-    if (normalized.contains('long')) return 7000;
-    return 4800;
-  }
-
-  int get maxTokens {
-    final normalized = sceneLength.toLowerCase();
-    if (normalized.contains('short')) return 1800;
-    if (normalized.contains('long')) return 4200;
-    return 3000;
-  }
-
-  int get minWordCount {
-    final normalized = sceneLength.toLowerCase();
-    if (normalized.contains('short')) return 200;
-    if (normalized.contains('long')) return 700;
-    return 400;
-  }
 }
 
 class _ScreenplaySelectorSheet extends StatefulWidget {
