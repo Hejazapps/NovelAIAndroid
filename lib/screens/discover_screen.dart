@@ -5,8 +5,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../services/realtime_db_manager.dart';
+import '../services/book_preload_service.dart';
 import 'story_detail_screen.dart';
 import 'book_chapter_reader_screen.dart';
+import 'subscription_screen.dart';
 
 typedef DiscoverSubscriptionCheck = bool Function();
 typedef DiscoverLockedTap = Future<void> Function();
@@ -287,7 +289,7 @@ class DiscoverScreen extends StatefulWidget {
 
 class _DiscoverScreenState extends State<DiscoverScreen> {
   static const String _firstBooksUrl =
-      'https://gutendex.com/books?languages=en&copyright=false&sort=popular';
+      BookPreloadService.firstBooksUrl;
 
   static const String _poetryCollectionUrl =
       'https://nordapi.ee/api/v1/poetry/collection?count=10';
@@ -452,6 +454,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       _books.clear();
       _nextBooksUrl = null;
       _hasLoadedAllBooks = false;
+      await BookPreloadService.instance.getFirstPage(force: true);
     }
 
     await _fetchBookPage(
@@ -504,10 +507,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     }
 
     try {
-      final json = await _getJson(
-        urlString,
-        timeout: const Duration(seconds: 15),
-      );
+      final json = isFirstPage
+          ? await BookPreloadService.instance.getFirstPage()
+          : await _getJson(
+              urlString,
+              timeout: const Duration(seconds: 15),
+            );
 
       if (json is! Map) {
         throw const FormatException('Invalid Gutendex response.');
@@ -1036,35 +1041,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
     if (!mounted) return;
 
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.workspace_premium_rounded,
-                  size: 42,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Unlock PRO',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Connect onLockedTap to your Flutter subscription screen.',
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const SubscriptionScreen(),
+      ),
     );
   }
 

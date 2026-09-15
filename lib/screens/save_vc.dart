@@ -161,6 +161,79 @@ class _SaveVcState extends State<SaveVc> {
   bool _bookStateReady = false;
   bool _isNavigatingToHistory = false;
 
+  OverlayEntry? _shareProgressOverlay;
+
+  void _showShareProgress(String message) {
+    _hideShareProgress();
+    if (!mounted) return;
+
+    _shareProgressOverlay = OverlayEntry(
+      builder: (overlayContext) {
+        final isDark =
+            Theme.of(overlayContext).brightness == Brightness.dark;
+        return Stack(
+          children: [
+            const Positioned.fill(
+              child: ModalBarrier(
+                dismissible: false,
+                color: Color(0x66000000),
+              ),
+            ),
+            Center(
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  width: 210,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 22,
+                    vertical: 22,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF1C1C1E)
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(
+                        width: 34,
+                        height: 34,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        message,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF171717),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    Overlay.of(context, rootOverlay: true).insert(_shareProgressOverlay!);
+  }
+
+  void _hideShareProgress() {
+    _shareProgressOverlay?.remove();
+    _shareProgressOverlay = null;
+  }
+
   Color get _pageBackground =>
       Theme.of(context).brightness == Brightness.dark
           ? const Color(0xFF111111)
@@ -440,6 +513,7 @@ class _SaveVcState extends State<SaveVc> {
 
   @override
   void dispose() {
+    _hideShareProgress();
     _historyAutosaveTimer?.cancel();
     _bookDesignAutosaveTimer?.cancel();
     _bookTextAutosaveTimer?.cancel();
@@ -1085,6 +1159,8 @@ class _SaveVcState extends State<SaveVc> {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
 
+    _showShareProgress('Preparing text file...');
+
     try {
       final body = _title.trim().isEmpty
           ? text
@@ -1095,11 +1171,14 @@ class _SaveVcState extends State<SaveVc> {
         bytes: utf8.encode(body),
       );
 
+      _hideShareProgress();
+
       await Share.shareXFiles(
         [XFile(file.path, mimeType: 'text/plain')],
         subject: _title,
       );
     } catch (error) {
+      _hideShareProgress();
       debugPrint('Text export failed: $error');
       if (mounted) {
         _showMessage('Unable to create the text file.');
@@ -1110,6 +1189,8 @@ class _SaveVcState extends State<SaveVc> {
   Future<void> _shareAsImage() async {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
+
+    _showShareProgress('Preparing image...');
 
     try {
       final bytes = await _renderStyledExportImage(
@@ -1123,11 +1204,14 @@ class _SaveVcState extends State<SaveVc> {
         bytes: bytes,
       );
 
+      _hideShareProgress();
+
       await Share.shareXFiles(
         [XFile(file.path, mimeType: 'image/png')],
         subject: _title,
       );
     } catch (error) {
+      _hideShareProgress();
       debugPrint('Image export failed: $error');
       if (mounted) {
         _showMessage('Unable to create the image.');
@@ -1534,6 +1618,8 @@ class _SaveVcState extends State<SaveVc> {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
 
+    _showShareProgress('Preparing PDF...');
+
     try {
       final document = pw.Document();
       final pages = _splitTextForPdf(text);
@@ -1568,11 +1654,14 @@ class _SaveVcState extends State<SaveVc> {
         bytes: bytes,
       );
 
+      _hideShareProgress();
+
       await Share.shareXFiles(
         [XFile(file.path, mimeType: 'application/pdf')],
         subject: _title,
       );
     } catch (error) {
+      _hideShareProgress();
       debugPrint('PDF export failed: $error');
       if (mounted) {
         _showMessage('Unable to create the PDF.');
@@ -1637,6 +1726,8 @@ class _SaveVcState extends State<SaveVc> {
   Future<void> _shareAsEpub() async {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
+
+    _showShareProgress('Preparing EPUB...');
 
     try {
       final title = _xmlEscape(
@@ -1789,11 +1880,14 @@ class _SaveVcState extends State<SaveVc> {
         bytes: encoded,
       );
 
+      _hideShareProgress();
+
       await Share.shareXFiles(
         [XFile(file.path, mimeType: 'application/epub+zip')],
         subject: _title,
       );
     } catch (error) {
+      _hideShareProgress();
       debugPrint('EPUB export failed: $error');
       if (mounted) {
         _showMessage('Unable to create the EPUB.');
