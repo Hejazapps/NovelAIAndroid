@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'screenplay_generation_manager.dart';
 import 'screenplay_models.dart';
 import 'save_vc.dart';
+import 'subscription_screen.dart';
 
 class ScreenplayDetailScreen extends StatefulWidget {
   const ScreenplayDetailScreen({
@@ -125,6 +126,16 @@ class _ScreenplayDetailScreenState extends State<ScreenplayDetailScreen> {
   Future<void> _showAddEpisodeSheet() async {
     final screenplay = _manager.screenplayById(widget.screenplayId);
     if (screenplay == null) return;
+
+    // Adding an extra episode is a PRO feature.
+    if (!isSubscription) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SubscriptionScreen(),
+        ),
+      );
+      return;
+    }
 
     if (!screenplay.isCompleted) {
       ScaffoldMessenger.of(context).showSnackBar(

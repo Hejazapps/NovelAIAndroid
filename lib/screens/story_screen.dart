@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'save_vc.dart';
 import '../services/easy_seek_api_manager.dart';
+import '../services/story_free_usage_manager.dart';
+import 'subscription_screen.dart';
 
 bool _storyIsDark(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark;
@@ -1141,8 +1143,37 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
     });
   }
 
-  void _generatePressed() {
+  Future<void> _generatePressed() async {
     FocusScope.of(context).unfocus();
+
+    // PRO users can always generate.
+    // Free users can generate one successfully completed story.
+    final allowed = await StoryFreeUsageManager.canCreateStory(
+      isSubscription: isSubscription,
+    );
+
+    if (!mounted) return;
+
+    // The free story has already been used: show the subscription screen
+    // BEFORE making another API request.
+    if (!allowed) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SubscriptionScreen(),
+        ),
+      );
+      return;
+    }
+
+    // Validation has passed and this free generation is available.
+    // Reserve it now. Once the API actually starts producing the story,
+    // leaving/backing out does NOT return the free generation.
+    final isUsingFreeStory = !isSubscription;
+    if (isUsingFreeStory) {
+      await StoryFreeUsageManager.markFreeStorySuccessfullyGenerated();
+    }
+
+    if (!mounted) return;
 
     final request = StoryGenerationRequest(
       title: _titleController.text.trim(),
@@ -1189,7 +1220,8 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
           mainTitle: request.title.isEmpty ? 'AI Story' : request.title,
           selectedLanguage: request.settings.language,
           genre: request.genre,
-          hasTag: '${request.genre},${request.length},${request.settings.ageGroup.split(' (').first}',
+          hasTag:
+              '${request.genre},${request.length},${request.settings.ageGroup.split(' (').first}',
           contentType: 'Story',
           shouldNeedToCall: true,
           isFromSave: false,
@@ -1213,6 +1245,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
       ),
     );
   }
+
 
   String _buildStoryPrompt(StoryGenerationRequest request) {
     final settings = request.settings;

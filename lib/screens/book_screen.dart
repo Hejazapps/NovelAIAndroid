@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'book_detail_screen.dart';
 import 'book_generation_manager.dart';
 import 'book_models.dart';
 import 'generation_coordinator.dart';
+import 'subscription_screen.dart';
 
 class BookScreen extends StatefulWidget {
   const BookScreen({super.key});
@@ -26,6 +28,9 @@ class _BookScreenState extends State<BookScreen> {
   int chapterCount = 4;
 
   bool _isCreatingBook = false;
+  bool _isShowingSubscription = false;
+
+  static const String _freeBookUsedKey = 'freeBookCreationUsedV1';
 
   final List<BookCharacterSpec> _characters = [];
 
@@ -508,13 +513,7 @@ class _BookScreenState extends State<BookScreen> {
             max: 25,
             divisions: 24,
             onChanged: (value) {
-              final newValue = value.round();
-
-              // Swift version gates free users above 4.
-              // Subscription check will be connected later.
-              setState(() {
-                chapterCount = newValue;
-              });
+              _handleChapterCountChanged(value.round());
             },
           ),
         ),
@@ -1239,6 +1238,64 @@ class _BookScreenState extends State<BookScreen> {
     });
   }
 
+  Future<void> _openSubscription() async {
+    if (_isShowingSubscription || !mounted) return;
+
+    _isShowingSubscription = true;
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SubscriptionScreen(),
+        ),
+      );
+    } finally {
+      _isShowingSubscription = false;
+    }
+  }
+
+  void _handleChapterCountChanged(int newValue) {
+    // Free users can create a book with up to 4 chapters.
+    // Moving the slider above 4 opens the subscription screen and keeps
+    // the free value capped at 4.
+    if (!isSubscription && newValue > 4) {
+      if (chapterCount != 4) {
+        setState(() => chapterCount = 4);
+      }
+      _openSubscription();
+      return;
+    }
+
+    setState(() {
+      chapterCount = newValue;
+    });
+  }
+
+  Future<bool> _hasUsedFreeBook() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    if (prefs.getBool(_freeBookUsedKey) == true) {
+      return true;
+    }
+
+    // Migration protection for users who already created a Book before this
+    // restriction was added. generatedBooksV1 is the Book manager's existing
+    // persisted storage key.
+    final existingBooks = prefs.getString('generatedBooksV1');
+    if (existingBooks != null &&
+        existingBooks.trim().isNotEmpty &&
+        existingBooks.trim() != '[]') {
+      await prefs.setBool(_freeBookUsedKey, true);
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<void> _markFreeBookUsed() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_freeBookUsedKey, true);
+  }
+
   // ============================================================
   // CREATE
   // ============================================================
@@ -1309,6 +1366,20 @@ class _BookScreenState extends State<BookScreen> {
   Future<void> _createBook() async {
     final coordinator = GenerationCoordinator.shared;
 
+    // One free Book total. After the free Book has been created, all later
+    // Book creation attempts go to Subscription unless the user is PRO.
+    if (!isSubscription && await _hasUsedFreeBook()) {
+      await _openSubscription();
+      return;
+    }
+
+    // Safety gate in case chapterCount was changed programmatically.
+    if (!isSubscription && chapterCount > 4) {
+      setState(() => chapterCount = 4);
+      await _openSubscription();
+      return;
+    }
+
     if (coordinator.isBusy) {
       _showGenerationInProgressAlert();
       return;
@@ -1357,6 +1428,10 @@ class _BookScreenState extends State<BookScreen> {
         spec: spec,
         outlinePrompt: outlinePrompt,
       );
+
+      if (!isSubscription) {
+        await _markFreeBookUsed();
+      }
 
       if (!mounted) {
         coordinator.finish(GenerationType.book);

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'book_generation_manager.dart';
 import 'book_models.dart';
 import 'save_vc.dart';
+import 'subscription_screen.dart';
 
 class BookDetailScreen extends StatefulWidget {
   const BookDetailScreen({
@@ -126,6 +127,16 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     final book = _manager.bookById(widget.bookId);
     if (book == null) return;
 
+    // Adding extra chapters is a PRO feature.
+    if (!isSubscription) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SubscriptionScreen(),
+        ),
+      );
+      return;
+    }
+
     if (book.isGenerating) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -137,8 +148,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       return;
     }
 
-    final titleController = TextEditingController();
-    final descriptionController = TextEditingController();
+    String chapterTitle = '';
+    String chapterDescription = '';
 
     final result = await showModalBottomSheet<Map<String, String>>(
       context: context,
@@ -194,8 +205,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 ),
                 const SizedBox(height: 16),
                 TextField(
-                  controller: titleController,
                   textInputAction: TextInputAction.next,
+                  onChanged: (value) => chapterTitle = value,
                   decoration: InputDecoration(
                     hintText: 'Chapter title (optional)',
                     filled: true,
@@ -208,9 +219,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 ),
                 const SizedBox(height: 12),
                 TextField(
-                  controller: descriptionController,
                   minLines: 4,
                   maxLines: 6,
+                  onChanged: (value) => chapterDescription = value,
                   decoration: InputDecoration(
                     hintText: 'What should happen in this chapter?',
                     filled: true,
@@ -227,8 +238,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   height: 50,
                   child: FilledButton(
                     onPressed: () {
-                      final description =
-                          descriptionController.text.trim();
+                      final description = chapterDescription.trim();
 
                       if (description.isEmpty) {
                         ScaffoldMessenger.of(sheetContext).showSnackBar(
@@ -242,7 +252,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       }
 
                       Navigator.of(sheetContext).pop({
-                        'title': titleController.text.trim(),
+                        'title': chapterTitle.trim(),
                         'description': description,
                       });
                     },
@@ -268,10 +278,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       },
     );
 
-    titleController.dispose();
-    descriptionController.dispose();
-
-    if (result == null) return;
+    if (result == null || !mounted) return;
 
     try {
       await _manager.addChapter(

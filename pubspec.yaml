@@ -86,6 +86,8 @@ flutter:
     - assets/chaticons/
     - assets/avatars/
     - assets/images/
+    - assets/subscription/light/
+    - assets/subscription/dark/
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

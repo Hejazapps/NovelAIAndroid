@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'screenplay_detail_screen.dart';
 import 'screenplay_generation_manager.dart';
 import 'screenplay_models.dart';
 import 'generation_coordinator.dart';
+import 'subscription_screen.dart';
 
 class ScreenplayScreen extends StatefulWidget {
   const ScreenplayScreen({super.key});
@@ -32,6 +34,10 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
   int sceneCount = 4;
 
   bool _isCreatingScreenplay = false;
+  bool _isShowingSubscription = false;
+
+  static const String _freeScreenplayUsedKey =
+      'freeScreenplayCreationUsedV1';
 
   final List<ScreenplayGenre> genres = const [
     ScreenplayGenre(name: 'Horror', image: 'assets/genres/horror.png'),
@@ -491,9 +497,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
             max: 25,
             divisions: 24,
             onChanged: (value) {
-              // Swift version gates free users above 4 scenes.
-              // Subscription check can be connected here later.
-              setState(() => sceneCount = value.round());
+              _handleSceneCountChanged(value.round());
             },
           ),
         ),
@@ -1076,8 +1080,67 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
     );
   }
 
+  Future<void> _openSubscription() async {
+    if (_isShowingSubscription || !mounted) return;
+
+    _isShowingSubscription = true;
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SubscriptionScreen(),
+        ),
+      );
+    } finally {
+      _isShowingSubscription = false;
+    }
+  }
+
+  void _handleSceneCountChanged(int newValue) {
+    // Free users can create a screenplay with up to 4 scenes.
+    if (!isSubscription && newValue > 4) {
+      if (sceneCount != 4) {
+        setState(() => sceneCount = 4);
+      }
+      _openSubscription();
+      return;
+    }
+
+    setState(() => sceneCount = newValue);
+  }
+
+  Future<bool> _hasUsedFreeScreenplay() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    if (prefs.getBool(_freeScreenplayUsedKey) == true) {
+      return true;
+    }
+
+    // Screenplays are stored by the generation manager. This flag is set
+    // after the first successful screenplay outline is created.
+    return false;
+  }
+
+  Future<void> _markFreeScreenplayUsed() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_freeScreenplayUsedKey, true);
+  }
+
   Future<void> _createScreenplay() async {
     final coordinator = GenerationCoordinator.shared;
+
+    // One free screenplay total. After the first successful creation,
+    // subsequent Create attempts open Subscription for free users.
+    if (!isSubscription && await _hasUsedFreeScreenplay()) {
+      await _openSubscription();
+      return;
+    }
+
+    // Safety gate if sceneCount is changed programmatically.
+    if (!isSubscription && sceneCount > 4) {
+      setState(() => sceneCount = 4);
+      await _openSubscription();
+      return;
+    }
 
     if (coordinator.isBusy) {
       _showGenerationInProgressAlert();
@@ -1142,6 +1205,10 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
         outlineSystemPrompt: _outlineSystemPrompt(),
         outlinePrompt: _outlinePrompt(spec),
       );
+
+      if (!isSubscription) {
+        await _markFreeScreenplayUsed();
+      }
 
       if (!mounted) {
         coordinator.finish(GenerationType.screenplay);

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'save_vc.dart';
 import '../services/easy_seek_api_manager.dart';
+import 'subscription_screen.dart';
 
 class PoemScreen extends StatefulWidget {
   const PoemScreen({super.key});
@@ -20,6 +22,9 @@ class _PoemScreenState extends State<PoemScreen> {
   String selectedLanguage = 'English';
   String selectedLength = 'Short';
   String selectedCreativity = 'Low';
+
+  bool _isShowingSubscription = false;
+  static const String _freePoemUsedKey = 'freePoemCreationUsedV1';
 
   // ============================================================
   // EXACT POEM TYPES FROM YOUR iOS PoemCell.swift
@@ -750,6 +755,31 @@ class _PoemScreenState extends State<PoemScreen> {
     );
   }
 
+  Future<void> _openSubscription() async {
+    if (_isShowingSubscription || !mounted) return;
+
+    _isShowingSubscription = true;
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SubscriptionScreen(),
+        ),
+      );
+    } finally {
+      _isShowingSubscription = false;
+    }
+  }
+
+  Future<bool> _hasUsedFreePoem() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_freePoemUsedKey) == true;
+  }
+
+  Future<void> _markFreePoemUsed() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_freePoemUsedKey, true);
+  }
+
   // ============================================================
   // CREATE
   // ============================================================
@@ -767,7 +797,14 @@ class _PoemScreenState extends State<PoemScreen> {
     }
   }
 
-  void _createPoem() {
+  Future<void> _createPoem() async {
+    // Free users can create one poem total. Every later Create attempt
+    // opens the subscription screen.
+    if (!isSubscription && await _hasUsedFreePoem()) {
+      await _openSubscription();
+      return;
+    }
+
     final prompt = _promptController.text.trim();
 
     if (prompt.isEmpty) {
@@ -820,6 +857,9 @@ class _PoemScreenState extends State<PoemScreen> {
               onUpdate: onUpdate,
               onCompletion: (success) {
                 completedSuccessfully = success;
+                if (success && !isSubscription) {
+                  _markFreePoemUsed();
+                }
               },
             );
 
