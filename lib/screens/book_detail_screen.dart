@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'book_generation_manager.dart';
@@ -19,16 +21,47 @@ class BookDetailScreen extends StatefulWidget {
 
 class _BookDetailScreenState extends State<BookDetailScreen> {
   final BookGenerationManager _manager = BookGenerationManager.shared;
+  final Map<int, int> _chapterProgress = <int, int>{};
+  Timer? _progressTimer;
+
 
   @override
   void initState() {
     super.initState();
     _manager.addListener(_refresh);
     _manager.ensureLoaded();
+    _progressTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      final book = _manager.bookById(widget.bookId);
+      if (book == null) return;
+
+      var changed = false;
+      for (var i = 0; i < book.chapters.length; i++) {
+        final chapter = book.chapters[i];
+        if (chapter.status == BookChapterStatus.generating) {
+          final current = _chapterProgress[i] ?? 4;
+          final next = current >= 95 ? 95 : current + (current < 55 ? 3 : 1);
+          if (next != current) {
+            _chapterProgress[i] = next;
+            changed = true;
+          }
+        } else if (chapter.status == BookChapterStatus.completed) {
+          if (_chapterProgress[i] != 100) {
+            _chapterProgress[i] = 100;
+            changed = true;
+          }
+        } else if (_chapterProgress.remove(i) != null) {
+          changed = true;
+        }
+      }
+
+      if (changed) setState(() {});
+    });
   }
 
   @override
   void dispose() {
+    _progressTimer?.cancel();
     _manager.removeListener(_refresh);
     super.dispose();
   }
@@ -343,13 +376,14 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     );
   }
 
-  String _chapterStatusText(GeneratedBookChapter chapter) {
+  String _chapterStatusText(GeneratedBookChapter chapter, int index) {
     switch (chapter.status) {
       case BookChapterStatus.completed:
         return 'Chapter ${chapter.number} • ${chapter.wordCount} words • '
             '${chapter.estimatedReadMinutes} min read';
       case BookChapterStatus.generating:
-        return 'Chapter ${chapter.number} • Generating...';
+        final percent = _chapterProgress[index] ?? 4;
+        return 'Chapter ${chapter.number} • Generating... ~$percent%';
       case BookChapterStatus.failed:
         return 'Chapter ${chapter.number} • Failed';
       case BookChapterStatus.pending:
@@ -585,7 +619,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                         ),
                                         const SizedBox(height: 3),
                                         Text(
-                                          _chapterStatusText(chapter),
+                                          _chapterStatusText(chapter, index),
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: chapter.status ==
@@ -596,6 +630,16 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                                     .onSurfaceVariant,
                                           ),
                                         ),
+                                        if (chapter.status ==
+                                            BookChapterStatus.generating) ...[
+                                          const SizedBox(height: 7),
+                                          LinearProgressIndicator(
+                                            value: (_chapterProgress[index] ?? 4) / 100,
+                                            minHeight: 4,
+                                            borderRadius: BorderRadius.circular(20),
+                                            color: accent,
+                                          ),
+                                        ],
                                       ],
                                     ),
                                   ),

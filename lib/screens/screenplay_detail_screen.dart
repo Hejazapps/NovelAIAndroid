@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'screenplay_generation_manager.dart';
@@ -19,16 +21,48 @@ class ScreenplayDetailScreen extends StatefulWidget {
 
 class _ScreenplayDetailScreenState extends State<ScreenplayDetailScreen> {
   final ScreenplayGenerationManager _manager = ScreenplayGenerationManager.shared;
+  final Map<int, int> _episodeProgress = <int, int>{};
+  Timer? _progressTimer;
+
 
   @override
   void initState() {
     super.initState();
     _manager.addListener(_refresh);
     _manager.ensureLoaded();
+    _progressTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      final screenplay = _manager.screenplayById(widget.screenplayId);
+      if (screenplay == null) return;
+
+      var changed = false;
+      for (var i = 0; i < screenplay.episodes.length; i++) {
+        final episode = screenplay.episodes[i];
+
+        if (episode.status == ScreenplayEpisodeStatus.generating) {
+          final current = _episodeProgress[i] ?? 4;
+          final next = current >= 95 ? 95 : current + (current < 55 ? 3 : 1);
+          if (next != current) {
+            _episodeProgress[i] = next;
+            changed = true;
+          }
+        } else if (episode.status == ScreenplayEpisodeStatus.completed) {
+          if (_episodeProgress[i] != 100) {
+            _episodeProgress[i] = 100;
+            changed = true;
+          }
+        } else if (_episodeProgress.remove(i) != null) {
+          changed = true;
+        }
+      }
+
+      if (changed) setState(() {});
+    });
   }
 
   @override
   void dispose() {
+    _progressTimer?.cancel();
     _manager.removeListener(_refresh);
     super.dispose();
   }
@@ -221,13 +255,17 @@ class _ScreenplayDetailScreenState extends State<ScreenplayDetailScreen> {
     );
   }
 
-  String _episodeStatusText(GeneratedScreenplayEpisode episode) {
+  String _episodeStatusText(
+    GeneratedScreenplayEpisode episode,
+    int index,
+  ) {
     switch (episode.status) {
       case ScreenplayEpisodeStatus.completed:
         return 'Episode ${episode.number} • ${episode.wordCount} words • '
             '${episode.estimatedReadMinutes} min read';
       case ScreenplayEpisodeStatus.generating:
-        return 'Episode ${episode.number} • Generating...';
+        final percent = _episodeProgress[index] ?? 4;
+        return 'Episode ${episode.number} • Generating... ~$percent%';
       case ScreenplayEpisodeStatus.failed:
         return 'Episode ${episode.number} • Failed';
       case ScreenplayEpisodeStatus.pending:
@@ -463,7 +501,7 @@ class _ScreenplayDetailScreenState extends State<ScreenplayDetailScreen> {
                                         ),
                                         const SizedBox(height: 3),
                                         Text(
-                                          _episodeStatusText(episode),
+                                          _episodeStatusText(episode, index),
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: episode.status ==
@@ -474,6 +512,16 @@ class _ScreenplayDetailScreenState extends State<ScreenplayDetailScreen> {
                                                     .onSurfaceVariant,
                                           ),
                                         ),
+                                        if (episode.status ==
+                                            ScreenplayEpisodeStatus.generating) ...[
+                                          const SizedBox(height: 7),
+                                          LinearProgressIndicator(
+                                            value: (_episodeProgress[index] ?? 4) / 100,
+                                            minHeight: 4,
+                                            borderRadius: BorderRadius.circular(20),
+                                            color: accent,
+                                          ),
+                                        ],
                                       ],
                                     ),
                                   ),

@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/easy_seek_api_manager.dart';
+import '../services/local_notification_service.dart';
 import 'book_models.dart';
 import 'save_vc.dart';
 
@@ -51,6 +53,131 @@ class BookGenerationManager extends ChangeNotifier {
 
     _loaded = true;
     notifyListeners();
+  }
+
+  /// Creates and persists a lightweight book immediately, without waiting for
+  /// the outline network request. This lets BookDetailScreen open at once.
+  Future<GeneratedBook> createBookDraft({
+    required BookGenerationSpec spec,
+  }) async {
+    await ensureLoaded();
+
+    final now = DateTime.now();
+    final outline = _fallbackOutline(spec);
+
+    final book = GeneratedBook(
+      id: 'book_${now.microsecondsSinceEpoch}',
+      spec: spec,
+      outline: outline,
+      chapters: List<GeneratedBookChapter>.generate(
+        spec.chapterCount,
+        (index) => GeneratedBookChapter(
+          number: index + 1,
+          title: 'Chapter ${index + 1}',
+          status: BookChapterStatus.pending,
+        ),
+      ),
+      isGenerating: true,
+      isCompleted: false,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    _books[book.id] = book;
+    notifyListeners();
+
+    // Do not make the user wait on disk/history writes before opening the
+    // chapter screen. Persistence continues immediately in the background.
+    unawaited(_save().catchError((error) {
+      debugPrint('⚠️ [BookGenerationManager] Draft persistence failed: $error');
+    }));
+    unawaited(LocalNotificationService.shared.prepare());
+    return book;
+  }
+
+  /// Builds the real outline in the background, updates the visible chapter
+  /// titles/plans, then generates all chapters sequentially.
+  Future<void> prepareOutlineAndGenerate({
+    required String bookId,
+    required String outlinePrompt,
+  }) async {
+    await ensureLoaded();
+
+    final draft = _books[bookId];
+    if (draft == null) {
+      throw StateError('Book not found.');
+    }
+
+    BookOutline outline;
+    try {
+      final raw = await _request(
+        outlinePrompt,
+        maxTokens: 4000,
+        temperature: 0.72,
+      );
+      outline = _normalizeOutline(
+        BookOutline.fromJson(_decodeObject(raw)),
+        draft.spec,
+      );
+    } catch (error) {
+      debugPrint(
+        '⚠️ [BookGenerationManager] Outline parse/generation failed. '
+        'Using fallback outline instead. Error: $error',
+      );
+      outline = _fallbackOutline(draft.spec);
+    }
+
+    final latest = _books[bookId];
+    if (latest == null) return;
+
+    final chapters = List<GeneratedBookChapter>.generate(
+      latest.chapters.length,
+      (index) {
+        final old = latest.chapters[index];
+        final plannedTitle = index < outline.chapters.length
+            ? outline.chapters[index].title.trim()
+            : '';
+        return GeneratedBookChapter(
+          number: old.number,
+          title: plannedTitle.isEmpty ? 'Chapter ${index + 1}' : plannedTitle,
+          content: old.content,
+          status: old.status,
+          errorMessage: old.errorMessage,
+        );
+      },
+    );
+
+    await _replace(
+      GeneratedBook(
+        id: latest.id,
+        spec: latest.spec,
+        outline: outline,
+        chapters: chapters,
+        isGenerating: true,
+        isCompleted: latest.isCompleted,
+        createdAt: latest.createdAt,
+        updatedAt: DateTime.now(),
+      ),
+    );
+
+    try {
+      await generatePendingChapters(bookId);
+    } catch (error) {
+      // Never leave the visible draft permanently stuck in a generating state.
+      final failed = _books[bookId];
+      if (failed != null && failed.isGenerating) {
+        final stopped = failed.copyWith(
+          isGenerating: false,
+          updatedAt: DateTime.now(),
+        );
+        _books[bookId] = stopped;
+        notifyListeners();
+        unawaited(_save().catchError((saveError) {
+          debugPrint('⚠️ [BookGenerationManager] Failed to persist stopped state: $saveError');
+        }));
+      }
+      rethrow;
+    }
   }
 
   Future<GeneratedBook> createBook({
@@ -149,6 +276,13 @@ class BookGenerationManager extends ChangeNotifier {
           isCompleted: done,
           updatedAt: DateTime.now(),
         ));
+
+        if (done) {
+          unawaited(LocalNotificationService.shared.showBookCompleted(
+            latest.spec.title,
+            latest.chapters.length,
+          ));
+        }
       }
     } finally {
       _active.remove(bookId);
@@ -943,15 +1077,35 @@ WRITING RULES
         : <String, dynamic>{};
 
     final status = _historyStatus(book);
-    final completed = book.completedChapterCount;
+    final completedChapters = book.chapters
+        .where((c) =>
+            c.status == BookChapterStatus.completed &&
+            c.content.trim().isNotEmpty)
+        .toList();
+    final completed = completedChapters.length;
     final total = book.chapters.length;
+
+    // History must never contain an empty Book item. If an older draft entry
+    // exists, remove it until at least one chapter has real generated text.
+    if (completedChapters.isEmpty) {
+      entries.removeWhere(
+        (item) =>
+            item is Map &&
+            (item['bookId'] ?? '').toString() == book.id,
+      );
+      await prefs.setString(_historyKey, jsonEncode(entries));
+      saveVcHistoryRevision.value++;
+      return;
+    }
+
+    final completedText =
+        completedChapters.map((c) => c.content.trim()).join('\n\n');
 
     final entry = <String, dynamic>{
       'id': book.id,
       'bookId': book.id,
-      'text': '$status • $completed/$total chapters • '
-          '${book.totalWordCount} words • '
-          '${book.estimatedReadMinutes} min read',
+      'text': completedText,
+      'progress': '$completed/$total',
       'date': _historyDateText(book.updatedAt),
       'lang': book.spec.language,
       'title': book.spec.title,

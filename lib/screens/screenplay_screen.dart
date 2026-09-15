@@ -1199,11 +1199,11 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
     var backgroundGenerationStarted = false;
 
     try {
+      // Persist a lightweight draft immediately so the episode screen can
+      // open without waiting for the outline request.
       final screenplay =
-          await ScreenplayGenerationManager.shared.createScreenplay(
+          await ScreenplayGenerationManager.shared.createScreenplayDraft(
         spec: spec,
-        outlineSystemPrompt: _outlineSystemPrompt(),
-        outlinePrompt: _outlinePrompt(spec),
       );
 
       if (!isSubscription) {
@@ -1216,7 +1216,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
       }
 
       debugPrint(
-        '✅ [Screenplay] Outline ready - opening ${screenplay.id}',
+        '🎬 [Screenplay] Draft ready - opening ${screenplay.id}',
       );
 
       Navigator.of(context).push(
@@ -1229,10 +1229,15 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
 
       backgroundGenerationStarted = true;
 
+      // Outline preparation and all episode generation continue in background.
       ScreenplayGenerationManager.shared
-          .generatePendingEpisodes(screenplay.id)
+          .prepareOutlineAndGenerate(
+            screenplayId: screenplay.id,
+            outlineSystemPrompt: _outlineSystemPrompt(),
+            outlinePrompt: _outlinePrompt(spec),
+          )
           .catchError((error) {
-        debugPrint('Screenplay episode generation stopped: $error');
+        debugPrint('Screenplay generation stopped: $error');
       }).whenComplete(() {
         GenerationCoordinator.shared.finish(GenerationType.screenplay);
       });

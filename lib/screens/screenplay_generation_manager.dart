@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/easy_seek_api_manager.dart';
+import '../services/local_notification_service.dart';
 import 'screenplay_models.dart';
 
 class ScreenplayGenerationManager extends ChangeNotifier {
@@ -61,6 +63,137 @@ class ScreenplayGenerationManager extends ChangeNotifier {
 
     _loaded = true;
     notifyListeners();
+  }
+
+  /// Creates and persists a screenplay shell immediately so the episode
+  /// screen can open without waiting for the outline API request.
+  Future<GeneratedScreenplay> createScreenplayDraft({
+    required ScreenplayGenerationSpec spec,
+  }) async {
+    await ensureLoaded();
+
+    final now = DateTime.now();
+    final outline = _fallbackOutline(spec);
+
+    final screenplay = GeneratedScreenplay(
+      id: 'screenplay_${now.microsecondsSinceEpoch}',
+      spec: spec,
+      outline: outline,
+      episodes: List<GeneratedScreenplayEpisode>.generate(
+        spec.resolvedSceneCount,
+        (index) => GeneratedScreenplayEpisode(
+          number: index + 1,
+          title: 'Episode ${index + 1}',
+          status: ScreenplayEpisodeStatus.pending,
+        ),
+      ),
+      isGenerating: true,
+      isCompleted: false,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    _screenplays[screenplay.id] = screenplay;
+    notifyListeners();
+
+    // Open the episode screen first; disk persistence can finish in the
+    // background and must not delay navigation.
+    unawaited(_persist().catchError((error) {
+      debugPrint('⚠️ [ScreenplayGenerationManager] Draft persistence failed: $error');
+    }));
+    unawaited(LocalNotificationService.shared.prepare());
+    return screenplay;
+  }
+
+  /// Generates the real outline in the background, replaces the placeholder
+  /// episode plans/titles, then starts sequential episode generation.
+  Future<void> prepareOutlineAndGenerate({
+    required String screenplayId,
+    required String outlineSystemPrompt,
+    required String outlinePrompt,
+  }) async {
+    await ensureLoaded();
+
+    final draft = _screenplays[screenplayId];
+    if (draft == null) {
+      throw StateError('Screenplay not found.');
+    }
+
+    ScreenplayOutline outline;
+    try {
+      final raw = await _request(
+        systemPrompt: outlineSystemPrompt,
+        userPrompt: outlinePrompt,
+        maxTokens: 4000,
+        temperature: 0.72,
+      );
+
+      outline = _normalizeOutline(
+        ScreenplayOutline.fromJson(_decodeOutlineObject(raw)),
+        draft.spec,
+      );
+    } catch (error) {
+      debugPrint(
+        '⚠️ [ScreenplayGenerationManager] Outline failed; '
+        'using fallback outline. Error: $error',
+      );
+      outline = _fallbackOutline(draft.spec);
+    }
+
+    final latest = _screenplays[screenplayId];
+    if (latest == null) return;
+
+    final episodes = List<GeneratedScreenplayEpisode>.generate(
+      latest.episodes.length,
+      (index) {
+        final old = latest.episodes[index];
+        final plannedTitle = index < outline.episodes.length
+            ? outline.episodes[index].title.trim()
+            : '';
+
+        return GeneratedScreenplayEpisode(
+          number: old.number,
+          title: plannedTitle.isEmpty ? 'Episode ${index + 1}' : plannedTitle,
+          content: old.content,
+          status: old.status,
+          errorMessage: old.errorMessage,
+        );
+      },
+    );
+
+    // Construct a new model instead of relying on copyWith(outline: ...),
+    // keeping compatibility with the current model implementation.
+    await _replace(
+      GeneratedScreenplay(
+        id: latest.id,
+        spec: latest.spec,
+        outline: outline,
+        episodes: episodes,
+        isGenerating: true,
+        isCompleted: latest.isCompleted,
+        createdAt: latest.createdAt,
+        updatedAt: DateTime.now(),
+      ),
+    );
+
+    try {
+      await generatePendingEpisodes(screenplayId);
+    } catch (error) {
+      // Never leave the visible draft permanently stuck in a generating state.
+      final failed = _screenplays[screenplayId];
+      if (failed != null && failed.isGenerating) {
+        final stopped = failed.copyWith(
+          isGenerating: false,
+          updatedAt: DateTime.now(),
+        );
+        _screenplays[screenplayId] = stopped;
+        notifyListeners();
+        unawaited(_persist().catchError((saveError) {
+          debugPrint('⚠️ [ScreenplayGenerationManager] Failed to persist stopped state: $saveError');
+        }));
+      }
+      rethrow;
+    }
   }
 
   Future<GeneratedScreenplay> createScreenplay({
@@ -162,6 +295,13 @@ class ScreenplayGenerationManager extends ChangeNotifier {
           updatedAt: DateTime.now(),
         ),
       );
+
+      if (complete) {
+        unawaited(LocalNotificationService.shared.showScreenplayCompleted(
+          current.spec.title,
+          current.episodes.length,
+        ));
+      }
     } finally {
       _active.remove(screenplayId);
 
@@ -270,110 +410,109 @@ class ScreenplayGenerationManager extends ChangeNotifier {
       );
     }
 
-    final nextNumber = current.episodes.length + 1;
-    final title = requestedTitle.trim().isEmpty
-        ? 'Episode $nextNumber'
-        : requestedTitle.trim();
-
-    final newPlan = ScreenplayOutlineEpisode(
-      title: title,
-      mode: 'Continuation',
-      setting: '',
-      timeframe: '',
-      focusCharacters: const [],
-      beat: instruction,
-      advances: instruction,
-    );
-
-    final updatedOutline = ScreenplayOutline(
-      title: current.outline.title,
-      premise: current.outline.premise,
-      throughline: current.outline.throughline,
-      arc: current.outline.arc,
-      cost: current.outline.cost,
-      climaxEpisode: current.outline.climaxEpisode,
-      episodes: [...current.outline.episodes, newPlan],
-    );
-
-    final updatedSpec = ScreenplayGenerationSpec(
-      title: current.spec.title,
-      storyLogline: current.spec.storyLogline,
-      synopsis: current.spec.synopsis,
-      writtenBy: current.spec.writtenBy,
-      language: current.spec.language,
-      tone: current.spec.tone,
-      genre: current.spec.genre,
-      sceneLength: current.spec.sceneLength,
-      scriptFormat: current.spec.scriptFormat,
-      includedElements: current.spec.includedElements,
-      contentRating: current.spec.contentRating,
-      settingAndEra: current.spec.settingAndEra,
-      sceneCount: current.spec.sceneCount + 1,
-      characters: current.spec.characters,
-    );
-
-    // Insert the new episode FIRST as pending so the detail screen updates
-    // immediately. _generateEpisode() then changes it to "generating" before
-    // the API request starts, so the user sees live generation state.
-    final pending = GeneratedScreenplay(
-      id: current.id,
-      spec: updatedSpec,
-      outline: updatedOutline,
-      episodes: [
-        ...current.episodes,
-        GeneratedScreenplayEpisode(
-          number: nextNumber,
-          title: title,
-          status: ScreenplayEpisodeStatus.pending,
-        ),
-      ],
-      isGenerating: true,
-      isCompleted: false,
-      createdAt: current.createdAt,
-      updatedAt: DateTime.now(),
-    );
-
-    await _replace(pending);
-
     _active.add(screenplayId);
+
     try {
-      await _generateEpisodeWithRetry(
-        screenplayId,
-        pending.episodes.length - 1,
+      final nextNumber = current.episodes.length + 1;
+      final title = requestedTitle.trim().isEmpty
+          ? 'Episode $nextNumber'
+          : requestedTitle.trim();
+
+      final prompt = _addedEpisodePrompt(
+        current,
+        nextNumber: nextNumber,
+        requestedTitle: title,
+        instruction: instruction,
       );
 
-      final latest = _screenplays[screenplayId];
-      if (latest == null) return;
+      String? prose;
+      Object? lastError;
 
-      final complete = latest.episodes.isNotEmpty &&
-          latest.episodes.every(
-            (episode) => episode.status == ScreenplayEpisodeStatus.completed,
+      for (var attempt = 0; attempt < 3; attempt++) {
+        try {
+          prose = (await _request(
+            systemPrompt: _episodeSystemPrompt(current.spec),
+            userPrompt: prompt,
+            maxTokens: _episodeMaxTokens(current.spec.sceneLength),
+            temperature: 0.75,
+          ))
+              .trim();
+
+          if (prose.isEmpty) throw Exception('Empty episode response');
+          break;
+        } catch (error) {
+          lastError = error;
+          debugPrint(
+            'Added episode attempt ${attempt + 1}/3 failed: $error',
           );
+        }
+      }
 
-      await _replace(
-        latest.copyWith(
-          isGenerating: false,
-          isCompleted: complete,
-          updatedAt: DateTime.now(),
-        ),
-      );
-    } finally {
-      _active.remove(screenplayId);
-
-      final latest = _screenplays[screenplayId];
-      if (latest != null && latest.isGenerating) {
-        await _replace(
-          latest.copyWith(
-            isGenerating: false,
-            isCompleted: latest.episodes.isNotEmpty &&
-                latest.episodes.every(
-                  (episode) =>
-                      episode.status == ScreenplayEpisodeStatus.completed,
-                ),
-            updatedAt: DateTime.now(),
-          ),
+      if (prose == null || prose.isEmpty) {
+        throw Exception(
+          'Unable to generate the new episode. ${lastError ?? ''}',
         );
       }
+
+      final newPlan = ScreenplayOutlineEpisode(
+        title: title,
+        mode: 'Continuation',
+        setting: '',
+        timeframe: '',
+        focusCharacters: const [],
+        beat: instruction,
+        advances: instruction,
+      );
+
+      final updatedOutline = ScreenplayOutline(
+        title: current.outline.title,
+        premise: current.outline.premise,
+        throughline: current.outline.throughline,
+        arc: current.outline.arc,
+        cost: current.outline.cost,
+        climaxEpisode: current.outline.climaxEpisode,
+        episodes: [...current.outline.episodes, newPlan],
+      );
+
+      final updatedSpec = ScreenplayGenerationSpec(
+        title: current.spec.title,
+        storyLogline: current.spec.storyLogline,
+        synopsis: current.spec.synopsis,
+        writtenBy: current.spec.writtenBy,
+        language: current.spec.language,
+        tone: current.spec.tone,
+        genre: current.spec.genre,
+        sceneLength: current.spec.sceneLength,
+        scriptFormat: current.spec.scriptFormat,
+        includedElements: current.spec.includedElements,
+        contentRating: current.spec.contentRating,
+        settingAndEra: current.spec.settingAndEra,
+        sceneCount: current.spec.sceneCount + 1,
+        characters: current.spec.characters,
+      );
+
+      final updated = GeneratedScreenplay(
+        id: current.id,
+        spec: updatedSpec,
+        outline: updatedOutline,
+        episodes: [
+          ...current.episodes,
+          GeneratedScreenplayEpisode(
+            number: nextNumber,
+            title: title,
+            content: prose,
+            status: ScreenplayEpisodeStatus.completed,
+          ),
+        ],
+        isGenerating: false,
+        isCompleted: true,
+        createdAt: current.createdAt,
+        updatedAt: DateTime.now(),
+      );
+
+      await _replace(updated);
+    } finally {
+      _active.remove(screenplayId);
     }
   }
 
@@ -854,59 +993,51 @@ Output only the finished screenplay episode in ${screenplay.spec.language}.
       }
     }
 
-    final completed = screenplay.completedEpisodeCount;
+    final completedEpisodes = screenplay.episodes
+        .where((e) =>
+            e.status == ScreenplayEpisodeStatus.completed &&
+            e.content.trim().isNotEmpty)
+        .toList();
+    final completed = completedEpisodes.length;
     final total = screenplay.episodes.length;
-    final allText = screenplay.episodes
-        .where((e) => e.status == ScreenplayEpisodeStatus.completed)
-        .map((e) => e.content)
-        .join('\n\n');
+
+    // History must never contain an empty Screenplay item. If an older draft
+    // entry exists, remove it until at least one episode has real generated text.
+    if (completedEpisodes.isEmpty) {
+      entries.removeWhere(
+        (item) =>
+            item is Map &&
+            (item['screenplayId'] ?? '').toString() == screenplay.id,
+      );
+      await prefs.setString(_historyKey, jsonEncode(entries));
+      return;
+    }
+
+    final allText =
+        completedEpisodes.map((e) => e.content.trim()).join('\n\n');
 
     final words = allText.trim().isEmpty
         ? 0
         : allText.trim().split(RegExp(r'\s+')).length;
 
-    final status = screenplay.isCompleted
-        ? 'Completed'
-        : screenplay.isGenerating
-            ? 'Generating'
-            : screenplay.episodes.any(
-                (e) => e.status == ScreenplayEpisodeStatus.failed,
-              )
-                ? 'Paused'
-                : 'Incomplete';
-
-    final readMinutes = words == 0 ? 0 : (words / 200).ceil();
-    final local = screenplay.updatedAt.toLocal();
-    String two(int value) => value.toString().padLeft(2, '0');
-    final historyDate =
-        '${local.year}-${two(local.month)}-${two(local.day)} '
-        '${two(local.hour)}:${two(local.minute)}';
-
-    // Save the real generated screenplay body in History.
-    // SaveVc restores entry['text'] as the document body, so this must never
-    // contain the progress/status summary.
     final entry = <String, dynamic>{
       ...?existing,
-      'id': screenplay.id,
       'screenplayId': screenplay.id,
+      'contentType': 'Screenplay',
       'text': allText,
-      'date': historyDate,
-      'lang': screenplay.spec.language,
       'title': screenplay.spec.title,
       'category': screenplay.spec.genre,
-      'folder': (existing?['folder'] ?? '').toString(),
-      'isFav': existing?['isFav'] == true,
+      'lang': screenplay.spec.language,
       'hasTag': '${screenplay.spec.genre},${screenplay.spec.tone}',
-      'font': 'PlusJakartaSans-Medium',
-      'contentType': 'Screenplay',
-      'themeId': (existing?['themeId'] ?? '').toString(),
-      'screenplayStatus': status,
-      'completedEpisodes': completed,
-      'totalEpisodes': total,
+      'status': screenplay.isCompleted
+          ? 'completed'
+          : screenplay.isGenerating
+              ? 'generating'
+              : 'incomplete',
       'progress': '$completed/$total',
       'wordCount': words,
-      'readMinutes': readMinutes,
-      'colortype': '0',
+      'readMinutes': words == 0 ? 0 : (words / 200).ceil(),
+      'date': screenplay.updatedAt.toIso8601String(),
     };
 
     if (existingIndex >= 0) {

@@ -1424,9 +1424,10 @@ class _BookScreenState extends State<BookScreen> {
     var backgroundGenerationStarted = false;
 
     try {
-      final generatedBook = await BookGenerationManager.shared.createBook(
+      // Persist a draft immediately so the chapter screen can open without
+      // waiting for the outline API request.
+      final generatedBook = await BookGenerationManager.shared.createBookDraft(
         spec: spec,
-        outlinePrompt: outlinePrompt,
       );
 
       if (!isSubscription) {
@@ -1446,10 +1447,14 @@ class _BookScreenState extends State<BookScreen> {
 
       backgroundGenerationStarted = true;
 
+      // Outline preparation + chapter generation now continue in background.
       BookGenerationManager.shared
-          .generatePendingChapters(generatedBook.id)
+          .prepareOutlineAndGenerate(
+            bookId: generatedBook.id,
+            outlinePrompt: outlinePrompt,
+          )
           .catchError((error) {
-        debugPrint('Book chapter generation stopped: $error');
+        debugPrint('Book generation stopped: $error');
       }).whenComplete(() {
         GenerationCoordinator.shared.finish(GenerationType.book);
       });
