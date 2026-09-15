@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 /// Change this manually for now:
 /// true  = subscribed
 /// false = free
-bool isSubscription = false;
+bool isSubscription = true;
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({

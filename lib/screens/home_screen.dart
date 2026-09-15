@@ -11,6 +11,7 @@ import 'letter_screen.dart';
 import 'speech_screen.dart';
 import 'article_screen.dart';
 import 'info_screen.dart';
+import 'subscription_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -366,31 +367,41 @@ class _HomeScreenState extends State<HomeScreen>
 
           const SizedBox(width: 10),
 
-          Container(
-            height: 38,
-            padding: const EdgeInsets.symmetric(horizontal: 15),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFFAEEBFF),
-                  Color(0xFFF4D7FF),
-                ],
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const SubscriptionScreen(),
+                ),
+              );
+            },
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              height: 38,
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFFAEEBFF),
+                    Color(0xFFF4D7FF),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0xFFC879FF)
+                      : const Color(0xFF8FDFFF),
+                  width: 1,
+                ),
               ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isDark
-                    ? const Color(0xFFC879FF)
-                    : const Color(0xFF8FDFFF),
-                width: 1,
-              ),
-            ),
-            child: Text(
-              'PRO',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF111111),
+              child: Text(
+                'PRO',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF111111),
+                ),
               ),
             ),
           ),

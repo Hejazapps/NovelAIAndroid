@@ -10,6 +10,7 @@ import 'package:cross_file/cross_file.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -20,6 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/easy_seek_api_manager.dart';
 import '../services/realtime_db_manager.dart';
+import 'edit_vc.dart';
 
 typedef SaveVcGenerateCallback = Future<void> Function(
   String prompt,
@@ -111,6 +113,13 @@ class SaveVc extends StatefulWidget {
 }
 
 class _SaveVcState extends State<SaveVc> {
+  final AudioPlayer _storyMusicPlayer = AudioPlayer();
+  StreamSubscription<PlayerState>? _storyMusicStateSubscription;
+  bool _isStoryMusicPlaying = false;
+  bool _isStoryMusicPaused = false;
+  StoryMusicItem? _selectedStoryMusic;
+
+
   static const String _entriesKey = 'textDateEntries';
 
   final TextEditingController _textController = TextEditingController();
@@ -150,6 +159,7 @@ class _SaveVcState extends State<SaveVc> {
   List<Color>? _backgroundGradient;
   String? _backgroundAsset;
   String? _backgroundNetworkUrl;
+  String? _backgroundFilePath;
 
   Color? _forcedTextColor;
   int? _textureIndex;
@@ -285,6 +295,15 @@ class _SaveVcState extends State<SaveVc> {
   @override
   void initState() {
     super.initState();
+    _storyMusicStateSubscription =
+        _storyMusicPlayer.onPlayerStateChanged.listen((state) {
+      if (!mounted) return;
+      setState(() {
+        _isStoryMusicPlaying = state == PlayerState.playing;
+        _isStoryMusicPaused = state == PlayerState.paused;
+      });
+    });
+
 
     _title = widget.mainTitle.trim().isEmpty ? 'AI Story' : widget.mainTitle;
     _isFavorite = widget.isFromFav;
@@ -513,6 +532,9 @@ class _SaveVcState extends State<SaveVc> {
 
   @override
   void dispose() {
+    _storyMusicStateSubscription?.cancel();
+    _storyMusicPlayer.dispose();
+
     _hideShareProgress();
     _historyAutosaveTimer?.cancel();
     _bookDesignAutosaveTimer?.cancel();
@@ -564,40 +586,509 @@ class _SaveVcState extends State<SaveVc> {
     }
   }
 
+  Future<void> _showStoryMusicOptions() async {
+    if (widget.contentType.trim().toLowerCase() != 'story') return;
+
+    String query = '';
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            final accent =
+                isDark ? const Color(0xFF9146E8) : const Color(0xFFFF6435);
+            final background =
+                isDark ? const Color(0xFF2A2236) : Colors.white;
+            final surface =
+                isDark ? const Color(0xFF30283E) : const Color(0xFFF6F6F8);
+            final textColor =
+                isDark ? Colors.white : const Color(0xFF1D1A20);
+            final muted =
+                isDark ? const Color(0xFFD2CDD8) : const Color(0xFF77717C);
+
+            final tracks = _storyMusicItems
+                .where((item) =>
+                    item.name.toLowerCase().contains(query.toLowerCase()))
+                .toList();
+
+            return SafeArea(
+              child: Container(
+                height: MediaQuery.sizeOf(context).height * 0.72,
+                margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
+                decoration: BoxDecoration(
+                  color: background,
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Story Music',
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 21,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (_selectedStoryMusic != null)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: surface,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.music_note_rounded, color: accent),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _selectedStoryMusic!.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () async {
+                                if (_isStoryMusicPlaying) {
+                                  await _storyMusicPlayer.pause();
+                                } else if (_isStoryMusicPaused) {
+                                  await _storyMusicPlayer.resume();
+                                } else {
+                                  await _playStoryMusic(_selectedStoryMusic!);
+                                }
+                                setSheetState(() {});
+                              },
+                              icon: Icon(
+                                _isStoryMusicPlaying
+                                    ? Icons.pause_circle_filled_rounded
+                                    : Icons.play_circle_fill_rounded,
+                                color: accent,
+                                size: 31,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () async {
+                                await _storyMusicPlayer.stop();
+                                if (mounted) {
+                                  setState(() {
+                                    _isStoryMusicPlaying = false;
+                                    _isStoryMusicPaused = false;
+                                  });
+                                }
+                                setSheetState(() {});
+                              },
+                              icon: Icon(
+                                Icons.stop_circle_outlined,
+                                color: muted,
+                                size: 29,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    TextField(
+                      onChanged: (value) =>
+                          setSheetState(() => query = value),
+                      style: TextStyle(color: textColor),
+                      decoration: InputDecoration(
+                        hintText: 'Search music',
+                        hintStyle: TextStyle(color: muted),
+                        prefixIcon: Icon(Icons.search_rounded, color: muted),
+                        filled: true,
+                        fillColor: surface,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: ListView.separated(
+                        itemCount: tracks.length,
+                        separatorBuilder: (_, __) => Divider(
+                          height: 1,
+                          color: muted.withValues(alpha: 0.15),
+                        ),
+                        itemBuilder: (context, index) {
+                          final track = tracks[index];
+                          final selected =
+                              _selectedStoryMusic?.id == track.id;
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: CircleAvatar(
+                              backgroundColor:
+                                  accent.withValues(alpha: 0.14),
+                              child: Icon(
+                                Icons.music_note_rounded,
+                                color: accent,
+                              ),
+                            ),
+                            title: Text(
+                              track.name,
+                              style: TextStyle(
+                                color: textColor,
+                                fontWeight: selected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
+                            ),
+                            trailing: Icon(
+                              selected
+                                  ? Icons.equalizer_rounded
+                                  : Icons.play_arrow_rounded,
+                              color: accent,
+                            ),
+                            onTap: () async {
+                              setState(() => _selectedStoryMusic = track);
+                              await _playStoryMusic(track);
+                              setSheetState(() {});
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _playStoryMusic(StoryMusicItem track) async {
+    try {
+      await _storyMusicPlayer.stop();
+      await _storyMusicPlayer.setReleaseMode(ReleaseMode.loop);
+      await _storyMusicPlayer.play(
+        UrlSource(track.url),
+        volume: 0.35,
+      );
+    } catch (error) {
+      _showMessage('Unable to play music: $error');
+    }
+  }
+
   Future<void> _regenerate() async {
-    if (widget.onRegenerate == null || _isGenerating) return;
+    if (widget.contentType.trim().toLowerCase() != 'story') return;
+    if (_isGenerating) return;
+
+    final currentStory = _textController.text.trim();
+    if (currentStory.isEmpty) {
+      _showMessage('There is no story to regenerate.');
+      return;
+    }
+
+    final feedback = await _showRegenerateStorySheet();
+    if (feedback == null || !mounted) return;
+
+    final prompt = '''Rewrite the following story as a complete improved new version.
+
+LANGUAGE: ${widget.selectedLanguage}
+TITLE: $_title
+GENRE: ${widget.genre}
+
+USER REQUESTED IMPROVEMENTS:
+$feedback
+
+STRICT REQUIREMENTS:
+- Keep the same core premise, main characters, setting, and important continuity.
+- Apply ALL selected improvements.
+- Do not summarize the old story or explain changes.
+- Start directly with the rewritten story.
+- Return only one complete polished story in ${widget.selectedLanguage}.
+
+ORIGINAL STORY:
+$currentStory''';
 
     setState(() {
       _isGenerating = true;
       _generationCompleted = false;
-      _textController.clear();
     });
 
+    var generatedText = '';
+    var completedSuccessfully = false;
+
     try {
-      await widget.onRegenerate!(
-        widget.textToGive,
-        (streamedText) {
+      await EasySeekApiManager.shared.streamResponse(
+        message: prompt,
+        onUpdate: (streamedText) {
           if (!mounted) return;
+          generatedText = _cleanGeneratedText(streamedText);
           setState(() {
-            _textController.text = _cleanGeneratedText(streamedText);
+            _textController.text = generatedText;
             _textController.selection = TextSelection.collapsed(
               offset: _textController.text.length,
             );
           });
           _scrollToBottom();
         },
+        onCompletion: (success) {
+          completedSuccessfully = success;
+        },
       );
 
       if (!mounted) return;
+      if (!completedSuccessfully || generatedText.trim().isEmpty) {
+        setState(() {
+          _textController.text = currentStory;
+          _isGenerating = false;
+          _generationCompleted = true;
+        });
+        _showMessage('Regeneration failed. Your original story was restored.');
+        return;
+      }
+
       setState(() {
+        _textController.text = generatedText.trim();
+        _textController.selection = TextSelection.collapsed(
+          offset: _textController.text.length,
+        );
         _isGenerating = false;
-        _generationCompleted = _textController.text.trim().isNotEmpty;
+        _generationCompleted = true;
       });
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
-      setState(() => _isGenerating = false);
-      _showMessage('Regeneration failed. Please try again.');
+      setState(() {
+        _textController.text = currentStory;
+        _isGenerating = false;
+        _generationCompleted = true;
+      });
+      _showMessage('Regeneration failed. Your original story was restored.');
+      debugPrint('Story regeneration failed: $error');
     }
+  }
+
+  Future<String?> _showRegenerateStorySheet() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final background = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final card = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF6F6F8);
+    final textColor = isDark ? Colors.white : const Color(0xFF171717);
+    final muted = isDark ? const Color(0xFFAAA4B2) : const Color(0xFF77727D);
+    final accent = isDark ? const Color(0xFF9146E8) : const Color(0xFFFF6435);
+
+    return showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        bool specificFeedback = false;
+        final selected = <String>{};
+        final feedbackController = TextEditingController();
+
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            Widget modeButton({
+              required String title,
+              required String subtitle,
+              required IconData icon,
+              required bool selectedMode,
+              required VoidCallback onTap,
+            }) {
+              return Expanded(
+                child: InkWell(
+                  onTap: onTap,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: selectedMode ? accent.withValues(alpha: 0.12) : card,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: selectedMode ? accent : Colors.transparent,
+                        width: 1.2,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(icon, color: selectedMode ? accent : textColor),
+                        const SizedBox(height: 10),
+                        Text(title, style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w700)),
+                        const SizedBox(height: 3),
+                        Text(subtitle, style: TextStyle(color: muted, fontSize: 11.5, height: 1.25)),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            Widget improveChip(String label, IconData icon) {
+              final active = selected.contains(label);
+              return FilterChip(
+                selected: active,
+                showCheckmark: false,
+                avatar: Icon(icon, size: 17, color: active ? accent : muted),
+                label: Text(label),
+                labelStyle: TextStyle(color: active ? accent : textColor, fontWeight: FontWeight.w600),
+                backgroundColor: card,
+                selectedColor: accent.withValues(alpha: 0.12),
+                side: BorderSide(color: active ? accent : Colors.transparent),
+                onSelected: (value) {
+                  setSheetState(() {
+                    if (value) {
+                      selected.add(label);
+                    } else {
+                      selected.remove(label);
+                    }
+                  });
+                },
+              );
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: background,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                ),
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 22),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 18),
+                          decoration: BoxDecoration(
+                            color: muted.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text('Regenerate Story', style: TextStyle(color: textColor, fontSize: 22, fontWeight: FontWeight.w800)),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(sheetContext),
+                            icon: Icon(Icons.close_rounded, color: textColor),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text('Create Better Stories', style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 4),
+                      Text('Your feedback makes the story even better.', style: TextStyle(color: muted, fontSize: 13)),
+                      const SizedBox(height: 18),
+                      Row(
+                        children: [
+                          modeButton(
+                            title: 'Quick Improve',
+                            subtitle: 'Choose what you want to improve.',
+                            icon: Icons.auto_awesome_rounded,
+                            selectedMode: !specificFeedback,
+                            onTap: () => setSheetState(() => specificFeedback = false),
+                          ),
+                          const SizedBox(width: 10),
+                          modeButton(
+                            title: 'Specific Feedback',
+                            subtitle: 'Tell us exactly what did not work.',
+                            icon: Icons.edit_note_rounded,
+                            selectedMode: specificFeedback,
+                            onTap: () => setSheetState(() => specificFeedback = true),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      if (!specificFeedback) ...[
+                        Text('What would you like to improve?', style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w700)),
+                        const SizedBox(height: 3),
+                        Text('Choose one or more options.', style: TextStyle(color: muted, fontSize: 12)),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 6,
+                          children: [
+                            improveChip('More Emotion', Icons.favorite_border_rounded),
+                            improveChip('Clearer Story', Icons.lightbulb_outline_rounded),
+                            improveChip('Better Pacing', Icons.speed_rounded),
+                          ],
+                        ),
+                      ] else ...[
+                        Text('Not feeling it?', style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w700)),
+                        const SizedBox(height: 3),
+                        Text('Tell us what didn’t work, and let’s make it better.', style: TextStyle(color: muted, fontSize: 12)),
+                        const SizedBox(height: 10),
+                        TextField(
+                          controller: feedbackController,
+                          minLines: 3,
+                          maxLines: 5,
+                          textCapitalization: TextCapitalization.sentences,
+                          style: TextStyle(color: textColor),
+                          decoration: InputDecoration(
+                            hintText: 'Describe what you want to improve...',
+                            hintStyle: TextStyle(color: muted),
+                            filled: true,
+                            fillColor: card,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: accent,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                          onPressed: () {
+                            final result = specificFeedback
+                                ? feedbackController.text.trim()
+                                : selected.join(', ');
+
+                            if (result.isEmpty) {
+                              ScaffoldMessenger.of(sheetContext).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    specificFeedback
+                                        ? 'Please enter your feedback.'
+                                        : 'Choose at least one option.',
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+                            Navigator.pop(sheetContext, result);
+                          },
+                          icon: const Icon(Icons.auto_awesome_rounded),
+                          label: const Text('New Version', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _configureAndroidTts() async {
@@ -2354,6 +2845,65 @@ class _SaveVcState extends State<SaveVc> {
     }
   }
 
+  Future<EditVcThemeSelection?> _pickThemeForEditVc() async {
+    final result = await Navigator.of(context).push<_ThemeSelection>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => const _ThemePickerScreen(),
+      ),
+    );
+
+    if (result == null || result.type != _ThemeSelectionType.theme) return null;
+
+    return EditVcThemeSelection(
+      themeId: 'theme:${result.themeId ?? ''}',
+      themeUrl: result.themeUrl ?? '',
+      preferredTextColor: result.themeName?.toLowerCase() == 'white'
+          ? Colors.white
+          : Colors.black,
+    );
+  }
+
+  Future<void> _openIosStyleEditor() async {
+    if (_isGenerating) return;
+
+    final result = await Navigator.of(context).push<EditVcResult>(
+      MaterialPageRoute(
+        builder: (_) => EditVc(
+          text: _textController.text,
+          fontSize: _fontSize,
+          textAlign: _textAlign,
+          textColor: _forcedTextColor ?? _textColor,
+          backgroundColor: _backgroundColor,
+          backgroundGradient: _backgroundGradient,
+          backgroundNetworkUrl: _backgroundNetworkUrl,
+          backgroundFilePath: _backgroundFilePath,
+          themeId: _themeId,
+          onPickTheme: _pickThemeForEditVc,
+        ),
+      ),
+    );
+
+    if (result == null || !mounted) return;
+
+    setState(() {
+      _textController.text = result.text;
+      _textController.selection = TextSelection.collapsed(
+        offset: _textController.text.length,
+      );
+      _fontSize = result.fontSize;
+      _textAlign = result.textAlign;
+      _textColor = result.textColor;
+      _forcedTextColor = result.textColor;
+      _backgroundColor = result.backgroundColor;
+      _backgroundGradient = result.backgroundGradient;
+      _backgroundNetworkUrl = result.backgroundNetworkUrl;
+      _backgroundFilePath = result.backgroundFilePath;
+      _themeId = result.themeId;
+      _backgroundAsset = null;
+    });
+  }
+
   Future<void> _showTextStyleSheet() async {
     final originalFontSize = _fontSize;
     final originalFontWeight = _fontWeight;
@@ -3096,6 +3646,16 @@ class _SaveVcState extends State<SaveVc> {
   }
 
   Decoration _storyBackgroundDecoration() {
+    if (_backgroundFilePath != null &&
+        _backgroundFilePath!.trim().isNotEmpty) {
+      return BoxDecoration(
+        image: DecorationImage(
+          image: FileImage(File(_backgroundFilePath!)),
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+
     if (_backgroundNetworkUrl != null &&
         _backgroundNetworkUrl!.trim().isNotEmpty) {
       return BoxDecoration(
@@ -3234,8 +3794,7 @@ class _SaveVcState extends State<SaveVc> {
   }
 
   bool get _showRegenerate {
-    return widget.contentType.toLowerCase() == 'story' &&
-        widget.shouldNeedToCall &&
+    return widget.contentType.trim().toLowerCase() == 'story' &&
         !widget.isFromSave &&
         _generationCompleted &&
         !_isGenerating;
@@ -3815,10 +4374,13 @@ class _SaveVcState extends State<SaveVc> {
                         ),
                       ),
                     ),
-                  if (widget.onMusic != null)
+                  if (widget.contentType.trim().toLowerCase() == 'story')
                     _topIconButton(
-                      icon: Icons.music_note_outlined,
-                      onPressed: widget.onMusic,
+                      icon: _isStoryMusicPlaying
+                          ? Icons.music_note_rounded
+                          : Icons.music_note_outlined,
+                      onPressed:
+                          _isGenerating ? null : _showStoryMusicOptions,
                       tint: interfaceColor.withValues(
                         alpha: _isGenerating ? 0.35 : 1,
                       ),
@@ -3826,7 +4388,7 @@ class _SaveVcState extends State<SaveVc> {
                   _topImageButton(
                     path: 'assets/images/edit.png',
                     onPressed:
-                        widget.onOpenTextEditor ?? _showTextStyleSheet,
+                        widget.onOpenTextEditor ?? _openIosStyleEditor,
                     tint: interfaceColor.withValues(
                       alpha: _isGenerating ? 0.35 : 1,
                     ),
@@ -5076,3 +5638,35 @@ class _ThemePickerScreenState extends State<_ThemePickerScreen> {
     );
   }
 }
+
+
+class StoryMusicItem {
+  const StoryMusicItem({required this.id, required this.name});
+
+  final String id;
+  final String name;
+
+  String get url =>
+      'https://drive.google.com/uc?export=download&id=$id';
+}
+
+const List<StoryMusicItem> _storyMusicItems = [
+  StoryMusicItem(id: '1zTmYezLcC_OVxtkj4C15-VgsWhOXzUQ9', name: 'Virtual Relaxation'),
+  StoryMusicItem(id: '1yo3O64_eZ1K_9apm_lS9NStq1oc2IFrT', name: 'Relaxing Ambient Meditation'),
+  StoryMusicItem(id: '1sLx17IPVdu6WgLwBtEVxLXu3SFOE_5WX', name: 'A Nice Gun Shots Sound'),
+  StoryMusicItem(id: '1q8v6SXw9CuVoQVjm5WfgUGEQcIhbzF2-', name: 'Relaxing Background with Rain'),
+  StoryMusicItem(id: '1kyjqMEaExv2R7G7QkV7AF2lYRjssE20Z', name: 'Green Watercolor Sound Effect'),
+  StoryMusicItem(id: '1eSCCT_lvR65tb65vPHBvCstSVdu0vbWt', name: 'Ultimate Relaxation'),
+  StoryMusicItem(id: '1dYFIbCAxXMwrXSwrxj4O41ZZI6OGL0j7', name: 'Air Sound'),
+  StoryMusicItem(id: '1WKpWuWe1oczcFBG1RvoJYaU16CYQhsP0', name: 'Relaxing Ambient'),
+  StoryMusicItem(id: '1VUg6J2ULv9BoADfewEiBfPmPfUaQJzFv', name: 'Relaxing Light Background'),
+  StoryMusicItem(id: '1UZTgmEDuLtgd6PU0pJKD2OAcHj3tzVqp', name: 'Enstasy Raining Circles'),
+  StoryMusicItem(id: '1UAokN8iw0gQr7JoQCz70eDp6BJ7wzamP', name: 'Relaxing Gamelan Music'),
+  StoryMusicItem(id: '1A3KeAO01gW4CjCwwym7CAtcMOKO6APnG', name: 'Summer Beach Ambience'),
+  StoryMusicItem(id: '10tldyHCM4QTIWSIJaIGqT2LKgb15uiyg', name: 'Relaxing Orchestral Music'),
+  StoryMusicItem(id: '1IiJvGZ6ySdYtasqkFv92p1CmJOzIp9R8', name: 'Relaxing Ambient Meditation'),
+  StoryMusicItem(id: '1AbRz9pAESMJiBApXGeMXn7mWSo8JLaHE', name: 'Piano Melody for Relaxation'),
+  StoryMusicItem(id: '10_XrwLKzwAWJ9IsBjMhZRMo1YGvJwZGM', name: 'Atmospheric for Meditation Relaxation'),
+  StoryMusicItem(id: '1DUqTH5r5F4sZADF2hJnbIWSp5fZFDjRG', name: 'Relaxing Background Music'),
+  StoryMusicItem(id: '1NK73YZJDrJFa9pvqp3iB80B6_yMgzj9k', name: 'Relaxing Underwater Ambience'),
+];
