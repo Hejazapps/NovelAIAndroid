@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'save_vc.dart';
 import '../services/easy_seek_api_manager.dart';
+import 'subscription_screen.dart';
 
 class ArticleScreen extends StatefulWidget {
   const ArticleScreen({super.key});
@@ -55,6 +57,9 @@ class _ArticleScreenState extends State<ArticleScreen> {
   String selectedLanguage = 'English';
 
   int sectionValue = 3;
+
+  bool _isShowingSubscription = false;
+  static const String _freeArticleUsedKey = 'freeArticleCreationUsedV1';
 
   final List<String> depthOptions = const [
     'Short',
@@ -826,7 +831,37 @@ class _ArticleScreenState extends State<ArticleScreen> {
     );
   }
 
-  void _createArticle() {
+  Future<void> _openSubscription() async {
+    if (_isShowingSubscription || !mounted) return;
+
+    _isShowingSubscription = true;
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SubscriptionScreen(),
+        ),
+      );
+    } finally {
+      _isShowingSubscription = false;
+    }
+  }
+
+  Future<bool> _hasUsedFreeArticle() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_freeArticleUsedKey) == true;
+  }
+
+  Future<void> _markFreeArticleUsed() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_freeArticleUsedKey, true);
+  }
+
+  Future<void> _createArticle() async {
+    if (!isSubscription && await _hasUsedFreeArticle()) {
+      await _openSubscription();
+      return;
+    }
+
     final articleIdea = _articleIdeaController.text.trim();
     final targetReader = _targetReaderController.text.trim();
     final keywords = _keywordsController.text.trim();
@@ -879,6 +914,9 @@ class _ArticleScreenState extends State<ArticleScreen> {
               onUpdate: onUpdate,
               onCompletion: (success) {
                 completedSuccessfully = success;
+                if (success && !isSubscription) {
+                  _markFreeArticleUsed();
+                }
               },
             );
 

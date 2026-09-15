@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/realtime_db_manager.dart';
 import 'story_chat_screen.dart';
 import 'story_chat_history_screen.dart';
+import 'subscription_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -30,6 +31,9 @@ class _ChatScreenState extends State<ChatScreen> {
   List<StoryTellerItem> _storytellers = const [];
   bool _loadingStorytellers = true;
   String? _storytellerError;
+
+  bool _isShowingSubscription = false;
+  static const String _freeStoryChatUsedKey = 'freeStoryChatUsedV1';
 
   int _selectedStorytellerIndex = -1;
   int _selectedGenreIndex = 0;
@@ -873,6 +877,21 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Future<void> _openSubscription() async {
+    if (_isShowingSubscription || !mounted) return;
+
+    _isShowingSubscription = true;
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SubscriptionScreen(),
+        ),
+      );
+    } finally {
+      _isShowingSubscription = false;
+    }
+  }
+
   Widget _buildStorytellerSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -958,7 +977,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return GestureDetector(
       onTap: () {
         if (locked) {
-          _showProDialog();
+          _openSubscription();
           return;
         }
         setState(() => _selectedStorytellerIndex = index);
@@ -1533,7 +1552,13 @@ class _ChatScreenState extends State<ChatScreen> {
                       return GestureDetector(
                         onTap: () {
                           if (locked) {
-                            _showProDialog();
+                            Navigator.pop(sheetContext);
+                            Future.delayed(
+                              const Duration(milliseconds: 120),
+                              () {
+                                if (mounted) _openSubscription();
+                              },
+                            );
                             return;
                           }
                           Navigator.pop(sheetContext);
@@ -1770,6 +1795,15 @@ class _ChatScreenState extends State<ChatScreen> {
       return;
     }
 
+    if (!isSubscription) {
+      final prefs = await SharedPreferences.getInstance();
+      final hasUsedFreeChat = prefs.getBool(_freeStoryChatUsedKey) == true;
+      if (hasUsedFreeChat) {
+        await _openSubscription();
+        return;
+      }
+    }
+
     String storytellerName = '';
     String storytellerPrompt = '';
     if (_selectedStorytellerIndex >= 0 &&
@@ -1787,6 +1821,11 @@ class _ChatScreenState extends State<ChatScreen> {
       storytellerName: storytellerName,
       storytellerPrompt: storytellerPrompt,
     );
+
+    if (!isSubscription) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_freeStoryChatUsedKey, true);
+    }
 
     await Navigator.of(context).push(
       MaterialPageRoute<void>(

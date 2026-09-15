@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'save_vc.dart';
 import '../services/easy_seek_api_manager.dart';
+import 'subscription_screen.dart';
 
 class LetterScreen extends StatefulWidget {
   const LetterScreen({super.key});
@@ -24,6 +26,9 @@ class _LetterScreenState extends State<LetterScreen> {
   String selectedInclude = 'Personal Message';
   String selectedClosing = 'Sincerely';
   String selectedLength = 'Short';
+
+  bool _isShowingSubscription = false;
+  static const String _freeLetterUsedKey = 'freeLetterCreationUsedV1';
 
   final List<String> letterTypes = const [
     'Personal Letter',
@@ -729,7 +734,37 @@ class _LetterScreenState extends State<LetterScreen> {
     );
   }
 
-  void _createPressed() {
+  Future<void> _openSubscription() async {
+    if (_isShowingSubscription || !mounted) return;
+
+    _isShowingSubscription = true;
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SubscriptionScreen(),
+        ),
+      );
+    } finally {
+      _isShowingSubscription = false;
+    }
+  }
+
+  Future<bool> _hasUsedFreeLetter() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_freeLetterUsedKey) == true;
+  }
+
+  Future<void> _markFreeLetterUsed() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_freeLetterUsedKey, true);
+  }
+
+  Future<void> _createPressed() async {
+    if (!isSubscription && await _hasUsedFreeLetter()) {
+      await _openSubscription();
+      return;
+    }
+
     final message = _messageController.text.trim();
     final subject = _subjectController.text.trim();
 
@@ -788,6 +823,9 @@ class _LetterScreenState extends State<LetterScreen> {
               onUpdate: onUpdate,
               onCompletion: (success) {
                 completedSuccessfully = success;
+                if (success && !isSubscription) {
+                  _markFreeLetterUsed();
+                }
               },
             );
 

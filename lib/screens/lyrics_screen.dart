@@ -1,8 +1,45 @@
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'save_vc.dart';
 import '../services/easy_seek_api_manager.dart';
+import 'subscription_screen.dart';
+
+Future<bool> _hasUsedFreeLyricsFeature(String key) async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(key) == true;
+}
+
+Future<void> _markFreeLyricsFeatureUsed(String key) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(key, true);
+}
+
+Future<void> _openLyricsSubscription(BuildContext context) async {
+  if (!context.mounted) return;
+  await Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => const SubscriptionScreen(),
+    ),
+  );
+}
+
+Future<bool> _canUseLyricsFeature(
+  BuildContext context,
+  String key,
+) async {
+  if (isSubscription) return true;
+
+  if (await _hasUsedFreeLyricsFeature(key)) {
+    if (context.mounted) {
+      await _openLyricsSubscription(context);
+    }
+    return false;
+  }
+
+  return true;
+}
 
 Future<void> _openLyricsGeneration({
   required BuildContext context,
@@ -12,6 +49,7 @@ Future<void> _openLyricsGeneration({
   required String genre,
   required String tags,
   required String contentType,
+  required String freeUsageKey,
 }) async {
   await Navigator.of(context).push(
     MaterialPageRoute(
@@ -33,6 +71,9 @@ Future<void> _openLyricsGeneration({
             onUpdate: onUpdate,
             onCompletion: (success) {
               completedSuccessfully = success;
+              if (success && !isSubscription) {
+                _markFreeLyricsFeatureUsed(freeUsageKey);
+              }
             },
           );
 
@@ -795,6 +836,7 @@ class _CreateLyricsPage extends StatefulWidget {
 }
 
 class _CreateLyricsPageState extends State<_CreateLyricsPage> {
+  static const String _freeUsageKey = 'freeLyricsCreationUsedV1';
   final _keyPoints = TextEditingController();
   final _description = TextEditingController();
   String? _genre;
@@ -816,7 +858,9 @@ class _CreateLyricsPageState extends State<_CreateLyricsPage> {
     super.dispose();
   }
 
-  void _create() {
+  Future<void> _create() async {
+    if (!await _canUseLyricsFeature(context, _freeUsageKey)) return;
+
     final keyPoints = _keyPoints.text.trim();
     final description = _description.text.trim();
 
@@ -872,6 +916,7 @@ Return only the finished lyrics. Do not explain your process, do not add notes, 
       genre: 'Lyrics',
       tags: '${_genre ?? 'Lyrics'},Lyrics',
       contentType: 'Lyrics',
+      freeUsageKey: _freeUsageKey,
     );
   }
 
@@ -933,6 +978,7 @@ class _CreateChorusPage extends StatefulWidget {
 }
 
 class _CreateChorusPageState extends State<_CreateChorusPage> {
+  static const String _freeUsageKey = 'freeChorusCreationUsedV1';
   final _description = TextEditingController();
   String? _structure;
   String? _length;
@@ -944,7 +990,9 @@ class _CreateChorusPageState extends State<_CreateChorusPage> {
     super.dispose();
   }
 
-  void _create() {
+  Future<void> _create() async {
+    if (!await _canUseLyricsFeature(context, _freeUsageKey)) return;
+
     final description = _description.text.trim();
     if (description.isEmpty) {
       _showMessage(context, 'Please enter a description.');
@@ -993,6 +1041,7 @@ Return only the chorus lyrics. Do not add explanations, headings, notes, analysi
       genre: 'Lyrics',
       tags: '${_structure ?? 'Chorus'},${_length ?? 'Medium'}',
       contentType: 'Lyrics',
+      freeUsageKey: _freeUsageKey,
     );
   }
 
@@ -1054,6 +1103,7 @@ class _CreateVersePage extends StatefulWidget {
 }
 
 class _CreateVersePageState extends State<_CreateVersePage> {
+  static const String _freeUsageKey = 'freeVerseCreationUsedV1';
   final _keyPoints = TextEditingController();
   String? _genre;
   String? _language;
@@ -1070,7 +1120,9 @@ class _CreateVersePageState extends State<_CreateVersePage> {
     super.dispose();
   }
 
-  void _create() {
+  Future<void> _create() async {
+    if (!await _canUseLyricsFeature(context, _freeUsageKey)) return;
+
     final keyPoints = _keyPoints.text.trim();
     if (keyPoints.isEmpty) {
       _showMessage(context, 'Please enter your verse idea.');
@@ -1117,6 +1169,7 @@ Return only the finished verse. No explanation, notes, headings, analysis, or co
       genre: 'Lyrics',
       tags: '${_genre ?? 'Verse'},Verse',
       contentType: 'Lyrics',
+      freeUsageKey: _freeUsageKey,
     );
   }
 
@@ -1173,6 +1226,7 @@ class _CreateRhymingPage extends StatefulWidget {
 }
 
 class _CreateRhymingPageState extends State<_CreateRhymingPage> {
+  static const String _freeUsageKey = 'freeRhymingCreationUsedV1';
   final _keyPoints = TextEditingController();
   String? _type;
   String? _structure;
@@ -1185,7 +1239,9 @@ class _CreateRhymingPageState extends State<_CreateRhymingPage> {
     super.dispose();
   }
 
-  void _create() {
+  Future<void> _create() async {
+    if (!await _canUseLyricsFeature(context, _freeUsageKey)) return;
+
     final keyPoints = _keyPoints.text.trim();
     if (keyPoints.isEmpty) {
       _showMessage(context, 'Please enter a word or line.');
@@ -1233,6 +1289,7 @@ Return only the rhyming lyric options, one option per line. Do not explain the r
       genre: 'Lyrics',
       tags: '${_type ?? 'Rhyme'},${_structure ?? 'Flexible'}',
       contentType: 'Lyrics',
+      freeUsageKey: _freeUsageKey,
     );
   }
 

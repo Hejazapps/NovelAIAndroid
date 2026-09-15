@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'save_vc.dart';
 import '../services/easy_seek_api_manager.dart';
+import 'subscription_screen.dart';
 
 class CreateCharacterScreen extends StatefulWidget {
   const CreateCharacterScreen({super.key});
@@ -22,6 +24,10 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
   String _roleInStory = 'Hero';
   String _storyGenre = 'Horror';
   int _credibilityIndex = 0;
+
+  bool _isShowingSubscription = false;
+  static const String _freeCharacterUsedKey =
+      'freeCharacterCreationUsedV1';
 
   final ScrollController _genreScrollController = ScrollController();
 
@@ -919,8 +925,40 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     return cleaned.isEmpty ? 'Not specified' : cleaned;
   }
 
-  void _createCharacter() {
+  Future<void> _openSubscription() async {
+    if (_isShowingSubscription || !mounted) return;
+
+    _isShowingSubscription = true;
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SubscriptionScreen(),
+        ),
+      );
+    } finally {
+      _isShowingSubscription = false;
+    }
+  }
+
+  Future<bool> _hasUsedFreeCharacter() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_freeCharacterUsedKey) == true;
+  }
+
+  Future<void> _markFreeCharacterUsed() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_freeCharacterUsedKey, true);
+  }
+
+  Future<void> _createCharacter() async {
     FocusScope.of(context).unfocus();
+
+    // Free users can successfully create one character total.
+    // Every later Create attempt opens Subscription.
+    if (!isSubscription && await _hasUsedFreeCharacter()) {
+      await _openSubscription();
+      return;
+    }
 
     final name = _nameController.text.trim();
     final detail = _detailController.text.trim();
@@ -972,6 +1010,9 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
               onUpdate: onUpdate,
               onCompletion: (success) {
                 completedSuccessfully = success;
+                if (success && !isSubscription) {
+                  _markFreeCharacterUsed();
+                }
               },
             );
 

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'save_vc.dart';
 import '../services/easy_seek_api_manager.dart';
+import 'subscription_screen.dart';
 
 class SpeechScreen extends StatefulWidget {
   const SpeechScreen({super.key});
@@ -23,6 +25,9 @@ class _SpeechScreenState extends State<SpeechScreen> {
   String _selectedLanguage = 'English';
 
   double _duration = 3;
+
+  bool _isShowingSubscription = false;
+  static const String _freeSpeechUsedKey = 'freeSpeechCreationUsedV1';
 
   final List<String> _eventOptions = const [
     'Wedding',
@@ -303,8 +308,38 @@ class _SpeechScreenState extends State<SpeechScreen> {
   }
 
 
-  void _generateSpeech() {
+  Future<void> _openSubscription() async {
+    if (_isShowingSubscription || !mounted) return;
+
+    _isShowingSubscription = true;
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SubscriptionScreen(),
+        ),
+      );
+    } finally {
+      _isShowingSubscription = false;
+    }
+  }
+
+  Future<bool> _hasUsedFreeSpeech() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_freeSpeechUsedKey) == true;
+  }
+
+  Future<void> _markFreeSpeechUsed() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_freeSpeechUsedKey, true);
+  }
+
+  Future<void> _generateSpeech() async {
     FocusScope.of(context).unfocus();
+
+    if (!isSubscription && await _hasUsedFreeSpeech()) {
+      await _openSubscription();
+      return;
+    }
 
     final topic = _topicController.text.trim();
     final speaker = _speakerController.text.trim();
@@ -367,6 +402,9 @@ class _SpeechScreenState extends State<SpeechScreen> {
               onUpdate: onUpdate,
               onCompletion: (success) {
                 completedSuccessfully = success;
+                if (success && !isSubscription) {
+                  _markFreeSpeechUsed();
+                }
               },
             );
 
