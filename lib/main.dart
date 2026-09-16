@@ -3,11 +3,14 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'screens/main_tab_screen.dart';
 import 'screens/settings_screen.dart';
+import 'l10n/app_l10n.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await SettingsThemeController.instance.load();
+  await AppLocaleController.instance.load();
+  AppL10n.sync(AppLocaleController.instance.locale.value);
   runApp(const NovelAIApp());
 }
 
@@ -19,7 +22,12 @@ class NovelAIApp extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: SettingsThemeController.instance.themeMode,
       builder: (context, themeMode, child) {
-        return MaterialApp(
+        return ValueListenableBuilder<Locale?>(
+          valueListenable: AppLocaleController.instance.locale,
+          builder: (context, locale, child) {
+            AppL10n.sync(locale);
+
+            return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'NovelAI',
           themeMode: themeMode,
@@ -41,7 +49,11 @@ class NovelAIApp extends StatelessWidget {
               brightness: Brightness.dark,
             ),
           ),
-          home: const MainTabScreen(),
+              locale: locale,
+              supportedLocales: AppL10n.supportedLocales,
+              home: const MainTabScreen(),
+            );
+          },
         );
       },
     );

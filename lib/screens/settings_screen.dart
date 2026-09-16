@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../l10n/app_l10n.dart';
+
 class SettingsThemeController {
   SettingsThemeController._();
 
@@ -95,6 +97,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       'apaceapps2025@gmail.com';
 
   late int _selectedTheme;
+  String _selectedLanguageCode = AppL10n.currentCode;
 
   @override
   void initState() {
@@ -104,6 +107,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         SettingsThemeController.instance.selectedIndex;
 
     _loadSelectedTheme();
+    _loadSelectedLanguage();
   }
 
   Future<void> _loadSelectedTheme() async {
@@ -119,6 +123,91 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _selectedTheme =
           value.clamp(0, 2).toInt();
     });
+  }
+
+  Future<void> _loadSelectedLanguage() async {
+    await AppLocaleController.instance.load();
+    AppL10n.sync(AppLocaleController.instance.locale.value);
+    if (!mounted) return;
+    setState(() => _selectedLanguageCode = AppL10n.currentCode);
+  }
+
+  String _languageName(String code) {
+    for (final language in AppL10n.languages) {
+      if (language.code == code) return language.name;
+    }
+    return 'English';
+  }
+
+  Future<void> _changeLanguage(String code) async {
+    await AppLocaleController.instance.setLanguage(code);
+    AppL10n.sync(AppLocaleController.instance.locale.value);
+    if (!mounted) return;
+    setState(() => _selectedLanguageCode = code);
+  }
+
+  Future<void> _showLanguagePicker() async {
+    String searchText = '';
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, refresh) {
+          final q = searchText.trim().toLowerCase();
+          final languages = AppL10n.languages.where((l) =>
+            q.isEmpty || l.name.toLowerCase().contains(q) ||
+            l.code.toLowerCase().contains(q)).toList();
+          return SizedBox(
+            height: MediaQuery.of(context).size.height * .78,
+            child: Column(children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(AppL10n.tr('Language'),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700)),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  onChanged: (v) { searchText = v; refresh(() {}); },
+                  decoration: InputDecoration(
+                    hintText: AppL10n.tr('Search language...'),
+                    prefixIcon: const Icon(Icons.search_rounded),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: languages.length,
+                  itemBuilder: (context, index) {
+                    final l = languages[index];
+                    return ListTile(
+                      title: Text(l.name),
+                      trailing: l.code == _selectedLanguageCode
+                        ? Icon(Icons.check_circle_rounded,
+                            color: Theme.of(context).colorScheme.primary)
+                        : null,
+                      onTap: () async {
+                        await _changeLanguage(l.code);
+                        if (sheetContext.mounted) Navigator.pop(sheetContext);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ]),
+          );
+        },
+      ),
+    );
   }
 
   Future<void> _changeTheme(int index) async {
@@ -314,6 +403,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             _privacyUrl,
                           );
                         },
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(
+                    height: 24,
+                  ),
+
+                  _sectionTitle(
+                    'Language',
+                  ),
+
+                  _settingsCard(
+                    context,
+                    children: [
+                      _settingsRowWithValue(
+                        context,
+                        icon: Icons.language_rounded,
+                        title: 'Language',
+                        value: _languageName(_selectedLanguageCode),
+                        onTap: _showLanguagePicker,
                       ),
                     ],
                   ),
@@ -708,6 +818,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       .colorScheme
                       .onSurfaceVariant,
                 ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _settingsRowWithValue(
+      BuildContext context, {
+        required IconData icon,
+        required String title,
+        required String value,
+        required VoidCallback onTap,
+      }) {
+    final theme = Theme.of(context);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          height: 60,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 25,
+                  height: 25,
+                  child: Icon(icon, size: 23, color: theme.colorScheme.onSurface),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(title, style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500, fontSize: 14)),
+                ),
+                Flexible(
+                  child: Text(value, maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant)),
+                ),
+                const SizedBox(width: 8),
+                Icon(Icons.arrow_forward_ios_rounded, size: 15,
+                  color: theme.colorScheme.onSurfaceVariant),
               ],
             ),
           ),
