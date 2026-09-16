@@ -994,7 +994,7 @@
   "Sonnet": "Sonnet",
   "Sonnet (Petrarchan)": "Sonnet (Petrarchan)",
   "Sonnet (Shakespearean)": "Sonnet (Shakespearean)",
-  "Sort By": "Sort By",
+  "Sort By": "Urutkan berdasarkan",
   "Sound Effects": "Sound Effects",
   "Space Opera": "Space Opera",
   "Spanish": "Spanish",
@@ -1452,5 +1452,16 @@
   "words": "words",
   "writing_tips_title": "Tips Menulis",
   "year": "year",
-  "‹ Previous": "‹ Previous"
+  "‹ Previous": "‹ Previous",
+  "Terms & Condition": "Syarat & Ketentuan",
+  "More Apps": "Aplikasi Lainnya",
+  "Information": "Informasi",
+  "Unable to open the link.": "Tautan tidak dapat dibuka.",
+  "Email is not configured on this device.": "Email belum dikonfigurasi di perangkat ini.",
+  "Minimalist Launcher: LessPhone": "Peluncur Minimalis: LessPhone",
+  "Turn your smartphone into a distraction-free minimalist device.": "Ubah ponsel pintar Anda menjadi perangkat minimalis bebas gangguan.",
+  "Easy QR Creator: QR Code Maker": "Pembuat QR Mudah: QR Code Maker",
+  "Generate stunning QR & barcodes — and keep everything organized in one place.": "Buat QR dan barcode yang menarik serta simpan semuanya tetap teratur di satu tempat.",
+  "Newest First": "Terbaru dulu",
+  "Oldest First": "Terlama dulu"
 }

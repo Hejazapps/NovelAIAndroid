@@ -994,7 +994,7 @@
   "Sonnet": "سونيت",
   "Sonnet (Petrarchan)": "سونيت (بتراركي)",
   "Sonnet (Shakespearean)": "سونيت (شكسبيري)",
-  "Sort By": "فرز حسب",
+  "Sort By": "ترتيب حسب",
   "Sound Effects": "المؤثرات الصوتية",
   "Space Opera": "أوبرا الفضاء",
   "Spanish": "الإسبانية",
@@ -1452,5 +1452,16 @@
   "words": "كلمات",
   "writing_tips_title": "نصائح الكتابة",
   "year": "سنة",
-  "‹ Previous": "‹ السابق"
+  "‹ Previous": "‹ السابق",
+  "Terms & Condition": "الشروط والأحكام",
+  "More Apps": "المزيد من التطبيقات",
+  "Information": "المعلومات",
+  "Unable to open the link.": "تعذر فتح الرابط.",
+  "Email is not configured on this device.": "البريد الإلكتروني غير مُعدّ على هذا الجهاز.",
+  "Minimalist Launcher: LessPhone": "المشغّل البسيط: LessPhone",
+  "Turn your smartphone into a distraction-free minimalist device.": "حوّل هاتفك الذكي إلى جهاز بسيط خالٍ من المشتتات.",
+  "Easy QR Creator: QR Code Maker": "منشئ QR السهل: QR Code Maker",
+  "Generate stunning QR & barcodes — and keep everything organized in one place.": "أنشئ رموز QR وباركود رائعة واحتفظ بكل شيء منظماً في مكان واحد.",
+  "Newest First": "الأحدث أولاً",
+  "Oldest First": "الأقدم أولاً"
 }

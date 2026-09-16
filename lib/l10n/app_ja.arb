@@ -1452,5 +1452,16 @@
   "words": "単語",
   "writing_tips_title": "ライティングのヒント",
   "year": "年",
-  "‹ Previous": "‹ 前へ"
+  "‹ Previous": "‹ 前へ",
+  "Terms & Condition": "利用規約",
+  "More Apps": "その他のアプリ",
+  "Information": "情報",
+  "Unable to open the link.": "リンクを開けませんでした。",
+  "Email is not configured on this device.": "このデバイスではメールが設定されていません。",
+  "Minimalist Launcher: LessPhone": "ミニマリストランチャー: LessPhone",
+  "Turn your smartphone into a distraction-free minimalist device.": "スマートフォンを気が散らないミニマルなデバイスに変えます。",
+  "Easy QR Creator: QR Code Maker": "かんたんQR作成: QR Code Maker",
+  "Generate stunning QR & barcodes — and keep everything organized in one place.": "魅力的なQRコードとバーコードを作成し、すべてを1か所で整理できます。",
+  "Newest First": "新しい順",
+  "Oldest First": "古い順"
 }

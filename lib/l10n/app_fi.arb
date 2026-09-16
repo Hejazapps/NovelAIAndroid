@@ -1452,5 +1452,16 @@
   "words": "sanat",
   "writing_tips_title": "Kirjoitusvinkkejä",
   "year": "vuosi",
-  "‹ Previous": "‹ Edellinen"
+  "‹ Previous": "‹ Edellinen",
+  "Terms & Condition": "Käyttöehdot",
+  "More Apps": "Lisää sovelluksia",
+  "Information": "Tiedot",
+  "Unable to open the link.": "Linkkiä ei voitu avata.",
+  "Email is not configured on this device.": "Sähköpostia ei ole määritetty tällä laitteella.",
+  "Minimalist Launcher: LessPhone": "Minimalistinen käynnistin: LessPhone",
+  "Turn your smartphone into a distraction-free minimalist device.": "Muuta älypuhelimesi häiriöttömäksi minimalistiseksi laitteeksi.",
+  "Easy QR Creator: QR Code Maker": "Helppo QR-luoja: QR Code Maker",
+  "Generate stunning QR & barcodes — and keep everything organized in one place.": "Luo näyttäviä QR- ja viivakoodeja ja pidä kaikki järjestyksessä yhdessä paikassa.",
+  "Newest First": "Uusimmat ensin",
+  "Oldest First": "Vanhimmat ensin"
 }

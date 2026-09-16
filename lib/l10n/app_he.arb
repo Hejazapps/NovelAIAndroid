@@ -994,7 +994,7 @@
   "Sonnet": "סונטה",
   "Sonnet (Petrarchan)": "סונטה (פטרארכן)",
   "Sonnet (Shakespearean)": "סונטה (שייקספירית)",
-  "Sort By": "מיין לפי",
+  "Sort By": "מיון לפי",
   "Sound Effects": "אפקטים קוליים",
   "Space Opera": "אופרת חלל",
   "Spanish": "ספרדית",
@@ -1452,5 +1452,16 @@
   "words": "מילים",
   "writing_tips_title": "טיפים לכתיבה",
   "year": "לשנה",
-  "‹ Previous": "‹ הקודם"
+  "‹ Previous": "‹ הקודם",
+  "Terms & Condition": "תנאים והגבלות",
+  "More Apps": "אפליקציות נוספות",
+  "Information": "מידע",
+  "Unable to open the link.": "לא ניתן לפתוח את הקישור.",
+  "Email is not configured on this device.": "דוא״ל אינו מוגדר במכשיר זה.",
+  "Minimalist Launcher: LessPhone": "משגר מינימליסטי: LessPhone",
+  "Turn your smartphone into a distraction-free minimalist device.": "הפכו את הטלפון החכם למכשיר מינימליסטי ללא הסחות דעת.",
+  "Easy QR Creator: QR Code Maker": "יוצר QR קל: QR Code Maker",
+  "Generate stunning QR & barcodes — and keep everything organized in one place.": "צרו קודי QR וברקודים מרשימים ושמרו הכול מסודר במקום אחד.",
+  "Newest First": "החדשים ביותר תחילה",
+  "Oldest First": "הישנים ביותר תחילה"
 }

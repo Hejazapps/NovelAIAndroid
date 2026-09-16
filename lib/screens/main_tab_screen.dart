@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_l10n.dart';
+
 import 'home_screen.dart';
 import 'history_screen.dart';
 import 'save_vc.dart';
@@ -117,9 +119,11 @@ class _MainTabScreenState extends State<MainTabScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                label,
+                AppL10n.tr(label),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 11.5,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                   color: selected ? selectedColor : unselectedColor,
                 ),

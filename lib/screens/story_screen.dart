@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_l10n.dart';
 import 'save_vc.dart';
 import '../services/easy_seek_api_manager.dart';
 import '../services/story_free_usage_manager.dart';
@@ -405,8 +406,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
           ),
           const SizedBox(width: 4),
           Expanded(
-            child: Text(
-              'Create Story',
+            child: Text(AppL10n.tr('Create Story'),
               style: TextStyle(
                 fontSize: 23,
                 fontWeight: FontWeight.w700,
@@ -445,8 +445,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Enter Your Imaginations',
+          Text(AppL10n.tr('Enter Your Imaginations'),
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
@@ -478,7 +477,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                         color: _storyText(context),
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Describe your prompt here…',
+                        hintText: AppL10n.tr('Describe your prompt here…'),
                         hintStyle: TextStyle(
                           fontSize: 14,
                           color: _storyHint(context),
@@ -520,8 +519,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
             ),
           ),
           const SizedBox(width: 8),
-          Text(
-            'Rewrite with AI',
+          Text(AppL10n.tr('Rewrite with AI'),
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -554,8 +552,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                   children: [
                     Icon(Icons.close_rounded, size: 17, color: _storyMuted(context)),
                     SizedBox(width: 4),
-                    Text(
-                      'Clear',
+                    Text(AppL10n.tr('Clear'),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -581,8 +578,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                 children: [
                   Icon(Icons.auto_awesome, size: 15, color: _storyAccent(context)),
                   SizedBox(width: 6),
-                  Text(
-                    'Inspire Me',
+                  Text(AppL10n.tr('Inspire Me'),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -647,8 +643,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Story Title',
+          Text(AppL10n.tr('Story Title'),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -670,7 +665,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                 color: _storyText(context),
               ),
               decoration: InputDecoration(
-                hintText: 'Enter story title',
+                hintText: AppL10n.tr('Enter story title'),
                 hintStyle: TextStyle(fontSize: 14, color: _storyHint(context)),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 16),
@@ -691,8 +686,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
           child: Row(
             children: [
               Expanded(
-                child: Text(
-                  'Story Genre',
+                child: Text(AppL10n.tr('Story Genre'),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -704,8 +698,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                 onTap: _showAllGenres,
                 child: Padding(
                   padding: EdgeInsets.all(6),
-                  child: Text(
-                    'View All',
+                  child: Text(AppL10n.tr('View All'),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -791,7 +784,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
             ),
             const SizedBox(height: 7),
             Text(
-              genre.name,
+              AppL10n.tr(genre.name),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -861,12 +854,11 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(20, 20, 20, 15),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 15),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Select Genre',
+                    child: Text(AppL10n.tr('Select Genre'),
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                     ),
                   ),
@@ -948,7 +940,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                             ),
                             const SizedBox(height: 7),
                             Text(
-                              genre.name,
+                              AppL10n.tr(genre.name),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -983,8 +975,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Story Length',
+          Text(AppL10n.tr('Story Length'),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -1023,7 +1014,7 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                             : null,
                       ),
                       child: Text(
-                        value,
+                        AppL10n.tr(value),
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight:
@@ -1092,17 +1083,16 @@ Write a fairy tale story about a lonely child who discovers an ancient tree that
                       borderRadius: BorderRadius.circular(16),
                     ),
                     alignment: Alignment.center,
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.auto_awesome_rounded,
                           color: Colors.white,
                           size: 18,
                         ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Generate',
+                        const SizedBox(width: 8),
+                        Text(AppL10n.tr('Generate'),
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
@@ -1616,8 +1606,7 @@ class _AdvancedStorySettingsScreenState
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
             onPressed: _closeWithSettings,
           ),
-          title: const Text(
-            'Advance Settings',
+          title: Text(AppL10n.tr('Advance Settings'),
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
           ),
         ),
@@ -2171,15 +2160,14 @@ class _AdvancedStorySettingsScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
-                      style: TextStyle(
+              AppL10n.tr(title),
+              style: TextStyle(
                         fontSize: 12,
                         color: _storyMuted(context),
                       ),
                     ),
                     const SizedBox(height: 3),
-                    Text(
-                      value,
+                    Text(AppL10n.tr(value),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -2266,8 +2254,8 @@ class _AdvancedStorySettingsScreenState
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          title,
-                          style: TextStyle(
+              AppL10n.tr(title),
+              style: TextStyle(
                             fontSize: 19,
                             fontWeight: FontWeight.w700,
                             color: _storyText(context),
@@ -2372,8 +2360,7 @@ class _AdvancedStorySettingsScreenState
                                     horizontal: 20,
                                     vertical: 1,
                                   ),
-                                  title: Text(
-                                    value,
+                                  title: Text(AppL10n.tr(value),
                                     style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: isSelected
@@ -2493,7 +2480,7 @@ class _AddCharacterSheetState extends State<_AddCharacterSheet> {
                 textInputAction: TextInputAction.next,
                 decoration: InputDecoration(
                   labelText: 'Character Name',
-                  hintText: 'Enter character name',
+                  hintText: AppL10n.tr('Enter character name'),
                   filled: true,
                   fillColor: _storySurfaceAlt(context),
                   border: OutlineInputBorder(
@@ -2567,8 +2554,7 @@ class _AddCharacterSheetState extends State<_AddCharacterSheet> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                   ),
-                  child: const Text(
-                    'Add Character',
+                  child: Text(AppL10n.tr('Add Character'),
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,

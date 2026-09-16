@@ -1452,5 +1452,16 @@
   "words": "words",
   "writing_tips_title": "Writing Tips",
   "year": "year",
-  "‹ Previous": "‹ ก่อนหน้า"
+  "‹ Previous": "‹ ก่อนหน้า",
+  "Terms & Condition": "ข้อกำหนดและเงื่อนไข",
+  "More Apps": "แอปเพิ่มเติม",
+  "Information": "ข้อมูล",
+  "Unable to open the link.": "ไม่สามารถเปิดลิงก์ได้",
+  "Email is not configured on this device.": "ยังไม่ได้ตั้งค่าอีเมลบนอุปกรณ์นี้",
+  "Minimalist Launcher: LessPhone": "ลอนเชอร์มินิมอล: LessPhone",
+  "Turn your smartphone into a distraction-free minimalist device.": "เปลี่ยนสมาร์ทโฟนของคุณให้เป็นอุปกรณ์มินิมอลที่ไร้สิ่งรบกวน",
+  "Easy QR Creator: QR Code Maker": "เครื่องมือสร้าง QR แบบง่าย: QR Code Maker",
+  "Generate stunning QR & barcodes — and keep everything organized in one place.": "สร้าง QR และบาร์โค้ดที่สวยงาม พร้อมจัดทุกอย่างให้เป็นระเบียบในที่เดียว",
+  "Newest First": "ใหม่ล่าสุดก่อน",
+  "Oldest First": "เก่าที่สุดก่อน"
 }

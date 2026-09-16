@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'screens/main_tab_screen.dart';
@@ -51,6 +52,11 @@ class NovelAIApp extends StatelessWidget {
           ),
               locale: locale,
               supportedLocales: AppL10n.supportedLocales,
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
               home: const MainTabScreen(),
             );
           },

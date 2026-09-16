@@ -1,5 +1,6 @@
-
 import 'package:flutter/material.dart';
+
+import '../l10n/app_l10n.dart';
 
 import 'story_screen.dart';
 import 'book_screen.dart';
@@ -20,8 +21,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // ============================================================
   // FEATURES
   // ============================================================
@@ -106,9 +106,7 @@ class _HomeScreenState extends State<HomeScreen>
     for (int i = 0; i < features.length; i++) {
       final controller = AnimationController(
         vsync: this,
-        duration: const Duration(
-          milliseconds: 500,
-        ),
+        duration: const Duration(milliseconds: 500),
       );
 
       final curvedAnimation = CurvedAnimation(
@@ -120,10 +118,7 @@ class _HomeScreenState extends State<HomeScreen>
 
       // Fade
       _fadeAnimations.add(
-        Tween<double>(
-          begin: 0.0,
-          end: 1.0,
-        ).animate(curvedAnimation),
+        Tween<double>(begin: 0.0, end: 1.0).animate(curvedAnimation),
       );
 
       // Slide from bottom
@@ -136,10 +131,7 @@ class _HomeScreenState extends State<HomeScreen>
 
       // Small scale animation
       _scaleAnimations.add(
-        Tween<double>(
-          begin: 0.97,
-          end: 1.0,
-        ).animate(curvedAnimation),
+        Tween<double>(begin: 0.97, end: 1.0).animate(curvedAnimation),
       );
     }
 
@@ -147,9 +139,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _startAnimations() async {
-    await Future.delayed(
-      const Duration(milliseconds: 100),
-    );
+    await Future.delayed(const Duration(milliseconds: 100));
 
     for (final controller in _controllers) {
       if (!mounted) {
@@ -158,9 +148,7 @@ class _HomeScreenState extends State<HomeScreen>
 
       controller.forward();
 
-      await Future.delayed(
-        const Duration(milliseconds: 100),
-      );
+      await Future.delayed(const Duration(milliseconds: 100));
     }
   }
 
@@ -223,39 +211,21 @@ class _HomeScreenState extends State<HomeScreen>
 
     Navigator.of(context).push(
       PageRouteBuilder(
-        transitionDuration: const Duration(
-          milliseconds: 400,
-        ),
-        reverseTransitionDuration: const Duration(
-          milliseconds: 400,
-        ),
-        pageBuilder: (
-            context,
-            animation,
-            secondaryAnimation,
-            ) {
+        transitionDuration: const Duration(milliseconds: 400),
+        reverseTransitionDuration: const Duration(milliseconds: 400),
+        pageBuilder: (context, animation, secondaryAnimation) {
           return screen;
         },
-        transitionsBuilder: (
-            context,
-            animation,
-            secondaryAnimation,
-            child,
-            ) {
-          final slideAnimation = Tween<Offset>(
-            begin: const Offset(1.0, 0.0),
-            end: Offset.zero,
-          ).animate(
-            CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeInOut,
-            ),
-          );
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final slideAnimation =
+              Tween<Offset>(
+                begin: const Offset(1.0, 0.0),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+              );
 
-          return SlideTransition(
-            position: slideAnimation,
-            child: child,
-          );
+          return SlideTransition(position: slideAnimation, child: child);
         },
       ),
     );
@@ -279,17 +249,9 @@ class _HomeScreenState extends State<HomeScreen>
             Expanded(
               child: ListView.builder(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(
-                  0,
-                  0,
-                  0,
-                  20,
-                ),
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
                 itemCount: features.length,
-                itemBuilder: (
-                    context,
-                    index,
-                    ) {
+                itemBuilder: (context, index) {
                   return FadeTransition(
                     opacity: _fadeAnimations[index],
                     child: SlideTransition(
@@ -320,8 +282,9 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildHeader() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor =
-        isDark ? Colors.white : Theme.of(context).colorScheme.onSurface;
+    final textColor = isDark
+        ? Colors.white
+        : Theme.of(context).colorScheme.onSurface;
 
     return Container(
       color: isDark
@@ -332,11 +295,8 @@ class _HomeScreenState extends State<HomeScreen>
         children: [
           GestureDetector(
             onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const InfoScreen(),
-                ),
-              );
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (_) => const InfoScreen()));
             },
             child: SizedBox(
               width: 42,
@@ -353,12 +313,13 @@ class _HomeScreenState extends State<HomeScreen>
 
           Expanded(
             child: Text(
-              'AI Story Generator',
+              AppL10n.tr('AI Story Generator'),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 22,
+                height: 1.15,
                 fontWeight: FontWeight.w700,
                 color: textColor,
               ),
@@ -370,9 +331,7 @@ class _HomeScreenState extends State<HomeScreen>
           GestureDetector(
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const SubscriptionScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
               );
             },
             behavior: HitTestBehavior.opaque,
@@ -382,10 +341,7 @@ class _HomeScreenState extends State<HomeScreen>
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFFAEEBFF),
-                    Color(0xFFF4D7FF),
-                  ],
+                  colors: [Color(0xFFAEEBFF), Color(0xFFF4D7FF)],
                 ),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
@@ -409,7 +365,6 @@ class _HomeScreenState extends State<HomeScreen>
       ),
     );
   }
-
 }
 
 // ============================================================
@@ -435,9 +390,7 @@ class HomeFeatureCard extends StatelessWidget {
         ? feature.backgroundImage.replaceFirst('/light/', '/dark/')
         : feature.backgroundImage;
 
-    final titleColor = isDark
-        ? Colors.white
-        : const Color(0xFF111111);
+    final titleColor = isDark ? Colors.white : const Color(0xFF111111);
 
     final subtitleColor = isDark
         ? const Color(0xFFB9AEC8)
@@ -452,12 +405,7 @@ class HomeFeatureCard extends StatelessWidget {
         : const Color(0xFFFF6229);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        10,
-        10,
-        10,
-        0,
-      ),
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
@@ -465,22 +413,13 @@ class HomeFeatureCard extends StatelessWidget {
           child: AspectRatio(
             aspectRatio: 300 / 160,
             child: Container(
-              constraints: const BoxConstraints(
-                maxWidth: 300,
-              ),
+              constraints: const BoxConstraints(maxWidth: 300),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(
-                  20,
-                ),
-                border: Border.all(
-                  color: borderColor,
-                  width: 1,
-                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: borderColor, width: 1),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(
-                  19,
-                ),
+                borderRadius: BorderRadius.circular(19),
                 child: Stack(
                   children: [
                     // ==================================================
@@ -491,11 +430,7 @@ class HomeFeatureCard extends StatelessWidget {
                       child: Image.asset(
                         backgroundImage,
                         fit: BoxFit.cover,
-                        errorBuilder: (
-                            context,
-                            error,
-                            stackTrace,
-                            ) {
+                        errorBuilder: (context, error, stackTrace) {
                           return Container(
                             color: isDark
                                 ? const Color(0xFF21152F)
@@ -508,22 +443,16 @@ class HomeFeatureCard extends StatelessWidget {
                     // ==================================================
                     // LEFT CONTENT
                     // ==================================================
-
                     Positioned(
                       left: 0,
                       top: 0,
                       bottom: 0,
-                      width: 220,
+                      width: 230,
                       child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: 15,
-                          right: 5,
-                        ),
+                        padding: const EdgeInsets.only(left: 14, right: 6),
                         child: Column(
-                          mainAxisAlignment:
-                          MainAxisAlignment.center,
-                          crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // ==========================================
                             // TITLE + ICON
@@ -534,13 +463,13 @@ class HomeFeatureCard extends StatelessWidget {
                               children: [
                                 Flexible(
                                   child: Text(
-                                    feature.title,
+                                    AppL10n.tr(feature.title),
                                     maxLines: 2,
                                     overflow: TextOverflow.visible,
                                     softWrap: true,
                                     style: TextStyle(
-                                      fontSize: 21,
-                                      height: 1.1,
+                                      fontSize: 19,
+                                      height: 1.25,
                                       fontWeight: FontWeight.w600,
                                       color: titleColor,
                                     ),
@@ -556,11 +485,7 @@ class HomeFeatureCard extends StatelessWidget {
                                     width: 20,
                                     height: 20,
                                     fit: BoxFit.contain,
-                                    errorBuilder: (
-                                      context,
-                                      error,
-                                      stackTrace,
-                                    ) {
+                                    errorBuilder: (context, error, stackTrace) {
                                       return const SizedBox(
                                         width: 20,
                                         height: 20,
@@ -571,53 +496,46 @@ class HomeFeatureCard extends StatelessWidget {
                               ],
                             ),
 
-                            const SizedBox(
-                              height: 6,
-                            ),
+                            const SizedBox(height: 6),
 
                             // ==========================================
                             // SUBTITLE
                             // ==========================================
-
                             Text(
-                              feature.subtitle,
+                              AppL10n.tr(feature.subtitle),
                               maxLines: 2,
                               overflow: TextOverflow.visible,
                               softWrap: true,
                               style: TextStyle(
-                                fontSize: 13,
-                                height: 1.2,
-                                fontWeight: FontWeight.w300,
+                                fontSize: 12.5,
+                                height: 1.35,
+                                fontWeight: FontWeight.w400,
                                 color: subtitleColor,
                               ),
                             ),
 
-                            const SizedBox(
-                              height: 11,
-                            ),
+                            const SizedBox(height: 11),
 
                             // ==========================================
                             // TRY NOW
                             // ==========================================
-
                             Container(
-                              width: 82,
-                              height: 28,
+                              constraints: const BoxConstraints(minWidth: 82),
+                              height: 30,
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
                               decoration: BoxDecoration(
                                 color: buttonColor,
-                                borderRadius:
-                                BorderRadius.circular(
-                                  14,
-                                ),
+                                borderRadius: BorderRadius.circular(14),
                               ),
                               alignment: Alignment.center,
-                              child: const Text(
-                                'Try now',
+                              child: Text(
+                                AppL10n.tr('Try now'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontSize: 11,
-                                  height: 1,
-                                  fontWeight:
-                                  FontWeight.w500,
+                                  fontSize: 11.5,
+                                  height: 1.15,
+                                  fontWeight: FontWeight.w600,
                                   color: Colors.white,
                                 ),
                               ),

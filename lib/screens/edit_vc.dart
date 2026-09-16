@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../services/realtime_db_manager.dart';
+import '../l10n/app_l10n.dart';
 
 class EditVcThemeSelection {
   const EditVcThemeSelection({
@@ -251,21 +252,21 @@ class _EditVcState extends State<EditVc> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Align(
+              Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Choose Image', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+                child: Text(AppL10n.tr('Choose Image'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
               ),
               const SizedBox(height: 12),
               ListTile(
                 leading: const Icon(Icons.photo_library_outlined),
-                title: const Text('Gallery'),
-                subtitle: const Text('Choose a photo from your device'),
+                title: Text(AppL10n.tr('Gallery')),
+                subtitle: Text(AppL10n.tr('Choose a photo from your device')),
                 onTap: () => Navigator.pop(sheetContext, _EditImageSource.device),
               ),
               ListTile(
                 leading: const Icon(Icons.grid_view_rounded),
-                title: const Text('App Gallery'),
-                subtitle: const Text('Choose from the app image gallery'),
+                title: Text(AppL10n.tr('App Gallery')),
+                subtitle: Text(AppL10n.tr('Choose from the app image gallery')),
                 onTap: () => Navigator.pop(sheetContext, _EditImageSource.appGallery),
               ),
             ],
@@ -391,8 +392,8 @@ class _EditVcState extends State<EditVc> {
         elevation: 0,
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
         actions: [
-          IconButton(tooltip: 'Done', onPressed: _done, icon: const Icon(Icons.check)),
-          IconButton(tooltip: 'Share visible canvas', onPressed: _sharing ? null : _shareVisibleCanvas, icon: _sharing ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.share_outlined)),
+          IconButton(tooltip: AppL10n.tr('Done'), onPressed: _done, icon: const Icon(Icons.check)),
+          IconButton(tooltip: AppL10n.tr('Share visible canvas'), onPressed: _sharing ? null : _shareVisibleCanvas, icon: _sharing ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.share_outlined)),
           const SizedBox(width: 4),
         ],
       ),
@@ -437,7 +438,7 @@ class _EditVcState extends State<EditVc> {
     final color = selected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface;
     return InkWell(onTap: onTap, borderRadius: BorderRadius.circular(12), child: SizedBox(width: 78, child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
       Icon(icon, color: color, size: 24), const SizedBox(height: 5),
-      Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: selected ? FontWeight.w700 : FontWeight.w500)),
+      Text(AppL10n.tr(label), style: TextStyle(color: color, fontSize: 12, fontWeight: selected ? FontWeight.w700 : FontWeight.w500)),
     ])));
   }
 
@@ -449,17 +450,17 @@ class _EditVcState extends State<EditVc> {
     if (_selectedTool == 2) {
       return Container(key: const ValueKey('canvas'), height: 72, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10), child: ListView.separated(
         scrollDirection: Axis.horizontal, itemCount: _ratios.length, separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (_, i) { final item = _ratios[i]; return ChoiceChip(label: Text(item.label), selected: (_aspectRatio - item.ratio).abs() < .001, onSelected: (_) => setState(() => _aspectRatio = item.ratio)); },
+        itemBuilder: (_, i) { final item = _ratios[i]; return ChoiceChip(label: Text(AppL10n.tr(item.label)), selected: (_aspectRatio - item.ratio).abs() < .001, onSelected: (_) => setState(() => _aspectRatio = item.ratio)); },
       ));
     }
 
     if (_selectedTool == 3) {
       return Container(key: const ValueKey('background'), padding: const EdgeInsets.fromLTRB(12, 8, 12, 10), child: Column(mainAxisSize: MainAxisSize.min, children: [
         SegmentedButton<int>(
-          segments: const [
-            ButtonSegment(value: 0, icon: Icon(Icons.palette_outlined), label: Text('Color')),
-            ButtonSegment(value: 1, icon: Icon(Icons.gradient_outlined), label: Text('Gradient')),
-            ButtonSegment(value: 2, icon: Icon(Icons.wallpaper_outlined), label: Text('Theme')),
+          segments: [
+            ButtonSegment(value: 0, icon: Icon(Icons.palette_outlined), label: Text(AppL10n.tr('Color'))),
+            ButtonSegment(value: 1, icon: Icon(Icons.gradient_outlined), label: Text(AppL10n.tr('Gradient'))),
+            ButtonSegment(value: 2, icon: Icon(Icons.wallpaper_outlined), label: Text(AppL10n.tr('Theme'))),
           ],
           selected: {_backgroundTab}, showSelectedIcon: false,
           onSelectionChanged: (value) => setState(() => _backgroundTab = value.first),
@@ -491,7 +492,7 @@ class _EditVcState extends State<EditVc> {
       return const SizedBox(height: 92, child: Center(child: CircularProgressIndicator(strokeWidth: 2)));
     }
     if (_themes.isEmpty) {
-      return SizedBox(height: 58, child: Center(child: TextButton.icon(onPressed: _loadThemes, icon: const Icon(Icons.refresh), label: const Text('Retry themes'))));
+      return SizedBox(height: 58, child: Center(child: TextButton.icon(onPressed: _loadThemes, icon: const Icon(Icons.refresh), label: Text(AppL10n.tr('Retry themes')))));
     }
     return SizedBox(
       height: 118,
@@ -616,23 +617,23 @@ class _EditVcState extends State<EditVc> {
         final muted = isDark ? const Color(0xFFA9A9AF) : const Color(0xFF7A7A80);
         const textColors = <Color>[Color(0xFF111111), Colors.white, Color(0xFFFF3B30), Color(0xFFFF9500), Color(0xFFFFCC00), Color(0xFF34C759), Color(0xFF00C7BE), Color(0xFF007AFF), Color(0xFF5856D6), Color(0xFFAF52DE), Color(0xFFFF2D55), Color(0xFF8E8E93)];
         const textGradients = <List<Color>>[[Color(0xFFFF6435),Color(0xFFFF2D55)],[Color(0xFF9146E8),Color(0xFF5856D6)],[Color(0xFF007AFF),Color(0xFF00C7BE)],[Color(0xFF34C759),Color(0xFFFFCC00)],[Color(0xFFFF9500),Color(0xFFFF3B30)],[Color(0xFF111111),Color(0xFF8E8E93)]];
-        Widget sectionTitle(String t) => Padding(padding: const EdgeInsets.only(bottom:10), child: Align(alignment: Alignment.centerLeft, child: Text(t, style: const TextStyle(fontSize:14,fontWeight:FontWeight.w700))));
-        Widget slider(String title,double value,double min,double max,int divisions,String Function(double) label,ValueChanged<double> change)=>Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Row(children:[Expanded(child:Text(title,style:const TextStyle(fontSize:14,fontWeight:FontWeight.w600))),Text(label(value),style:TextStyle(fontSize:13,color:muted))]),Slider(value:value.clamp(min,max).toDouble(),min:min,max:max,divisions:divisions,activeColor:primary,onChanged:change)]);
+        Widget sectionTitle(String t) => Padding(padding: const EdgeInsets.only(bottom:10), child: Align(alignment: Alignment.centerLeft, child: Text(AppL10n.tr(t), style: const TextStyle(fontSize:14,fontWeight:FontWeight.w700))));
+        Widget slider(String title,double value,double min,double max,int divisions,String Function(double) label,ValueChanged<double> change)=>Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Row(children:[Expanded(child:Text(AppL10n.tr(title),style:const TextStyle(fontSize:14,fontWeight:FontWeight.w600))),Text(label(value),style:TextStyle(fontSize:13,color:muted))]),Slider(value:value.clamp(min,max).toDouble(),min:min,max:max,divisions:divisions,activeColor:primary,onChanged:change)]);
         Widget iconChoice(IconData icon,bool selected,VoidCallback tap)=>Expanded(child:GestureDetector(onTap:tap,child:AnimatedContainer(duration:const Duration(milliseconds:150),height:42,decoration:BoxDecoration(color:selected?primary.withValues(alpha:.14):cardColor,borderRadius:BorderRadius.circular(10),border:Border.all(color:selected?primary:borderColor)),child:Icon(icon,size:20,color:selected?primary:null))));
         return Container(
           height: MediaQuery.sizeOf(context).height * .50,
           decoration: BoxDecoration(color:sheetColor,borderRadius:const BorderRadius.vertical(top:Radius.circular(26))),
           child: Column(children:[
-            Padding(padding:const EdgeInsets.fromLTRB(18,12,12,8),child:Row(children:[IconButton(onPressed:()=>Navigator.pop(sheetContext),icon:const Icon(Icons.close_rounded)),const Expanded(child:Text('Text Editor',textAlign:TextAlign.center,style:TextStyle(fontSize:18,fontWeight:FontWeight.w700))),IconButton(onPressed:(){applied=true;Navigator.pop(sheetContext);},icon:Icon(Icons.check_rounded,color:primary))])),
-            Container(margin:const EdgeInsets.fromLTRB(18,4,18,14),padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:cardColor,borderRadius:BorderRadius.circular(16),border:Border.all(color:borderColor)),child:Text(_controller.text.trim().isEmpty?'Your story text will look like this.':_controller.text.trim().split('\n').first,maxLines:3,overflow:TextOverflow.ellipsis,textAlign:_textAlign,style:_editorTextStyle)),
+            Padding(padding:const EdgeInsets.fromLTRB(18,12,12,8),child:Row(children:[IconButton(onPressed:()=>Navigator.pop(sheetContext),icon:const Icon(Icons.close_rounded)),Expanded(child:Text(AppL10n.tr('Text Editor'),textAlign:TextAlign.center,style:TextStyle(fontSize:18,fontWeight:FontWeight.w700))),IconButton(onPressed:(){applied=true;Navigator.pop(sheetContext);},icon:Icon(Icons.check_rounded,color:primary))])),
+            Container(margin:const EdgeInsets.fromLTRB(18,4,18,14),padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:cardColor,borderRadius:BorderRadius.circular(16),border:Border.all(color:borderColor)),child:Text(_controller.text.trim().isEmpty?AppL10n.tr('Your story text will look like this.'):_controller.text.trim().split('\n').first,maxLines:3,overflow:TextOverflow.ellipsis,textAlign:_textAlign,style:_editorTextStyle)),
             Expanded(child:SingleChildScrollView(padding:const EdgeInsets.fromLTRB(18,0,18,28),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-              Container(height:42,padding:const EdgeInsets.all(4),decoration:BoxDecoration(color:cardColor,borderRadius:BorderRadius.circular(12)),child:Row(children:['Color','Gradient','Texture'].asMap().entries.map((e){final selected=_textEditorTab==e.key;return Expanded(child:GestureDetector(onTap:()=>update(()=>_textEditorTab=e.key),child:AnimatedContainer(duration:const Duration(milliseconds:160),alignment:Alignment.center,decoration:BoxDecoration(color:selected?sheetColor:Colors.transparent,borderRadius:BorderRadius.circular(9),boxShadow:selected?[BoxShadow(color:Colors.black.withValues(alpha:.08),blurRadius:5)]:null),child:Text(e.value,style:TextStyle(fontSize:13,fontWeight:selected?FontWeight.w700:FontWeight.w500,color:selected?primary:muted)))));}).toList())),
+              Container(height:42,padding:const EdgeInsets.all(4),decoration:BoxDecoration(color:cardColor,borderRadius:BorderRadius.circular(12)),child:Row(children:['Color','Gradient','Texture'].asMap().entries.map((e){final selected=_textEditorTab==e.key;return Expanded(child:GestureDetector(onTap:()=>update(()=>_textEditorTab=e.key),child:AnimatedContainer(duration:const Duration(milliseconds:160),alignment:Alignment.center,decoration:BoxDecoration(color:selected?sheetColor:Colors.transparent,borderRadius:BorderRadius.circular(9),boxShadow:selected?[BoxShadow(color:Colors.black.withValues(alpha:.08),blurRadius:5)]:null),child:Text(AppL10n.tr(e.value),style:TextStyle(fontSize:13,fontWeight:selected?FontWeight.w700:FontWeight.w500,color:selected?primary:muted)))));}).toList())),
               const SizedBox(height:14),
               if(_textEditorTab==0) Wrap(spacing:12,runSpacing:12,children:textColors.map((c){final selected=_textGradientIndex==null&&_textureIndex==null&&_textColor.value==c.value;return GestureDetector(onTap:()=>update((){_textColor=c;_textGradientIndex=null;_textureIndex=null;_textTextureImage=null;}),child:Container(width:38,height:38,decoration:BoxDecoration(color:c,shape:BoxShape.circle,border:Border.all(width:selected?3:1,color:selected?primary:borderColor)),child:selected?Icon(Icons.check,size:17,color:_readableColor(c)):null));}).toList()),
               if(_textEditorTab==1) GridView.builder(shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),itemCount:textGradients.length,gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount:3,mainAxisSpacing:10,crossAxisSpacing:10,childAspectRatio:2),itemBuilder:(_,i){final selected=_textGradientIndex==i;return GestureDetector(onTap:()=>update((){_textGradientIndex=i;_textureIndex=null;_textTextureImage=null;}),child:Container(decoration:BoxDecoration(gradient:LinearGradient(colors:textGradients[i]),borderRadius:BorderRadius.circular(10),border:Border.all(color:selected?primary:Colors.transparent,width:2.5)),child:selected?const Icon(Icons.check,color:Colors.white):null));}),
               if(_textEditorTab==2) SizedBox(height:74,child:ListView.separated(scrollDirection:Axis.horizontal,itemCount:22,separatorBuilder:(_,__)=>const SizedBox(width:9),itemBuilder:(_,i){final selected=_textureIndex==i;return GestureDetector(onTap:()async{update((){_textureIndex=i;_textGradientIndex=null;});await _loadTextTexture(i);sheetSetState((){});},child:Container(width:62,decoration:BoxDecoration(borderRadius:BorderRadius.circular(10),border:Border.all(color:selected?primary:borderColor,width:selected?2.5:1),image:DecorationImage(image:AssetImage('assets/images/texture$i.png'),fit:BoxFit.cover)),child:selected?const Icon(Icons.check_circle,color:Colors.white):null));})),
               const SizedBox(height:22),sectionTitle('Font'),
-              DropdownButtonFormField<String>(value:_fontFamily,decoration:InputDecoration(filled:true,fillColor:cardColor,border:OutlineInputBorder(borderRadius:BorderRadius.circular(12),borderSide:BorderSide(color:borderColor)),enabledBorder:OutlineInputBorder(borderRadius:BorderRadius.circular(12),borderSide:BorderSide(color:borderColor)),contentPadding:const EdgeInsets.symmetric(horizontal:14,vertical:12)),items:const [DropdownMenuItem(value:'sans-serif',child:Text('Sans Serif')),DropdownMenuItem(value:'serif',child:Text('Serif')),DropdownMenuItem(value:'monospace',child:Text('Monospace')),DropdownMenuItem(value:'sans-serif-condensed',child:Text('Condensed'))],onChanged:(v){if(v!=null)update(()=>_fontFamily=v);}),
+              DropdownButtonFormField<String>(value:_fontFamily,decoration:InputDecoration(filled:true,fillColor:cardColor,border:OutlineInputBorder(borderRadius:BorderRadius.circular(12),borderSide:BorderSide(color:borderColor)),enabledBorder:OutlineInputBorder(borderRadius:BorderRadius.circular(12),borderSide:BorderSide(color:borderColor)),contentPadding:const EdgeInsets.symmetric(horizontal:14,vertical:12)),items:[DropdownMenuItem(value:'sans-serif',child:Text(AppL10n.tr('Sans Serif'))),DropdownMenuItem(value:'serif',child:Text(AppL10n.tr('Serif'))),DropdownMenuItem(value:'monospace',child:Text(AppL10n.tr('Monospace'))),DropdownMenuItem(value:'sans-serif-condensed',child:Text(AppL10n.tr('Condensed')))],onChanged:(v){if(v!=null)update(()=>_fontFamily=v);}),
               const SizedBox(height:18),slider('Font Size',_fontSize,12,34,22,(v)=>'${v.round()}',(v)=>update(()=>_fontSize=v)),const SizedBox(height:4),sectionTitle('Font Alignment'),
               Row(children:[iconChoice(Icons.format_align_left_rounded,_textAlign==TextAlign.left,()=>update(()=>_textAlign=TextAlign.left)),const SizedBox(width:8),iconChoice(Icons.format_align_center_rounded,_textAlign==TextAlign.center,()=>update(()=>_textAlign=TextAlign.center)),const SizedBox(width:8),iconChoice(Icons.format_align_right_rounded,_textAlign==TextAlign.right,()=>update(()=>_textAlign=TextAlign.right)),const SizedBox(width:8),iconChoice(Icons.format_align_justify_rounded,_textAlign==TextAlign.justify,()=>update(()=>_textAlign=TextAlign.justify))]),
               const SizedBox(height:18),sectionTitle('Font Style'),Row(children:[iconChoice(Icons.format_bold_rounded,_fontWeight==FontWeight.bold,()=>update(()=>_fontWeight=_fontWeight==FontWeight.bold?FontWeight.w500:FontWeight.bold)),const SizedBox(width:8),iconChoice(Icons.format_italic_rounded,_fontStyle==FontStyle.italic,()=>update(()=>_fontStyle=_fontStyle==FontStyle.italic?FontStyle.normal:FontStyle.italic)),const SizedBox(width:8),iconChoice(Icons.format_underline_rounded,_underline,()=>update(()=>_underline=!_underline))]),
@@ -755,7 +756,7 @@ class _AppGalleryScreenState extends State<_AppGalleryScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
-        title: const Text('App Gallery Images'),
+        title: Text(AppL10n.tr('App Gallery Images')),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -768,9 +769,9 @@ class _AppGalleryScreenState extends State<_AppGalleryScreen> {
                       children: [
                         const Icon(Icons.wifi_off_rounded, size: 42),
                         const SizedBox(height: 12),
-                        const Text('Unable to load App Gallery.'),
+                        Text(AppL10n.tr('Unable to load App Gallery.')),
                         const SizedBox(height: 12),
-                        FilledButton(onPressed: () { setState(() { _loading = true; _error = null; }); _load(); }, child: const Text('Retry')),
+                        FilledButton(onPressed: () { setState(() { _loading = true; _error = null; }); _load(); }, child: Text(AppL10n.tr('Retry'))),
                       ],
                     ),
                   ),

@@ -148,66 +148,96 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _showLanguagePicker() async {
     String searchText = '';
-    await showModalBottomSheet<void>(
+
+    final selectedCode = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
-      builder: (sheetContext) => StatefulBuilder(
-        builder: (context, refresh) {
-          final q = searchText.trim().toLowerCase();
-          final languages = AppL10n.languages.where((l) =>
-            q.isEmpty || l.name.toLowerCase().contains(q) ||
-            l.code.toLowerCase().contains(q)).toList();
-          return SizedBox(
-            height: MediaQuery.of(context).size.height * .78,
-            child: Column(children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(AppL10n.tr('Language'),
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700)),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TextField(
-                  onChanged: (v) { searchText = v; refresh(() {}); },
-                  decoration: InputDecoration(
-                    hintText: AppL10n.tr('Search language...'),
-                    prefixIcon: const Icon(Icons.search_rounded),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14)),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, refresh) {
+            final q = searchText.trim().toLowerCase();
+            final languages = AppL10n.languages.where((language) {
+              return q.isEmpty ||
+                  language.name.toLowerCase().contains(q) ||
+                  language.code.toLowerCase().contains(q);
+            }).toList();
+
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * .78,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        AppL10n.tr('Language'),
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: languages.length,
-                  itemBuilder: (context, index) {
-                    final l = languages[index];
-                    return ListTile(
-                      title: Text(l.name),
-                      trailing: l.code == _selectedLanguageCode
-                        ? Icon(Icons.check_circle_rounded,
-                            color: Theme.of(context).colorScheme.primary)
-                        : null,
-                      onTap: () async {
-                        await _changeLanguage(l.code);
-                        if (sheetContext.mounted) Navigator.pop(sheetContext);
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: TextField(
+                      autofocus: false,
+                      onChanged: (value) {
+                        searchText = value;
+                        refresh(() {});
                       },
-                    );
-                  },
-                ),
+                      decoration: InputDecoration(
+                        hintText: AppL10n.tr('Search language...'),
+                        prefixIcon: const Icon(Icons.search_rounded),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: ListView.builder(
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      itemCount: languages.length,
+                      itemBuilder: (context, index) {
+                        final language = languages[index];
+                        final selected =
+                            language.code == _selectedLanguageCode;
+
+                        return ListTile(
+                          title: Text(language.name),
+                          trailing: selected
+                              ? Icon(
+                                  Icons.check_circle_rounded,
+                                  color: Theme.of(context).colorScheme.primary,
+                                )
+                              : null,
+                          onTap: () {
+                            Navigator.of(sheetContext).pop(language.code);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ]),
-          );
-        },
-      ),
+            );
+          },
+        );
+      },
     );
+
+    if (selectedCode == null ||
+        selectedCode == _selectedLanguageCode ||
+        !mounted) {
+      return;
+    }
+
+    await _changeLanguage(selectedCode);
   }
 
   Future<void> _changeTheme(int index) async {
@@ -276,7 +306,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ScaffoldMessenger.of(context)
         .showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(AppL10n.tr(message)),
       ),
     );
   }
@@ -535,7 +565,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           Expanded(
             child: Text(
-              'Settings',
+                       AppL10n.tr('Settings'),
 
               style:
               theme.textTheme.titleLarge
@@ -557,8 +587,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Icons.info_outline_rounded,
               ),
 
-              tooltip:
-              'Info',
+              tooltip: AppL10n.tr('Info'),
             ),
         ],
       ),
@@ -636,7 +665,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   children: [
                     Text(
-                      'Upgrade to Pro',
+                       AppL10n.tr('Upgrade to Pro'),
 
                       style:
                       theme
@@ -653,7 +682,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
 
                     Text(
-                      'Unlock all premium features',
+                       AppL10n.tr('Unlock all premium features'),
 
                       style:
                       theme
@@ -691,7 +720,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
 
       child: Text(
-        text,
+        AppL10n.tr(text),
 
         style:
         const TextStyle(
@@ -794,7 +823,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 Expanded(
                   child: Text(
-                    title,
+                    AppL10n.tr(title),
 
                     style:
                     theme
@@ -851,11 +880,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Text(title, style: theme.textTheme.bodyMedium?.copyWith(
+                  child: Text(AppL10n.tr(title), style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500, fontSize: 14)),
                 ),
                 Flexible(
-                  child: Text(value, maxLines: 1, overflow: TextOverflow.ellipsis,
+                  child: Text(AppL10n.tr(value), maxLines: 1, overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant)),
                 ),
@@ -1073,7 +1102,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                           Flexible(
                             child: Text(
-                              labels[index],
+                              AppL10n.tr(labels[index]),
 
                               maxLines: 1,
 
@@ -1257,7 +1286,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
 
                     child: Text(
-                      'Try Now',
+                       AppL10n.tr('Try Now'),
 
                       style:
                       TextStyle(

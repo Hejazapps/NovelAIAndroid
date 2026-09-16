@@ -1452,5 +1452,16 @@
   "words": "слов",
   "writing_tips_title": "Writing Tips",
   "year": "год",
-  "‹ Previous": "‹ Назад"
+  "‹ Previous": "‹ Назад",
+  "Terms & Condition": "Условия использования",
+  "More Apps": "Другие приложения",
+  "Information": "Информация",
+  "Unable to open the link.": "Не удалось открыть ссылку.",
+  "Email is not configured on this device.": "Электронная почта не настроена на этом устройстве.",
+  "Minimalist Launcher: LessPhone": "Минималистичный лаунчер: LessPhone",
+  "Turn your smartphone into a distraction-free minimalist device.": "Превратите смартфон в минималистичное устройство без отвлекающих факторов.",
+  "Easy QR Creator: QR Code Maker": "Простой QR-конструктор: QR Code Maker",
+  "Generate stunning QR & barcodes — and keep everything organized in one place.": "Создавайте красивые QR- и штрихкоды и храните всё организованно в одном месте.",
+  "Newest First": "Сначала новые",
+  "Oldest First": "Сначала старые"
 }

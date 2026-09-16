@@ -994,7 +994,7 @@
   "Sonnet": "Szonett",
   "Sonnet (Petrarchan)": "Szonett (Petrarcha)",
   "Sonnet (Shakespearean)": "Szonett (Shakespeare)",
-  "Sort By": "Sort By",
+  "Sort By": "Rendezés",
   "Sound Effects": "Hangeffektek",
   "Space Opera": "Űropera",
   "Spanish": "spanyol",
@@ -1452,5 +1452,16 @@
   "words": "szavak",
   "writing_tips_title": "Írási tippek",
   "year": "év",
-  "‹ Previous": "‹ Previous"
+  "‹ Previous": "‹ Previous",
+  "Terms & Condition": "Felhasználási feltételek",
+  "More Apps": "További alkalmazások",
+  "Information": "Információ",
+  "Unable to open the link.": "A hivatkozás nem nyitható meg.",
+  "Email is not configured on this device.": "Az e-mail nincs beállítva ezen az eszközön.",
+  "Minimalist Launcher: LessPhone": "Minimalista indító: LessPhone",
+  "Turn your smartphone into a distraction-free minimalist device.": "Alakítsd okostelefonodat zavaró tényezőktől mentes minimalista eszközzé.",
+  "Easy QR Creator: QR Code Maker": "Egyszerű QR-készítő: QR Code Maker",
+  "Generate stunning QR & barcodes — and keep everything organized in one place.": "Készíts látványos QR- és vonalkódokat, és tarts mindent egy helyen rendszerezve.",
+  "Newest First": "Legújabb elöl",
+  "Oldest First": "Legrégebbi elöl"
 }

@@ -994,7 +994,7 @@
   "Sonnet": "Sonet",
   "Sonnet (Petrarchan)": "Sonet (Petrarka)",
   "Sonnet (Shakespearean)": "Sonet (Shakespeareov)",
-  "Sort By": "Sort By",
+  "Sort By": "Poredaj po",
   "Sound Effects": "Zvučni efekti",
   "Space Opera": "Svemirska opera",
   "Spanish": "Španjolski",
@@ -1452,5 +1452,16 @@
   "words": "riječi",
   "writing_tips_title": "Savjeti za pisanje",
   "year": "godina",
-  "‹ Previous": "‹ Previous"
+  "‹ Previous": "‹ Previous",
+  "Terms & Condition": "Uvjeti i odredbe",
+  "More Apps": "Više aplikacija",
+  "Information": "Informacije",
+  "Unable to open the link.": "Nije moguće otvoriti poveznicu.",
+  "Email is not configured on this device.": "E-pošta nije konfigurirana na ovom uređaju.",
+  "Minimalist Launcher: LessPhone": "Minimalistički pokretač: LessPhone",
+  "Turn your smartphone into a distraction-free minimalist device.": "Pretvorite svoj pametni telefon u minimalistički uređaj bez ometanja.",
+  "Easy QR Creator: QR Code Maker": "Jednostavan QR kreator: QR Code Maker",
+  "Generate stunning QR & barcodes — and keep everything organized in one place.": "Izradite atraktivne QR i crtične kodove i držite sve organizirano na jednom mjestu.",
+  "Newest First": "Najnovije prvo",
+  "Oldest First": "Najstarije prvo"
 }

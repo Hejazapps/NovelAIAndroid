@@ -994,7 +994,7 @@
   "Sonnet": "Sone",
   "Sonnet (Petrarchan)": "Sonnet (Petrarchan)",
   "Sonnet (Shakespearean)": "Sonnet (Shakespearean)",
-  "Sort By": "Sıralama Ölçütü",
+  "Sort By": "Sıralama ölçütü",
   "Sound Effects": "Ses Efektleri",
   "Space Opera": "Uzay Operası",
   "Spanish": "İspanyolca",
@@ -1452,5 +1452,16 @@
   "words": "kelime",
   "writing_tips_title": "Yazma İpuçları",
   "year": "yıl",
-  "‹ Previous": "‹ Önceki"
+  "‹ Previous": "‹ Önceki",
+  "Terms & Condition": "Şartlar ve Koşullar",
+  "More Apps": "Daha Fazla Uygulama",
+  "Information": "Bilgi",
+  "Unable to open the link.": "Bağlantı açılamadı.",
+  "Email is not configured on this device.": "Bu cihazda e-posta yapılandırılmamış.",
+  "Minimalist Launcher: LessPhone": "Minimalist Başlatıcı: LessPhone",
+  "Turn your smartphone into a distraction-free minimalist device.": "Akıllı telefonunuzu dikkat dağıtmayan minimalist bir cihaza dönüştürün.",
+  "Easy QR Creator: QR Code Maker": "Kolay QR Oluşturucu: QR Code Maker",
+  "Generate stunning QR & barcodes — and keep everything organized in one place.": "Harika QR ve barkodlar oluşturun ve her şeyi tek bir yerde düzenli tutun.",
+  "Newest First": "En yeni önce",
+  "Oldest First": "En eski önce"
 }

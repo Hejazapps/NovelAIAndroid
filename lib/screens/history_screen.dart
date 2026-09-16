@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/app_l10n.dart';
+
 import 'save_vc.dart';
 import 'book_detail_screen.dart';
 import 'book_generation_manager.dart';
@@ -211,10 +213,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(16, 16, 16, 10),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
                   child: Text(
-                    'Sort By',
+                    AppL10n.tr('Sort By'),
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
@@ -231,7 +233,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               ? Icons.arrow_upward_rounded
                               : Icons.sort_by_alpha_rounded,
                     ),
-                    title: Text(option),
+                    title: Text(AppL10n.tr(option)),
                     trailing: _selectedSort == option
                         ? Icon(Icons.check_rounded, color: primary)
                         : null,
@@ -339,12 +341,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
       barrierDismissible: false,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Create Folder'),
+          title: Text(AppL10n.tr('Create Folder')),
           content: TextField(
             autofocus: true,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              hintText: 'Folder name',
+            decoration: InputDecoration(
+              hintText: AppL10n.tr('Folder name'),
             ),
             onChanged: (value) => folderName = value,
             onSubmitted: (value) {
@@ -357,7 +359,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel'),
+              child: Text(AppL10n.tr('Cancel')),
             ),
             TextButton(
               onPressed: () {
@@ -366,7 +368,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   Navigator.of(dialogContext).pop(name);
                 }
               },
-              child: const Text('Create'),
+              child: Text(AppL10n.tr('Create')),
             ),
           ],
         );
@@ -394,14 +396,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Delete Item?'),
+          title: Text(AppL10n.tr('Delete Item?')),
           content: const Text(
             'Do you want to remove this item from your history?',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
+              child: Text(AppL10n.tr('Cancel')),
             ),
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -529,8 +531,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(16, 16, 16, 10),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
                   child: Text(
                     'Option',
                     style: TextStyle(
@@ -552,24 +554,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
                 if (insideFolder)
                   ListTile(
-                    title: const Center(
-                      child: Text('Remove from folder'),
+                    title: Center(
+                    child: Text(AppL10n.tr('Remove from folder')),
                     ),
                     onTap: () =>
                         Navigator.of(sheetContext).pop('remove'),
                   )
                 else
                   ListTile(
-                    title: const Center(
-                      child: Text('Move to folder'),
+                    title: Center(
+                    child: Text(AppL10n.tr('Move to folder')),
                     ),
                     onTap: () =>
                         Navigator.of(sheetContext).pop('move'),
                   ),
                 const Divider(height: 1),
                 ListTile(
-                  title: const Center(
-                    child: Text('Cancel'),
+                  title: Center(
+                    child: Text(AppL10n.tr('Cancel')),
                   ),
                   onTap: () =>
                       Navigator.of(sheetContext).pop('cancel'),
@@ -613,14 +615,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   String _previewFor(Map<String, dynamic> entry) {
     final text = (entry['text'] ?? '').toString().trim();
-    if (text.isEmpty) return 'No text';
+    if (text.isEmpty) return AppL10n.tr('No text');
     return text.replaceAll(RegExp(r'\s+'), ' ');
   }
 
   void _showMessage(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(content: Text(AppL10n.tr(message))),
     );
   }
 
@@ -694,8 +696,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(18, 18, 18, 18),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
       child: Center(
         child: Text(
           'History',
@@ -760,13 +762,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
         child: Row(
           children: [
             _TopTabButton(
-              title: 'History',
+              title: AppL10n.tr('History'),
               selected: !_showFavorites,
               selectedColor: primary,
               onTap: () => setState(() => _showFavorites = false),
             ),
             _TopTabButton(
-              title: 'Favourites',
+              title: AppL10n.tr('Favourites'),
               selected: _showFavorites,
               selectedColor: primary,
               onTap: () => setState(() => _showFavorites = true),
@@ -810,7 +812,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       borderRadius: BorderRadius.circular(7),
                     ),
                     child: Text(
-                      type,
+                      AppL10n.tr(type),
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight:
@@ -868,8 +870,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
           const SizedBox(height: 14),
           Text(
             _showFavorites
-                ? 'No Favourite Items'
-                : 'No History Yet',
+                ? AppL10n.tr('No Favourite Items')
+                : AppL10n.tr('No History Yet'),
             style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
@@ -984,14 +986,14 @@ class _HistoryFolderScreenState extends State<_HistoryFolderScreen> {
                 child: Row(
                   children: [
                     _TopTabButton(
-                      title: 'History',
+                      title: AppL10n.tr('History'),
                       selected: !_showFavorites,
                       selectedColor: primary,
                       onTap: () =>
                           setState(() => _showFavorites = false),
                     ),
                     _TopTabButton(
-                      title: 'Favourites',
+                      title: AppL10n.tr('Favourites'),
                       selected: _showFavorites,
                       selectedColor: primary,
                       onTap: () =>
@@ -1013,10 +1015,10 @@ class _HistoryFolderScreenState extends State<_HistoryFolderScreen> {
                           ? ListView(
                               physics:
                                   const AlwaysScrollableScrollPhysics(),
-                              children: const [
-                                SizedBox(height: 120),
+                              children: [
+                                const SizedBox(height: 120),
                                 Center(
-                                  child: Text('No items in this folder'),
+                                  child: Text(AppL10n.tr('No items in this folder')),
                                 ),
                               ],
                             )
@@ -1138,7 +1140,7 @@ class _TopTabButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(7),
           ),
           child: Text(
-            title,
+            AppL10n.tr(title),
             style: TextStyle(
               fontSize: 13,
               fontWeight:

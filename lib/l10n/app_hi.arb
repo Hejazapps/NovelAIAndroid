@@ -994,7 +994,7 @@
   "Sonnet": "सॉनेट",
   "Sonnet (Petrarchan)": "सॉनेट (पेट्रार्कन)",
   "Sonnet (Shakespearean)": "सॉनेट (शेक्सपियरियन)",
-  "Sort By": "इसके अनुसार क्रमबद्ध करें",
+  "Sort By": "क्रमबद्ध करें",
   "Sound Effects": "साउंड इफ़ेक्ट",
   "Space Opera": "स्पेस ओपेरा",
   "Spanish": "स्पैनिश",
@@ -1452,5 +1452,16 @@
   "words": "शब्द",
   "writing_tips_title": "लिखने के टिप्स",
   "year": "साल",
-  "‹ Previous": "‹ पिछला"
+  "‹ Previous": "‹ पिछला",
+  "Terms & Condition": "नियम और शर्तें",
+  "More Apps": "और ऐप्स",
+  "Information": "जानकारी",
+  "Unable to open the link.": "लिंक नहीं खोला जा सका।",
+  "Email is not configured on this device.": "इस डिवाइस पर ईमेल कॉन्फ़िगर नहीं है।",
+  "Minimalist Launcher: LessPhone": "मिनिमलिस्ट लॉन्चर: LessPhone",
+  "Turn your smartphone into a distraction-free minimalist device.": "अपने स्मार्टफ़ोन को बिना ध्यान भटकाए एक मिनिमलिस्ट डिवाइस में बदलें।",
+  "Easy QR Creator: QR Code Maker": "आसान QR क्रिएटर: QR Code Maker",
+  "Generate stunning QR & barcodes — and keep everything organized in one place.": "शानदार QR और बारकोड बनाएं और सब कुछ एक ही जगह व्यवस्थित रखें।",
+  "Newest First": "नवीनतम पहले",
+  "Oldest First": "सबसे पुराने पहले"
 }

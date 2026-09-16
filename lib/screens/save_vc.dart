@@ -19,6 +19,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../l10n/app_l10n.dart';
 import '../services/easy_seek_api_manager.dart';
 import '../services/realtime_db_manager.dart';
 import 'edit_vc.dart';
@@ -626,8 +627,7 @@ class _SaveVcState extends State<SaveVc> {
                 ),
                 child: Column(
                   children: [
-                    Text(
-                      'Story Music',
+                    Text(AppL10n.tr('Story Music'),
                       style: TextStyle(
                         color: textColor,
                         fontSize: 21,
@@ -702,7 +702,7 @@ class _SaveVcState extends State<SaveVc> {
                           setSheetState(() => query = value),
                       style: TextStyle(color: textColor),
                       decoration: InputDecoration(
-                        hintText: 'Search music',
+                        hintText: AppL10n.tr('Search music'),
                         hintStyle: TextStyle(color: muted),
                         prefixIcon: Icon(Icons.search_rounded, color: muted),
                         filled: true,
@@ -918,9 +918,13 @@ $currentStory''';
                       children: [
                         Icon(icon, color: selectedMode ? accent : textColor),
                         const SizedBox(height: 10),
-                        Text(title, style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w700)),
+                        Text(
+                          AppL10n.tr(title),
+                          style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w700)),
                         const SizedBox(height: 3),
-                        Text(subtitle, style: TextStyle(color: muted, fontSize: 11.5, height: 1.25)),
+                        Text(
+                          AppL10n.tr(subtitle),
+                          style: TextStyle(color: muted, fontSize: 11.5, height: 1.25)),
                       ],
                     ),
                   ),
@@ -934,7 +938,7 @@ $currentStory''';
                 selected: active,
                 showCheckmark: false,
                 avatar: Icon(icon, size: 17, color: active ? accent : muted),
-                label: Text(label),
+                label: Text(AppL10n.tr(label)),
                 labelStyle: TextStyle(color: active ? accent : textColor, fontWeight: FontWeight.w600),
                 backgroundColor: card,
                 selectedColor: accent.withValues(alpha: 0.12),
@@ -978,7 +982,7 @@ $currentStory''';
                       Row(
                         children: [
                           Expanded(
-                            child: Text('Regenerate Story', style: TextStyle(color: textColor, fontSize: 22, fontWeight: FontWeight.w800)),
+                            child: Text(AppL10n.tr('Regenerate Story'), style: TextStyle(color: textColor, fontSize: 22, fontWeight: FontWeight.w800)),
                           ),
                           IconButton(
                             onPressed: () => Navigator.pop(sheetContext),
@@ -987,9 +991,9 @@ $currentStory''';
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text('Create Better Stories', style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w700)),
+                      Text(AppL10n.tr('Create Better Stories'), style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w700)),
                       const SizedBox(height: 4),
-                      Text('Your feedback makes the story even better.', style: TextStyle(color: muted, fontSize: 13)),
+                      Text(AppL10n.tr('Your feedback makes the story even better.'), style: TextStyle(color: muted, fontSize: 13)),
                       const SizedBox(height: 18),
                       Row(
                         children: [
@@ -1012,9 +1016,9 @@ $currentStory''';
                       ),
                       const SizedBox(height: 18),
                       if (!specificFeedback) ...[
-                        Text('What would you like to improve?', style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w700)),
+                        Text(AppL10n.tr('What would you like to improve?'), style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w700)),
                         const SizedBox(height: 3),
-                        Text('Choose one or more options.', style: TextStyle(color: muted, fontSize: 12)),
+                        Text(AppL10n.tr('Choose one or more options.'), style: TextStyle(color: muted, fontSize: 12)),
                         const SizedBox(height: 10),
                         Wrap(
                           spacing: 8,
@@ -1026,9 +1030,9 @@ $currentStory''';
                           ],
                         ),
                       ] else ...[
-                        Text('Not feeling it?', style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w700)),
+                        Text(AppL10n.tr('Not feeling it?'), style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w700)),
                         const SizedBox(height: 3),
-                        Text('Tell us what didn’t work, and let’s make it better.', style: TextStyle(color: muted, fontSize: 12)),
+                        Text(AppL10n.tr('Tell us what didn’t work, and let’s make it better.'), style: TextStyle(color: muted, fontSize: 12)),
                         const SizedBox(height: 10),
                         TextField(
                           controller: feedbackController,
@@ -1037,7 +1041,7 @@ $currentStory''';
                           textCapitalization: TextCapitalization.sentences,
                           style: TextStyle(color: textColor),
                           decoration: InputDecoration(
-                            hintText: 'Describe what you want to improve...',
+                            hintText: AppL10n.tr('Describe what you want to improve...'),
                             hintStyle: TextStyle(color: muted),
                             filled: true,
                             fillColor: card,
@@ -1077,7 +1081,7 @@ $currentStory''';
                             Navigator.pop(sheetContext, result);
                           },
                           icon: const Icon(Icons.auto_awesome_rounded),
-                          label: const Text('New Version', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                          label: Text(AppL10n.tr('New Version'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
                         ),
                       ),
                     ],
@@ -1350,19 +1354,19 @@ $currentStory''';
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Edit Title'),
+          title: Text(AppL10n.tr('Edit Title')),
           content: TextField(
             controller: controller,
             autofocus: true,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              hintText: 'Enter Title',
+            decoration: InputDecoration(
+              hintText: AppL10n.tr('Enter Title'),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(AppL10n.tr('Cancel')),
             ),
             TextButton(
               onPressed: () {
@@ -1371,7 +1375,7 @@ $currentStory''';
                   Navigator.pop(context, title);
                 }
               },
-              child: const Text('Save'),
+              child: Text(AppL10n.tr('Save')),
             ),
           ],
         );
@@ -1524,7 +1528,7 @@ $currentStory''';
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          title,
+                          AppL10n.tr(title),
                           style: const TextStyle(
                             fontSize: 14.5,
                             fontWeight: FontWeight.w700,
@@ -1532,7 +1536,7 @@ $currentStory''';
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          subtitle,
+                          AppL10n.tr(subtitle),
                           style: TextStyle(
                             fontSize: 11.5,
                             color: muted,
@@ -1570,10 +1574,9 @@ $currentStory''';
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
-              const Align(
+              Align(
                 alignment: Alignment.centerLeft,
-                child: Text(
-                  'Share as',
+                child: Text(AppL10n.tr('Share as'),
                   style: TextStyle(
                     fontSize: 19,
                     fontWeight: FontWeight.w800,
@@ -2497,8 +2500,8 @@ $currentStory''';
             initialValue: typedTitle,
             autofocus: true,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              hintText: 'Enter Title',
+            decoration: InputDecoration(
+              hintText: AppL10n.tr('Enter Title'),
             ),
             onChanged: (value) {
               typedTitle = value;
@@ -2513,7 +2516,7 @@ $currentStory''';
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel'),
+              child: Text(AppL10n.tr('Cancel')),
             ),
             TextButton(
               onPressed: () {
@@ -2522,7 +2525,7 @@ $currentStory''';
                   Navigator.of(dialogContext).pop(title);
                 }
               },
-              child: const Text('Save'),
+              child: Text(AppL10n.tr('Save')),
             ),
           ],
         );
@@ -2822,18 +2825,17 @@ $currentStory''';
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Reset Design?'),
-          content: const Text(
-            'This will reset the background and text style. Your story will not be deleted.',
+          title: Text(AppL10n.tr('Reset Design?')),
+          content: Text(AppL10n.tr('This will reset the background and text style. Your story will not be deleted.'),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
+              child: Text(AppL10n.tr('Cancel')),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Reset'),
+              child: Text(AppL10n.tr('Reset')),
             ),
           ],
         );
@@ -2983,8 +2985,8 @@ $currentStory''';
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    title,
-                    style: const TextStyle(
+                          AppL10n.tr(title),
+                          style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
@@ -3009,7 +3011,7 @@ $currentStory''';
                     children: [
                       Expanded(
                         child: Text(
-                          title,
+                          AppL10n.tr(title),
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -3633,7 +3635,7 @@ $currentStory''';
     required VoidCallback onTap,
   }) {
     return ChoiceChip(
-      label: Text(label),
+      label: Text(AppL10n.tr(label)),
       selected: selected,
       onSelected: (_) => onTap(),
     );
@@ -3872,8 +3874,8 @@ $currentStory''';
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      title,
-                      textAlign: TextAlign.center,
+                          AppL10n.tr(title),
+                          textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 18,
                         height: 1.15,
@@ -3939,8 +3941,8 @@ $currentStory''';
               padding: EdgeInsets.zero,
             ),
             child: Text(
-              title,
-              style: TextStyle(
+                          AppL10n.tr(title),
+                          style: TextStyle(
                 fontSize: 16,
                 fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
                 color: destructive
@@ -3990,7 +3992,7 @@ $currentStory''';
               },
             ),
             _iosDialogAction(
-              title: 'Cancel',
+              title: AppL10n.tr('Cancel'),
               onPressed: () {
                 debugPrint('User cancelled opinion');
                 Navigator.of(dialogContext).pop();
@@ -4070,7 +4072,7 @@ $currentStory''';
               color: isDark ? Colors.white : const Color(0xFF111111),
             ),
             decoration: InputDecoration(
-              hintText: 'Reason for dislike',
+              hintText: AppL10n.tr('Reason for dislike'),
               hintStyle: TextStyle(
                 color: isDark
                     ? const Color(0xFF858585)
@@ -4097,11 +4099,11 @@ $currentStory''';
           ),
           actions: [
             _iosDialogAction(
-              title: 'Cancel',
+              title: AppL10n.tr('Cancel'),
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             _iosDialogAction(
-              title: 'Send',
+              title: AppL10n.tr('Send'),
               bold: true,
               onPressed: () async {
                 final reason = reasonController.text.trim();
@@ -4168,11 +4170,11 @@ $currentStory''';
       barrierDismissible: false,
       builder: (dialogContext) {
         return _iosStyleDialog(
-          title: 'Mail Not Configured',
-          message: 'Please set up a mail account in order to send email.',
+          title: AppL10n.tr('Mail Not Configured'),
+          message: AppL10n.tr('Please set up a mail account in order to send email.'),
           actions: [
             _iosDialogAction(
-              title: 'OK',
+              title: AppL10n.tr('OK'),
               bold: true,
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
@@ -4184,7 +4186,7 @@ $currentStory''';
 
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(content: Text(AppL10n.tr(message))),
     );
   }
 
@@ -4574,7 +4576,7 @@ $currentStory''';
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
+              child: Text(AppL10n.tr('Cancel')),
             ),
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -5335,8 +5337,8 @@ class _ThemePickerScreenState extends State<_ThemePickerScreen> {
               : null,
         ),
         child: Text(
-          title,
-          style: TextStyle(
+                          AppL10n.tr(title),
+                          style: TextStyle(
             fontSize: 12,
             fontWeight: active ? FontWeight.w600 : FontWeight.w500,
           ),
@@ -5581,7 +5583,7 @@ class _ThemePickerScreenState extends State<_ThemePickerScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Cancel'),
+                  child: Text(AppL10n.tr('Cancel')),
                 ),
                 TextButton(
                   onPressed: () {

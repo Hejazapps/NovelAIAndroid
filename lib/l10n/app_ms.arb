@@ -994,7 +994,7 @@
   "Sonnet": "Soneta",
   "Sonnet (Petrarchan)": "Soneta (Petrarch)",
   "Sonnet (Shakespearean)": "Soneta (Shakespeare)",
-  "Sort By": "Isih Mengikut",
+  "Sort By": "Isih mengikut",
   "Sound Effects": "Kesan bunyi",
   "Space Opera": "Opera Angkasa",
   "Spanish": "Sepanyol",
@@ -1452,5 +1452,16 @@
   "words": "perkataan",
   "writing_tips_title": "Petua Menulis",
   "year": "tahun",
-  "‹ Previous": "‹ Sebelumnya"
+  "‹ Previous": "‹ Sebelumnya",
+  "Terms & Condition": "Terma & Syarat",
+  "More Apps": "Lebih Banyak Aplikasi",
+  "Information": "Maklumat",
+  "Unable to open the link.": "Pautan tidak dapat dibuka.",
+  "Email is not configured on this device.": "E-mel tidak dikonfigurasikan pada peranti ini.",
+  "Minimalist Launcher: LessPhone": "Pelancar Minimalis: LessPhone",
+  "Turn your smartphone into a distraction-free minimalist device.": "Ubah telefon pintar anda menjadi peranti minimalis tanpa gangguan.",
+  "Easy QR Creator: QR Code Maker": "Pencipta QR Mudah: QR Code Maker",
+  "Generate stunning QR & barcodes — and keep everything organized in one place.": "Cipta QR dan kod bar yang menarik serta pastikan semuanya tersusun di satu tempat.",
+  "Newest First": "Terbaharu dahulu",
+  "Oldest First": "Terlama dahulu"
 }

@@ -1452,5 +1452,16 @@
   "words": "শব্দ",
   "writing_tips_title": "লেখার টিপস",
   "year": "বছর",
-  "‹ Previous": "‹ পূর্ববর্তী"
+  "‹ Previous": "‹ পূর্ববর্তী",
+  "Terms & Condition": "শর্তাবলী",
+  "More Apps": "আরও অ্যাপ",
+  "Information": "তথ্য",
+  "Unable to open the link.": "লিঙ্কটি খোলা যায়নি।",
+  "Email is not configured on this device.": "এই ডিভাইসে ইমেইল কনফিগার করা নেই।",
+  "Minimalist Launcher: LessPhone": "মিনিমালিস্ট লঞ্চার: LessPhone",
+  "Turn your smartphone into a distraction-free minimalist device.": "আপনার স্মার্টফোনকে মনোযোগ-বিক্ষেপমুক্ত মিনিমালিস্ট ডিভাইসে পরিণত করুন।",
+  "Easy QR Creator: QR Code Maker": "সহজ QR নির্মাতা: QR Code Maker",
+  "Generate stunning QR & barcodes — and keep everything organized in one place.": "দারুণ QR ও বারকোড তৈরি করুন এবং সবকিছু এক জায়গায় গুছিয়ে রাখুন।",
+  "Newest First": "নতুনগুলো আগে",
+  "Oldest First": "পুরোনোগুলো আগে"
 }
