@@ -519,26 +519,45 @@ class HomeFeatureCard extends StatelessWidget {
                             // ==========================================
                             // TRY NOW
                             // ==========================================
-                            Container(
-                              constraints: const BoxConstraints(minWidth: 82),
-                              height: 30,
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: buttonColor,
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                AppL10n.tr('Try now'),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  height: 1.15,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
+                            Builder(
+                              builder: (context) {
+                                final buttonText = AppL10n.tr('Try now');
+
+                                return Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: IntrinsicWidth(
+                                    child: Container(
+                                      constraints: const BoxConstraints(
+                                        minWidth: 82,
+                                        minHeight: 32,
+                                        maxWidth: 190,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 7,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: buttonColor,
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        buttonText,
+                                        maxLines: 2,
+                                        textAlign: TextAlign.center,
+                                        softWrap: true,
+                                        overflow: TextOverflow.visible,
+                                        style: const TextStyle(
+                                          fontSize: 12.5,
+                                          height: 1.15,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
