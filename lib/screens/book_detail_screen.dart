@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_l10n.dart';
+
 import 'book_generation_manager.dart';
 import 'book_models.dart';
 import 'save_vc.dart';
@@ -77,20 +79,20 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     final result = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Book is still generating'),
-        content: const Text(
-          'You can leave this screen. Generation will continue while the app '
-          'remains running. If generation is interrupted, you can resume the '
-          'book later from History.',
+        title: Text(AppL10n.tr('Book is still generating')),
+        content: Text(
+          AppL10n.tr(
+            'You can leave this screen. Generation will continue while the app remains running. If generation is interrupted, you can resume the book later from History.',
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Stay'),
+            child: Text(AppL10n.tr('Stay')),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Leave'),
+            child: Text(AppL10n.tr('Leave')),
           ),
         ],
       ),
@@ -172,9 +174,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
     if (book.isGenerating) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'Please wait for the current chapter generation to finish.',
+            AppL10n.tr('Please wait for the current chapter generation to finish.'),
           ),
         ),
       );
@@ -241,7 +243,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   textInputAction: TextInputAction.next,
                   onChanged: (value) => chapterTitle = value,
                   decoration: InputDecoration(
-                    hintText: 'Chapter title (optional)',
+                    hintText: AppL10n.tr('Chapter title (optional)'),
                     filled: true,
                     fillColor: fieldColor,
                     border: OutlineInputBorder(
@@ -256,7 +258,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   maxLines: 6,
                   onChanged: (value) => chapterDescription = value,
                   decoration: InputDecoration(
-                    hintText: 'What should happen in this chapter?',
+                    hintText: AppL10n.tr('What should happen in this chapter?'),
                     filled: true,
                     fillColor: fieldColor,
                     border: OutlineInputBorder(
@@ -275,9 +277,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
                       if (description.isEmpty) {
                         ScaffoldMessenger.of(sheetContext).showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                             content: Text(
-                              'Please describe what should happen in this chapter.',
+                              AppL10n.tr('Please describe what should happen in this chapter.'),
                             ),
                           ),
                         );
@@ -296,9 +298,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         borderRadius: BorderRadius.circular(13),
                       ),
                     ),
-                    child: const Text(
-                      'Generate',
-                      style: TextStyle(
+                    child: Text(
+                      AppL10n.tr('Generate'),
+                      style: const TextStyle(
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -377,17 +379,18 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   }
 
   String _chapterStatusText(GeneratedBookChapter chapter, int index) {
+    final chapterLabel = AppL10n.tr('Chapter');
     switch (chapter.status) {
       case BookChapterStatus.completed:
-        return 'Chapter ${chapter.number} • ${chapter.wordCount} words • '
-            '${chapter.estimatedReadMinutes} min read';
+        return '$chapterLabel ${chapter.number} • ${chapter.wordCount} ${AppL10n.tr('words')} • '
+            '${chapter.estimatedReadMinutes} ${AppL10n.tr('min read')}';
       case BookChapterStatus.generating:
         final percent = _chapterProgress[index] ?? 4;
-        return 'Chapter ${chapter.number} • Generating... ~$percent%';
+        return '$chapterLabel ${chapter.number} • ${AppL10n.tr('Generating...')} ~$percent%';
       case BookChapterStatus.failed:
-        return 'Chapter ${chapter.number} • Failed';
+        return '$chapterLabel ${chapter.number} • ${AppL10n.tr('Failed')}';
       case BookChapterStatus.pending:
-        return 'Chapter ${chapter.number} • Waiting';
+        return '$chapterLabel ${chapter.number} • ${AppL10n.tr('Waiting')}';
     }
   }
 
@@ -404,8 +407,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     if (book == null) {
       return Scaffold(
         backgroundColor: background,
-        body: const SafeArea(
-          child: Center(child: Text('Book not found')),
+        body: SafeArea(
+          child: Center(child: Text(AppL10n.tr('Book not found'))),
         ),
       );
     }
@@ -472,7 +475,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           ),
                           if (book.spec.author.trim().isNotEmpty) ...[
                             const SizedBox(height: 4),
-                            Text('by ${book.spec.author}'),
+                            Text('${AppL10n.tr('by')} ${book.spec.author}'),
                           ],
                           const SizedBox(height: 14),
                           LinearProgressIndicator(
@@ -482,12 +485,12 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             color: accent,
                           ),
                           const SizedBox(height: 8),
-                          Text('$completed of $total chapters generated'),
+                          Text('$completed ${AppL10n.tr('of')} $total ${AppL10n.tr('chapters generated')}'),
                           if (book.totalWordCount > 0) ...[
                             const SizedBox(height: 4),
                             Text(
-                              '${book.totalWordCount} words • '
-                              '${book.estimatedReadMinutes} min read',
+                              '${book.totalWordCount} ${AppL10n.tr('words')} • '
+                              '${book.estimatedReadMinutes} ${AppL10n.tr('min read')}',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Theme.of(context)
@@ -509,7 +512,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                const Text('Generating book...'),
+                                Text(AppL10n.tr('Generating book...')),
                               ],
                             ),
                           ],
@@ -522,8 +525,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                 icon: const Icon(Icons.menu_book_rounded),
                                 label: Text(
                                   completed == total
-                                      ? 'Read Full Book'
-                                      : 'Read $completed Available Chapters',
+                                      ? AppL10n.tr('Read Full Book')
+                                      : '${AppL10n.tr('Read')} $completed ${AppL10n.tr('Available Chapters')}',
                                 ),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: accent,
@@ -543,7 +546,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                               onPressed:
                                   book.isCompleted ? _showAddChapterSheet : null,
                               icon: const Icon(Icons.add_rounded),
-                              label: const Text('Add Chapter'),
+                              label: Text(AppL10n.tr('Add Chapter')),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: accent,
                                 side: BorderSide(color: accent),
@@ -656,7 +659,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                                 );
                                               } catch (_) {}
                                             },
-                                      child: const Text('Retry'),
+                                      child: Text(AppL10n.tr('Retry')),
                                     )
                                   else if (chapter.status ==
                                       BookChapterStatus.completed)
@@ -696,7 +699,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         foregroundColor: Colors.white,
                       ),
                       icon: const Icon(Icons.play_arrow_rounded),
-                      label: const Text('Resume Generation'),
+                      label: Text(AppL10n.tr('Resume Generation')),
                     ),
                   ),
                 ),

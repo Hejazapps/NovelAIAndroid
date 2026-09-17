@@ -6,6 +6,7 @@ import 'book_generation_manager.dart';
 import 'book_models.dart';
 import 'generation_coordinator.dart';
 import 'subscription_screen.dart';
+import '../l10n/app_l10n.dart';
 
 class BookScreen extends StatefulWidget {
   const BookScreen({super.key});
@@ -302,7 +303,7 @@ class _BookScreenState extends State<BookScreen> {
           const SizedBox(width: 4),
           Expanded(
             child: Text(
-              'Create Book',
+              AppL10n.tr('Create Book'),
               style: TextStyle(
                 fontSize: 23,
                 fontWeight: FontWeight.w700,
@@ -351,7 +352,7 @@ class _BookScreenState extends State<BookScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          title,
+          AppL10n.tr(title),
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -377,7 +378,7 @@ class _BookScreenState extends State<BookScreen> {
               color: _bodyText(context),
             ),
             decoration: InputDecoration(
-              hintText: hint,
+              hintText: AppL10n.tr(hint),
               hintStyle: TextStyle(
                 fontSize: 14,
                 color: _hint(context),
@@ -403,7 +404,7 @@ class _BookScreenState extends State<BookScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Description',
+          AppL10n.tr('Description'),
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -433,7 +434,7 @@ class _BookScreenState extends State<BookScreen> {
               color: _bodyText(context),
             ),
             decoration: InputDecoration(
-              hintText: 'Describe your book idea...',
+              hintText: AppL10n.tr('Describe your book idea...'),
               hintStyle: TextStyle(
                 fontSize: 14,
                 color: _hint(context),
@@ -459,7 +460,7 @@ class _BookScreenState extends State<BookScreen> {
           children: [
             Expanded(
               child: Text(
-                'Chapter',
+                AppL10n.tr('Chapter'),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -556,7 +557,7 @@ class _BookScreenState extends State<BookScreen> {
           children: [
             Expanded(
               child: Text(
-                'Select Genre',
+                AppL10n.tr('Select Genre'),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -570,7 +571,7 @@ class _BookScreenState extends State<BookScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(6),
                 child: Text(
-                  'View All',
+                  AppL10n.tr('View All'),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -672,7 +673,7 @@ class _BookScreenState extends State<BookScreen> {
             const SizedBox(height: 7),
 
             Text(
-              genre.name,
+              AppL10n.tr(genre.name),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
@@ -754,7 +755,7 @@ class _BookScreenState extends State<BookScreen> {
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Select Genre',
+                      AppL10n.tr('Select Genre'),
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -846,7 +847,7 @@ class _BookScreenState extends State<BookScreen> {
                             ),
                             const SizedBox(height: 7),
                             Text(
-                              genre.name,
+                              AppL10n.tr(genre.name),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -926,7 +927,7 @@ class _BookScreenState extends State<BookScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      AppL10n.tr(title),
                       style: TextStyle(
                         fontSize: 12,
                         color: _muted(context),
@@ -936,7 +937,7 @@ class _BookScreenState extends State<BookScreen> {
                     const SizedBox(height: 3),
 
                     Text(
-                      value,
+                      AppL10n.tr(value),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -973,7 +974,7 @@ class _BookScreenState extends State<BookScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Book Length',
+          AppL10n.tr('Book Length'),
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -1018,7 +1019,7 @@ class _BookScreenState extends State<BookScreen> {
                       borderRadius: BorderRadius.circular(11),
                     ),
                     child: Text(
-                      value,
+                      AppL10n.tr(value),
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: selected
@@ -1049,7 +1050,7 @@ class _BookScreenState extends State<BookScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Target Audience',
+          AppL10n.tr('Target Audience'),
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -1090,7 +1091,7 @@ class _BookScreenState extends State<BookScreen> {
           children: [
             Expanded(
               child: Text(
-                'Main Characters',
+                AppL10n.tr('Main Characters'),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -1194,7 +1195,7 @@ class _BookScreenState extends State<BookScreen> {
                 ),
                 const SizedBox(width: 11),
                 Text(
-                  'Add New Character',
+                  AppL10n.tr('Add New Character'),
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -1338,7 +1339,7 @@ class _BookScreenState extends State<BookScreen> {
                       color: Colors.white,
                     ),
                   )
-                : const Row(
+                : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
@@ -1348,7 +1349,7 @@ class _BookScreenState extends State<BookScreen> {
                       ),
                       SizedBox(width: 8),
                       Text(
-                        'Create',
+                        AppL10n.tr('Create'),
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -1789,11 +1790,11 @@ Return JSON only.
         return AlertDialog(
           backgroundColor: _surface(context),
           title: Text(
-            title,
+            AppL10n.tr(title),
             style: TextStyle(color: _text(context)),
           ),
           content: Text(
-            message,
+            AppL10n.tr(message),
             style: TextStyle(color: _muted(context)),
           ),
           actions: [
@@ -1802,7 +1803,7 @@ Return JSON only.
                 Navigator.pop(context);
               },
               child: Text(
-                'OK',
+                AppL10n.tr('OK'),
                 style: TextStyle(
                   color: _accent(context),
                 ),
@@ -1828,6 +1829,7 @@ Return JSON only.
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: false,
       backgroundColor: Colors.transparent,
       builder: (context) {
         return _BookSelectorSheet(
@@ -1882,9 +1884,9 @@ class _BookSelectorSheetState
     }
 
     return widget.values.where((item) {
-      return item.toLowerCase().contains(
-        search.trim().toLowerCase(),
-      );
+      final query = search.trim().toLowerCase();
+      return item.toLowerCase().contains(query) ||
+          AppL10n.tr(item).toLowerCase().contains(query);
     }).toList();
   }
 
@@ -1898,7 +1900,7 @@ class _BookSelectorSheetState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final maxHeight = MediaQuery.sizeOf(context).height * 0.50;
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.42;
     final showSearch = widget.searchable && widget.values.length > 10;
     final items = filtered;
 
@@ -1921,10 +1923,11 @@ class _BookSelectorSheetState
             .clamp(190.0, maxHeight)
             .toDouble();
 
-    return SafeArea(
-      top: false,
-      child: Container(
-        height: naturalHeight,
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    return Container(
+        height: naturalHeight + bottomInset,
+        padding: EdgeInsets.only(bottom: bottomInset),
         decoration: BoxDecoration(
           color: background,
           borderRadius: const BorderRadius.vertical(
@@ -1950,7 +1953,7 @@ class _BookSelectorSheetState
                 children: [
                   Expanded(
                     child: Text(
-                      widget.title,
+                      AppL10n.tr(widget.title),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -1991,7 +1994,7 @@ class _BookSelectorSheetState
                       color: textColor,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Search',
+                      hintText: AppL10n.tr('Search'),
                       hintStyle: TextStyle(color: muted),
                       prefixIcon: Icon(
                         Icons.search_rounded,
@@ -2006,7 +2009,7 @@ class _BookSelectorSheetState
               child: items.isEmpty
                   ? Center(
                       child: Text(
-                        'No results found',
+                        AppL10n.tr('No results found'),
                         style: TextStyle(color: muted),
                       ),
                     )
@@ -2030,7 +2033,7 @@ class _BookSelectorSheetState
                             contentPadding:
                                 const EdgeInsets.symmetric(horizontal: 20),
                             title: Text(
-                              value,
+                              AppL10n.tr(value),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -2057,8 +2060,7 @@ class _BookSelectorSheetState
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 
 }
@@ -2163,7 +2165,7 @@ class _BookCharacterInputSheetState extends State<_BookCharacterInputSheet> {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Add Main Character',
+                AppL10n.tr('Add Main Character'),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
@@ -2178,8 +2180,8 @@ class _BookCharacterInputSheetState extends State<_BookCharacterInputSheet> {
               textInputAction: TextInputAction.next,
               style: TextStyle(color: widget.textColor),
               decoration: InputDecoration(
-                labelText: 'Character Name',
-                hintText: 'Enter character name',
+                labelText: AppL10n.tr('Character Name'),
+                hintText: AppL10n.tr('Enter character name'),
                 labelStyle: TextStyle(color: widget.mutedColor),
                 hintStyle: TextStyle(color: widget.hintColor),
                 filled: true,
@@ -2210,9 +2212,9 @@ class _BookCharacterInputSheetState extends State<_BookCharacterInputSheet> {
               onSubmitted: (_) => _submit(),
               style: TextStyle(color: widget.textColor),
               decoration: InputDecoration(
-                labelText: 'Character Description',
-                hintText:
-                    'Describe personality, role, goal, appearance, or important details',
+                labelText: AppL10n.tr('Character Description'),
+                hintText: AppL10n.tr(
+                    'Describe personality, role, goal, appearance, or important details'),
                 alignLabelWithHint: true,
                 labelStyle: TextStyle(color: widget.mutedColor),
                 hintStyle: TextStyle(color: widget.hintColor),
@@ -2250,9 +2252,9 @@ class _BookCharacterInputSheetState extends State<_BookCharacterInputSheet> {
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-                child: const Text(
-                  'Add Character',
-                  style: TextStyle(
+                child: Text(
+                  AppL10n.tr('Add Character'),
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
@@ -2262,7 +2264,7 @@ class _BookCharacterInputSheetState extends State<_BookCharacterInputSheet> {
           ],
         ),
       ),
-    );
+      );
   }
 }
 
