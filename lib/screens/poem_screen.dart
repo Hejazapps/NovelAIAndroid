@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'save_vc.dart';
 import '../services/easy_seek_api_manager.dart';
 import 'subscription_screen.dart';
+import '../l10n/app_l10n.dart';
 
 class PoemScreen extends StatefulWidget {
   const PoemScreen({super.key});
@@ -344,7 +345,7 @@ class _PoemScreenState extends State<PoemScreen> {
           const SizedBox(width: 4),
           Expanded(
             child: Text(
-              'Create Poem',
+              AppL10n.tr('Create Poem'),
               style: TextStyle(
                 fontSize: 23,
                 fontWeight: FontWeight.w700,
@@ -389,7 +390,7 @@ class _PoemScreenState extends State<PoemScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Describe Your Poem',
+          AppL10n.tr('Describe Your Poem'),
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
@@ -424,7 +425,7 @@ class _PoemScreenState extends State<PoemScreen> {
                   color: _bodyText(context),
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Describe your prompt here…',
+                  hintText: AppL10n.tr('Describe your prompt here…'),
                   hintStyle: TextStyle(
                     fontSize: 14,
                     color: _hint(context),
@@ -483,7 +484,7 @@ class _PoemScreenState extends State<PoemScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Enter Syllables',
+          AppL10n.tr('Enter Syllables'),
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -582,7 +583,7 @@ class _PoemScreenState extends State<PoemScreen> {
                   CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      AppL10n.tr(title),
                       style: TextStyle(
                         fontSize: 12,
                         color: _muted(context),
@@ -592,7 +593,7 @@ class _PoemScreenState extends State<PoemScreen> {
                     const SizedBox(height: 3),
 
                     Text(
-                      value,
+                      AppL10n.tr(value),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -620,7 +621,7 @@ class _PoemScreenState extends State<PoemScreen> {
 
   Widget _buildSectionTitle(String title) {
     return Text(
-      title,
+      AppL10n.tr(title),
       style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w700,
@@ -673,7 +674,7 @@ class _PoemScreenState extends State<PoemScreen> {
                   borderRadius: BorderRadius.circular(11),
                 ),
                 child: Text(
-                  value,
+                  AppL10n.tr(value),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight:
@@ -727,11 +728,11 @@ class _PoemScreenState extends State<PoemScreen> {
               BorderRadius.circular(16),
             ),
             alignment: Alignment.center,
-            child: const Row(
+            child: Row(
               mainAxisAlignment:
               MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.auto_awesome_rounded,
                   color: Colors.white,
                   size: 18,
@@ -740,8 +741,8 @@ class _PoemScreenState extends State<PoemScreen> {
                 SizedBox(width: 8),
 
                 Text(
-                  'Create',
-                  style: TextStyle(
+                  AppL10n.tr('Create'),
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -1262,11 +1263,11 @@ Produce exactly one polished final poem.
         return AlertDialog(
           backgroundColor: _surface(context),
           title: Text(
-            title,
+            AppL10n.tr(title),
             style: TextStyle(color: _text(context)),
           ),
           content: Text(
-            message,
+            AppL10n.tr(message),
             style: TextStyle(color: _muted(context)),
           ),
           actions: [
@@ -1275,7 +1276,7 @@ Produce exactly one polished final poem.
                 Navigator.pop(context);
               },
               child: Text(
-                'OK',
+                AppL10n.tr('OK'),
                 style: TextStyle(
                   color: _accent(context),
                 ),
@@ -1301,6 +1302,7 @@ Produce exactly one polished final poem.
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: false,
       backgroundColor: Colors.transparent,
       builder: (context) {
         return _PoemSelectorSheet(
@@ -1358,7 +1360,8 @@ class _PoemSelectorSheetState
     searchText.trim().toLowerCase();
 
     return widget.values.where((value) {
-      return value.toLowerCase().contains(search);
+      return value.toLowerCase().contains(search) ||
+          AppL10n.tr(value).toLowerCase().contains(search);
     }).toList();
   }
 
@@ -1372,7 +1375,7 @@ class _PoemSelectorSheetState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final maxHeight = MediaQuery.sizeOf(context).height * 0.50;
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.42;
     final showSearch = widget.searchable && widget.values.length > 10;
     final items = filteredValues;
 
@@ -1395,10 +1398,11 @@ class _PoemSelectorSheetState
             .clamp(190.0, maxHeight)
             .toDouble();
 
-    return SafeArea(
-      top: false,
-      child: Container(
-        height: naturalHeight,
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    return Container(
+        height: naturalHeight + bottomInset,
+        padding: EdgeInsets.only(bottom: bottomInset),
         decoration: BoxDecoration(
           color: background,
           borderRadius: const BorderRadius.vertical(
@@ -1424,7 +1428,7 @@ class _PoemSelectorSheetState
                 children: [
                   Expanded(
                     child: Text(
-                      widget.title,
+                      AppL10n.tr(widget.title),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -1481,7 +1485,7 @@ class _PoemSelectorSheetState
               child: items.isEmpty
                   ? Center(
                       child: Text(
-                        'No results found',
+                        AppL10n.tr('No results found'),
                         style: TextStyle(color: muted),
                       ),
                     )
@@ -1505,7 +1509,7 @@ class _PoemSelectorSheetState
                             contentPadding:
                                 const EdgeInsets.symmetric(horizontal: 20),
                             title: Text(
-                              value,
+                              AppL10n.tr(value),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -1533,8 +1537,7 @@ class _PoemSelectorSheetState
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 
 }
