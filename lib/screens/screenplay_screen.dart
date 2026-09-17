@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../l10n/app_l10n.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'screenplay_detail_screen.dart';
@@ -344,7 +346,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
           const SizedBox(width: 4),
           Expanded(
             child: Text(
-              'Create Screenplay',
+              AppL10n.tr('Create Screenplay'),
               style: TextStyle(
                 fontSize: 23,
                 fontWeight: FontWeight.w700,
@@ -392,7 +394,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
             controller: controller,
             style: TextStyle(fontSize: 14, color: _bodyText(context)),
             decoration: InputDecoration(
-              hintText: hint,
+              hintText: AppL10n.tr(hint),
               hintStyle: TextStyle(fontSize: 14, color: _hint(context)),
               border: InputBorder.none,
               contentPadding:
@@ -433,7 +435,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
               color: _bodyText(context),
             ),
             decoration: InputDecoration(
-              hintText: hint,
+              hintText: AppL10n.tr(hint),
               hintStyle: TextStyle(fontSize: 14, color: _hint(context)),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(15),
@@ -445,7 +447,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
   }
 
   Widget _sectionTitle(String value) => Text(
-        value,
+        AppL10n.tr(value),
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w700,
@@ -527,7 +529,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(6),
                 child: Text(
-                  'View All',
+                  AppL10n.tr('View All'),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -610,7 +612,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
             ),
             const SizedBox(height: 7),
             Text(
-              genre.name,
+              AppL10n.tr(genre.name),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
@@ -674,7 +676,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Select Genre',
+                      AppL10n.tr('Select Genre'),
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -754,7 +756,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
                             ),
                             const SizedBox(height: 7),
                             Text(
-                              genre.name,
+                              AppL10n.tr(genre.name),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -816,12 +818,12 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title,
+                    Text(AppL10n.tr(title),
                         style:
                             TextStyle(fontSize: 12, color: _muted(context))),
                     const SizedBox(height: 3),
                     Text(
-                      value,
+                      AppL10n.tr(value),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -876,7 +878,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
                       borderRadius: BorderRadius.circular(11),
                     ),
                     child: Text(
-                      value,
+                      AppL10n.tr(value),
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight:
@@ -984,7 +986,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
                 ),
                 const SizedBox(width: 11),
                 Text(
-                  'Add New Character',
+                  AppL10n.tr('Add New Character'),
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -1055,7 +1057,7 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
                       color: Colors.white,
                     ),
                   )
-                : const Row(
+                : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
@@ -1065,8 +1067,8 @@ class _ScreenplayScreenState extends State<ScreenplayScreen> {
                       ),
                       SizedBox(width: 8),
                       Text(
-                        'Create',
-                        style: TextStyle(
+                        AppL10n.tr('Create'),
+                        style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
@@ -1643,6 +1645,7 @@ as ===HEADING===.
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: false,
       backgroundColor: Colors.transparent,
       builder: (context) => _ScreenplaySelectorSheet(
         title: title,
@@ -1692,7 +1695,10 @@ class _ScreenplaySelectorSheetState extends State<_ScreenplaySelectorSheet> {
   List<String> get filtered {
     if (search.trim().isEmpty) return widget.values;
     final q = search.trim().toLowerCase();
-    return widget.values.where((item) => item.toLowerCase().contains(q)).toList();
+    return widget.values.where((item) {
+      return item.toLowerCase().contains(q) ||
+          AppL10n.tr(item).toLowerCase().contains(q);
+    }).toList();
   }
 
   @override
@@ -1704,7 +1710,7 @@ class _ScreenplaySelectorSheetState extends State<_ScreenplaySelectorSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final maxHeight = MediaQuery.sizeOf(context).height * 0.50;
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.42;
     final showSearch = widget.searchable && widget.values.length > 10;
     final items = filtered;
     final background = isDark ? const Color(0xFF21152F) : Colors.white;
@@ -1723,14 +1729,16 @@ class _ScreenplaySelectorSheetState extends State<_ScreenplaySelectorSheet> {
             .clamp(190.0, maxHeight)
             .toDouble();
 
-    return SafeArea(
-      top: false,
-      child: Container(
-        height: naturalHeight,
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+
+    return Container(
+        height: naturalHeight + bottomInset,
+        padding: EdgeInsets.only(bottom: bottomInset),
         decoration: BoxDecoration(
           color: background,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
           children: [
             const SizedBox(height: 10),
@@ -1750,7 +1758,7 @@ class _ScreenplaySelectorSheetState extends State<_ScreenplaySelectorSheet> {
                 children: [
                   Expanded(
                     child: Text(
-                      widget.title,
+                      AppL10n.tr(widget.title),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -1781,7 +1789,7 @@ class _ScreenplaySelectorSheetState extends State<_ScreenplaySelectorSheet> {
                     onChanged: (value) => setState(() => search = value),
                     style: TextStyle(fontSize: 14, color: textColor),
                     decoration: InputDecoration(
-                      hintText: 'Search',
+                      hintText: AppL10n.tr('Search'),
                       hintStyle: TextStyle(color: muted),
                       prefixIcon: Icon(Icons.search_rounded, color: muted),
                       border: InputBorder.none,
@@ -1792,7 +1800,7 @@ class _ScreenplaySelectorSheetState extends State<_ScreenplaySelectorSheet> {
             Expanded(
               child: items.isEmpty
                   ? Center(
-                      child: Text('No results found',
+                      child: Text(AppL10n.tr('No results found'),
                           style: TextStyle(color: muted)),
                     )
                   : ListView.separated(
@@ -1813,7 +1821,7 @@ class _ScreenplaySelectorSheetState extends State<_ScreenplaySelectorSheet> {
                             contentPadding:
                                 const EdgeInsets.symmetric(horizontal: 20),
                             title: Text(
-                              value,
+                              AppL10n.tr(value),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -1835,8 +1843,7 @@ class _ScreenplaySelectorSheetState extends State<_ScreenplaySelectorSheet> {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -1984,7 +1991,7 @@ class _ScreenplayCharacterInputSheetState
         maxLines: maxLines,
         style: TextStyle(color: widget.textColor),
         decoration: InputDecoration(
-          hintText: hint,
+          hintText: AppL10n.tr(hint),
           hintStyle: TextStyle(color: widget.hintColor),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.all(14),

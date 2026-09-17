@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_l10n.dart';
+
 import 'screenplay_generation_manager.dart';
 import 'screenplay_models.dart';
 import 'save_vc.dart';
@@ -78,20 +80,18 @@ class _ScreenplayDetailScreenState extends State<ScreenplayDetailScreen> {
     final result = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Screenplay is still generating'),
-        content: const Text(
-          'You can leave this screen. Generation will continue while the app '
-          'remains running. If generation is interrupted, you can resume the '
-          'screenplay later from History.',
+        title: Text(AppL10n.tr('Screenplay is still generating')),
+        content: Text(
+          AppL10n.tr('You can leave this screen. Generation will continue while the app remains running. If generation is interrupted, you can resume the screenplay later from History.'),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Stay'),
+            child: Text(AppL10n.tr('Stay')),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Leave'),
+            child: Text(AppL10n.tr('Leave')),
           ),
         ],
       ),
@@ -173,10 +173,8 @@ class _ScreenplayDetailScreenState extends State<ScreenplayDetailScreen> {
 
     if (!screenplay.isCompleted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Please finish all current episodes before adding a new episode.',
-          ),
+        SnackBar(
+          content: Text(AppL10n.tr('Please finish all current episodes before adding a new episode.')),
         ),
       );
       return;
@@ -259,17 +257,18 @@ class _ScreenplayDetailScreenState extends State<ScreenplayDetailScreen> {
     GeneratedScreenplayEpisode episode,
     int index,
   ) {
+    final episodeLabel = AppL10n.tr('Episode');
     switch (episode.status) {
       case ScreenplayEpisodeStatus.completed:
-        return 'Episode ${episode.number} • ${episode.wordCount} words • '
-            '${episode.estimatedReadMinutes} min read';
+        return '$episodeLabel ${episode.number} • ${episode.wordCount} ${AppL10n.tr('words')} • '
+            '${episode.estimatedReadMinutes} ${AppL10n.tr('min read')}';
       case ScreenplayEpisodeStatus.generating:
         final percent = _episodeProgress[index] ?? 4;
-        return 'Episode ${episode.number} • Generating... ~$percent%';
+        return '$episodeLabel ${episode.number} • ${AppL10n.tr('Generating...')} ~$percent%';
       case ScreenplayEpisodeStatus.failed:
-        return 'Episode ${episode.number} • Failed';
+        return '$episodeLabel ${episode.number} • ${AppL10n.tr('Failed')}';
       case ScreenplayEpisodeStatus.pending:
-        return 'Episode ${episode.number} • Waiting';
+        return '$episodeLabel ${episode.number} • ${AppL10n.tr('Waiting')}';
     }
   }
 
@@ -286,8 +285,8 @@ class _ScreenplayDetailScreenState extends State<ScreenplayDetailScreen> {
     if (screenplay == null) {
       return Scaffold(
         backgroundColor: background,
-        body: const SafeArea(
-          child: Center(child: Text('Screenplay not found')),
+        body: SafeArea(
+          child: Center(child: Text(AppL10n.tr('Screenplay not found'))),
         ),
       );
     }
@@ -354,7 +353,7 @@ class _ScreenplayDetailScreenState extends State<ScreenplayDetailScreen> {
                           ),
                           if (screenplay.spec.writtenBy.trim().isNotEmpty) ...[
                             const SizedBox(height: 4),
-                            Text('by ${screenplay.spec.writtenBy}'),
+                            Text('${AppL10n.tr('by')} ${screenplay.spec.writtenBy}'),
                           ],
                           const SizedBox(height: 14),
                           LinearProgressIndicator(
@@ -364,12 +363,12 @@ class _ScreenplayDetailScreenState extends State<ScreenplayDetailScreen> {
                             color: accent,
                           ),
                           const SizedBox(height: 8),
-                          Text('$completed of $total episodes generated'),
+                          Text('$completed ${AppL10n.tr('of')} $total ${AppL10n.tr('episodes generated')}'),
                           if (screenplay.totalWordCount > 0) ...[
                             const SizedBox(height: 4),
                             Text(
-                              '${screenplay.totalWordCount} words • '
-                              '${screenplay.estimatedReadMinutes} min read',
+                              '${screenplay.totalWordCount} ${AppL10n.tr('words')} • '
+                              '${screenplay.estimatedReadMinutes} ${AppL10n.tr('min read')}',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Theme.of(context)
@@ -391,7 +390,7 @@ class _ScreenplayDetailScreenState extends State<ScreenplayDetailScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                const Text('Generating screenplay...'),
+                                Text(AppL10n.tr('Generating screenplay...')),
                               ],
                             ),
                           ],
@@ -404,8 +403,8 @@ class _ScreenplayDetailScreenState extends State<ScreenplayDetailScreen> {
                                 icon: const Icon(Icons.movie_creation_outlined),
                                 label: Text(
                                   completed == total
-                                      ? 'Read Full Screenplay'
-                                      : 'Read $completed Available Episodes',
+                                      ? AppL10n.tr('Read Full Screenplay')
+                                      : '${AppL10n.tr('Read')} $completed ${AppL10n.tr('Available Episodes')}',
                                 ),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: accent,
@@ -425,7 +424,7 @@ class _ScreenplayDetailScreenState extends State<ScreenplayDetailScreen> {
                               onPressed:
                                   screenplay.isCompleted ? _showAddEpisodeSheet : null,
                               icon: const Icon(Icons.add_rounded),
-                              label: const Text('Add Episode'),
+                              label: Text(AppL10n.tr('Add Episode')),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: accent,
                                 side: BorderSide(color: accent),
@@ -538,7 +537,7 @@ class _ScreenplayDetailScreenState extends State<ScreenplayDetailScreen> {
                                                 );
                                               } catch (_) {}
                                             },
-                                      child: const Text('Retry'),
+                                      child: Text(AppL10n.tr('Retry')),
                                     )
                                   else if (episode.status ==
                                       ScreenplayEpisodeStatus.completed)
@@ -578,7 +577,7 @@ class _ScreenplayDetailScreenState extends State<ScreenplayDetailScreen> {
                         foregroundColor: Colors.white,
                       ),
                       icon: const Icon(Icons.play_arrow_rounded),
-                      label: const Text('Resume Generation'),
+                      label: Text(AppL10n.tr('Resume Generation')),
                     ),
                   ),
                 ),
@@ -618,10 +617,8 @@ class _AddEpisodeSheetState extends State<_AddEpisodeSheet> {
 
     if (description.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Please describe what should happen in this episode.',
-          ),
+        SnackBar(
+          content: Text(AppL10n.tr('Please describe what should happen in this episode.')),
         ),
       );
       return;
@@ -682,9 +679,9 @@ class _AddEpisodeSheetState extends State<_AddEpisodeSheet> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'Add Episode',
-                  style: TextStyle(
+                Text(
+                  AppL10n.tr('Add Episode'),
+                  style: const TextStyle(
                     fontSize: 19,
                     fontWeight: FontWeight.w800,
                   ),
@@ -698,7 +695,7 @@ class _AddEpisodeSheetState extends State<_AddEpisodeSheet> {
                     _descriptionFocusNode.requestFocus();
                   },
                   decoration: InputDecoration(
-                    hintText: 'Episode title (optional)',
+                    hintText: AppL10n.tr('Episode title (optional)'),
                     filled: true,
                     fillColor: fieldColor,
                     border: OutlineInputBorder(
@@ -715,7 +712,7 @@ class _AddEpisodeSheetState extends State<_AddEpisodeSheet> {
                   maxLines: 6,
                   textInputAction: TextInputAction.newline,
                   decoration: InputDecoration(
-                    hintText: 'What should happen in this episode?',
+                    hintText: AppL10n.tr('What should happen in this episode?'),
                     filled: true,
                     fillColor: fieldColor,
                     border: OutlineInputBorder(
@@ -737,9 +734,9 @@ class _AddEpisodeSheetState extends State<_AddEpisodeSheet> {
                         borderRadius: BorderRadius.circular(13),
                       ),
                     ),
-                    child: const Text(
-                      'Generate',
-                      style: TextStyle(
+                    child: Text(
+                      AppL10n.tr('Generate'),
+                      style: const TextStyle(
                         fontWeight: FontWeight.w700,
                       ),
                     ),
