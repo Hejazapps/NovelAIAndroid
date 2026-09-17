@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/realtime_db_manager.dart';
+import '../l10n/app_l10n.dart';
 import 'story_chat_screen.dart';
 import 'story_chat_history_screen.dart';
 import 'subscription_screen.dart';
@@ -367,7 +368,7 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Unable to select image: $error')),
+        SnackBar(content: Text('${AppL10n.tr('Unable to select image')}: $error')),
       );
     }
   }
@@ -425,7 +426,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          'Choose Avatar',
+                          AppL10n.tr('Choose Avatar'),
                           style: TextStyle(
                             color: _text,
                             fontSize: 20,
@@ -514,7 +515,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 const SizedBox(height: 18),
                 Text(
-                  'Profile Picture',
+                  AppL10n.tr('Profile Picture'),
                   style: TextStyle(
                     color: _text,
                     fontSize: 20,
@@ -527,7 +528,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     Expanded(
                       child: _profileOption(
                         icon: Icons.camera_alt_rounded,
-                        title: 'Camera',
+                        title: AppL10n.tr('Camera'),
                         onTap: () {
                           Navigator.pop(sheetContext);
                           _pickProfileImage(ImageSource.camera);
@@ -538,7 +539,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     Expanded(
                       child: _profileOption(
                         icon: Icons.photo_library_rounded,
-                        title: 'Gallery',
+                        title: AppL10n.tr('Gallery'),
                         onTap: () {
                           Navigator.pop(sheetContext);
                           _pickProfileImage(ImageSource.gallery);
@@ -549,7 +550,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     Expanded(
                       child: _profileOption(
                         icon: Icons.face_rounded,
-                        title: 'Avatar',
+                        title: AppL10n.tr('Avatar'),
                         onTap: () {
                           Navigator.pop(sheetContext);
                           Future.delayed(
@@ -571,7 +572,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         _removeProfileImage();
                       },
                       icon: const Icon(Icons.delete_outline_rounded),
-                      label: const Text('Remove Photo'),
+                      label: Text(AppL10n.tr('Remove Photo')),
                     ),
                   ),
                 ],
@@ -718,7 +719,7 @@ class _ChatScreenState extends State<ChatScreen> {
           Expanded(
             child: Center(
               child: Text(
-                'Chat Box',
+                AppL10n.tr('Chat Box'),
                 style: TextStyle(
                   color: _text,
                   fontSize: 20,
@@ -768,7 +769,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         const SizedBox(height: 18),
         Text(
-          'Talk To your',
+          AppL10n.tr('Talk To your'),
           style: TextStyle(
             color: _text,
             fontSize: 38,
@@ -779,7 +780,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         const SizedBox(height: 6),
         Text(
-          'Story✨',
+          AppL10n.tr('Story✨'),
           style: TextStyle(
             color: _accent,
             fontSize: 40,
@@ -790,7 +791,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         const SizedBox(height: 26),
         Text(
-          'Turn Your Favorite Memories Into Beautiful AI-Powered\nTalking Stories',
+          AppL10n.tr('Turn Your Favorite Memories Into Beautiful AI-Powered\nTalking Stories'),
           style: TextStyle(
             color: _muted,
             fontSize: 17,
@@ -818,7 +819,7 @@ class _ChatScreenState extends State<ChatScreen> {
         textAlignVertical: TextAlignVertical.top,
         style: TextStyle(color: _text, fontSize: 17, height: 1.35),
         decoration: InputDecoration(
-          hintText: 'Describe your prompt here...',
+          hintText: AppL10n.tr('Describe your prompt here...'),
           hintStyle: TextStyle(
             color: _hint,
             fontSize: 17,
@@ -836,7 +837,7 @@ class _ChatScreenState extends State<ChatScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Choose Language',
+          AppL10n.tr('Choose Language'),
           style: TextStyle(
             color: _text,
             fontSize: 22,
@@ -859,7 +860,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 Expanded(
                   child: Text(
                     _selectedLanguage == 'English'
-                        ? 'Choose Language'
+                        ? AppL10n.tr('Choose Language')
                         : _selectedLanguage,
                     style: TextStyle(
                       color: _selectedLanguage == 'English' ? _hint : _text,
@@ -897,8 +898,8 @@ class _ChatScreenState extends State<ChatScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionHeader(
-          title: 'Select Storyteller',
-          actionText: 'See All',
+          title: AppL10n.tr('Select Storyteller'),
+          actionText: AppL10n.tr('See All'),
           onAction: _showAllStorytellers,
         ),
         const SizedBox(height: 20),
@@ -913,7 +914,7 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Center(
               child: TextButton(
                 onPressed: _loadStorytellers,
-                child: Text('Retry', style: TextStyle(color: _accent, fontSize: 15)),
+                child: Text(AppL10n.tr('Retry'), style: TextStyle(color: _accent, fontSize: 15)),
               ),
             ),
           )
@@ -1035,7 +1036,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             const SizedBox(height: 7),
             Text(
-              item.name.isEmpty ? 'Storyteller' : item.name,
+              item.name.isEmpty ? AppL10n.tr('Storyteller') : item.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
@@ -1099,8 +1100,8 @@ class _ChatScreenState extends State<ChatScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionHeader(
-          title: 'Story Genre',
-          actionText: 'View All',
+          title: AppL10n.tr('Story Genre'),
+          actionText: AppL10n.tr('View All'),
           onAction: _showAllGenres,
         ),
         const SizedBox(height: 16),
@@ -1172,7 +1173,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             const SizedBox(height: 7),
             Text(
-              genre.name,
+              AppL10n.tr(genre.name),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -1214,7 +1215,7 @@ class _ChatScreenState extends State<ChatScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Story Length',
+          AppL10n.tr('Story Length'),
           style: TextStyle(
             color: _text,
             fontSize: 22,
@@ -1253,7 +1254,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           : null,
                     ),
                     child: Text(
-                      values[index],
+                      AppL10n.tr(values[index]),
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
@@ -1302,7 +1303,7 @@ class _ChatScreenState extends State<ChatScreen> {
             const SizedBox(width: 15),
             Expanded(
               child: Text(
-                "Let's create a story...",
+                AppL10n.tr("Let's create a story..."),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -1374,7 +1375,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'Choose Language',
+                          AppL10n.tr('Choose Language'),
                           style: TextStyle(
                             color: _text,
                             fontSize: 20,
@@ -1396,7 +1397,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           fontSize: 16,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Search language...',
+                          hintText: AppL10n.tr('Search language...'),
                           hintStyle: TextStyle(color: _hint),
                           prefixIcon: Icon(
                             Icons.search_rounded,
@@ -1442,7 +1443,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: filtered.isEmpty
                           ? Center(
                               child: Text(
-                                'No language found',
+                                AppL10n.tr('No language found'),
                                 style: TextStyle(
                                   color: _muted,
                                   fontSize: 15,
@@ -1603,7 +1604,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             ),
                             const SizedBox(height: 7),
                             Text(
-                              item.name.isEmpty ? 'Storyteller' : item.name,
+                              item.name.isEmpty ? AppL10n.tr('Storyteller') : item.name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -1654,7 +1655,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Select Genre',
+                      AppL10n.tr('Select Genre'),
                       style: TextStyle(
                         color: _text,
                         fontSize: 20,
@@ -1733,7 +1734,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             ),
                             const SizedBox(height: 7),
                             Text(
-                              genre.name,
+                              AppL10n.tr(genre.name),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -1762,15 +1763,15 @@ class _ChatScreenState extends State<ChatScreen> {
       builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: _surface,
-          title: Text('Unlock PRO', style: TextStyle(color: _text)),
+          title: Text(AppL10n.tr('Unlock PRO'), style: TextStyle(color: _text)),
           content: Text(
-            'This storyteller is available for PRO users.',
+            AppL10n.tr('This storyteller is available for PRO users.'),
             style: TextStyle(color: _muted),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: Text('Close', style: TextStyle(color: _accent)),
+              child: Text(AppL10n.tr('Close'), style: TextStyle(color: _accent)),
             ),
           ],
         );
@@ -1790,7 +1791,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final prompt = _promptController.text.trim();
     if (prompt.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter something before continuing.')),
+        SnackBar(content: Text(AppL10n.tr('Please enter something before continuing.'))),
       );
       return;
     }

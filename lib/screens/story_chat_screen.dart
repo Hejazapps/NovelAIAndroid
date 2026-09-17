@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/easy_seek_api_manager.dart';
+import '../l10n/app_l10n.dart';
 
 class StoryChatConfig {
   const StoryChatConfig({
@@ -341,7 +342,7 @@ class _StoryChatScreenState extends State<StoryChatScreen> {
       final index = _session.messages.indexWhere((e) => e.id == bot.id);
       if (!_cancelled && index >= 0 && _session.messages[index].text.trim().isEmpty) {
         _session.messages[index] = _session.messages[index].copyWith(
-          text: 'Server unavailable. Please try again later.',
+          text: AppL10n.tr('Server unavailable. Please try again later.'),
         );
       }
       setState(() => _streaming = false);
@@ -588,7 +589,7 @@ $tail''';
               style: TextStyle(color: _text, fontSize: 17, fontWeight: FontWeight.w700),
             ),
             if (_streaming)
-              Text('Writing...', style: TextStyle(color: _accent, fontSize: 10, fontWeight: FontWeight.w600)),
+              Text(AppL10n.tr('Writing...'), style: TextStyle(color: _accent, fontSize: 10, fontWeight: FontWeight.w600)),
           ],
         ),
         centerTitle: true,
@@ -682,7 +683,9 @@ $tail''';
                         style: TextStyle(color: _text, fontSize: 15),
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: _streaming ? 'Please wait...' : 'Talk to your story...',
+                          hintText: _streaming
+                              ? AppL10n.tr('Please wait...')
+                              : AppL10n.tr('Talk to your story...'),
                           hintStyle: TextStyle(color: _muted),
                           contentPadding: const EdgeInsets.symmetric(vertical: 11),
                         ),

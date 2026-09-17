@@ -1463,5 +1463,15 @@
   "Easy QR Creator: QR Code Maker": "かんたんQR作成: QR Code Maker",
   "Generate stunning QR & barcodes — and keep everything organized in one place.": "魅力的なQRコードとバーコードを作成し、すべてを1か所で整理できます。",
   "Newest First": "新しい順",
-  "Oldest First": "古い順"
+  "Oldest First": "古い順",
+  "Search books or authors": "本または著者を検索",
+  "Search poems or authors": "詩または作者を検索",
+  "minutes": "分",
+  "Estimated length: approximately": "推定の長さ：約",
+  "Please enter a title.": "タイトルを入力してください。",
+  "Give your speech a clear title": "スピーチに分かりやすいタイトルを付けてください",
+  "Enter the speaker’s name or position": "話し手の名前または役職を入力してください",
+  "Example: Students, colleagues, invited guests...": "例：学生、同僚、招待客など",
+  "Describe the central idea you want to communicate": "伝えたい中心的な考えを説明してください",
+  "Describe what listeners should think, feel, or do afterward": "聞いた後に聴衆にどう考え、感じ、行動してほしいかを説明してください"
 }

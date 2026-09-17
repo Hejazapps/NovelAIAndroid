@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'save_vc.dart';
 import '../services/easy_seek_api_manager.dart';
 import 'subscription_screen.dart';
+import '../l10n/app_l10n.dart';
 
 class SpeechScreen extends StatefulWidget {
   const SpeechScreen({super.key});
@@ -140,8 +141,8 @@ class _SpeechScreenState extends State<SpeechScreen> {
           onPressed: () => Navigator.maybePop(context),
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
         ),
-        title: const Text(
-          'Create Speech',
+        title: Text(
+          AppL10n.tr('Create Speech'),
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
@@ -297,7 +298,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  child: const Text('Generate Speech'),
+                  child: Text(AppL10n.tr('Generate Speech')),
                 ),
               ),
             ],
@@ -349,12 +350,12 @@ class _SpeechScreenState extends State<SpeechScreen> {
     final minutes = _duration.round();
 
     if (topic.isEmpty) {
-      _showWarning('Please enter a title.');
+      _showWarning(AppL10n.tr('Please enter a title.'));
       return;
     }
 
     if (coreIdea.isEmpty) {
-      _showWarning('Please enter the core idea.');
+      _showWarning(AppL10n.tr('Please enter the core idea.'));
       return;
     }
 
@@ -427,7 +428,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
           backgroundColor:
               isDark ? const Color(0xFF21152F) : Colors.white,
           title: Text(
-            'Missing Information',
+            AppL10n.tr('Missing Information'),
             style: TextStyle(
               color: isDark ? Colors.white : const Color(0xFF1B1B1B),
             ),
@@ -444,7 +445,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                'OK',
+                AppL10n.tr('OK'),
                 style: TextStyle(
                   color: isDark
                       ? const Color(0xFF9146E8)
@@ -584,7 +585,7 @@ Do not say “Here is your speech,” “Generated Speech,” “Sure,” or any
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          title,
+          AppL10n.tr(title),
           style: theme.textTheme.titleMedium?.copyWith(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -671,7 +672,7 @@ Do not say “Here is your speech,” “Generated Speech,” “Sure,” or any
           children: [
             Expanded(
               child: Text(
-                value,
+                AppL10n.tr(value),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -727,7 +728,7 @@ Do not say “Here is your speech,” “Generated Speech,” “Sure,” or any
         : const Color(0xFFE0DCE8);
 
     return InputDecoration(
-      hintText: hint.isEmpty ? null : hint,
+      hintText: hint.isEmpty ? null : AppL10n.tr(hint),
       hintStyle: TextStyle(
         fontSize: 14,
         color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.72),
@@ -963,7 +964,7 @@ class _SpeechSelectorSheetState extends State<_SpeechSelectorSheet> {
                       color: theme.colorScheme.onSurface,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Search',
+                      hintText: AppL10n.tr('Search'),
                       hintStyle: TextStyle(
                         color: muted,
                       ),
@@ -1023,7 +1024,7 @@ class _SpeechSelectorSheetState extends State<_SpeechSelectorSheet> {
                             contentPadding:
                                 const EdgeInsets.symmetric(horizontal: 20),
                             title: Text(
-                              item,
+                              AppL10n.tr(item),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(

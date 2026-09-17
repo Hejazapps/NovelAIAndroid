@@ -1463,5 +1463,15 @@
   "Easy QR Creator: QR Code Maker": "Creador QR fàcil: QR Code Maker",
   "Generate stunning QR & barcodes — and keep everything organized in one place.": "Crea codis QR i de barres atractius i mantén-ho tot organitzat en un sol lloc.",
   "Newest First": "Més recents primer",
-  "Oldest First": "Més antics primer"
+  "Oldest First": "Més antics primer",
+  "Search books or authors": "Cerca llibres o autors",
+  "Search poems or authors": "Cerca poemes o autors",
+  "minutes": "minuts",
+  "Estimated length: approximately": "Longitud estimada: aproximadament",
+  "Please enter a title.": "Introdueix un títol.",
+  "Give your speech a clear title": "Dona un títol clar al teu discurs",
+  "Enter the speaker’s name or position": "Introdueix el nom o el càrrec de l’orador",
+  "Example: Students, colleagues, invited guests...": "Exemple: estudiants, companys, convidats...",
+  "Describe the central idea you want to communicate": "Descriu la idea central que vols comunicar",
+  "Describe what listeners should think, feel, or do afterward": "Descriu què haurien de pensar, sentir o fer els oients després"
 }

@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_l10n.dart';
+
 import '../services/realtime_db_manager.dart';
 import '../services/book_preload_service.dart';
 import 'story_detail_screen.dart';
@@ -978,14 +980,14 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       await showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Unable to Open'),
-          content: const Text(
-            'This book does not have a readable online format.',
+          title: Text(AppL10n.tr('Unable to Open')),
+          content: Text(
+            AppL10n.tr('This book does not have a readable online format.'),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
+              child: Text(AppL10n.tr('OK')),
             ),
           ],
         ),
@@ -1088,7 +1090,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   const SizedBox(width: 42),
                   Expanded(
                     child: Text(
-                      title,
+                      AppL10n.tr(title),
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.w800,
@@ -1114,8 +1116,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   autocorrect: false,
                   decoration: InputDecoration(
                     hintText: _mode == DiscoverMode.books
-                        ? 'Search books or authors'
-                        : 'Search poems or authors',
+                        ? AppL10n.tr('Search books or authors')
+                        : AppL10n.tr('Search poems or authors'),
                     prefixIcon: const Icon(Icons.search_rounded),
                     suffixIcon: _searchController.text.isEmpty
                         ? null
@@ -1160,14 +1162,14 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         children: [
           Expanded(
             child: _DiscoverSegmentItem(
-              label: 'Stories',
+              label: AppL10n.tr('Stories'),
               selected: _mode == DiscoverMode.stories,
               onTap: () => _changeMode(DiscoverMode.stories),
             ),
           ),
           Expanded(
             child: _DiscoverSegmentItem(
-              label: 'Books',
+              label: AppL10n.tr('Books'),
               selected: _mode == DiscoverMode.books,
               onTap: () => _changeMode(DiscoverMode.books),
             ),
@@ -1184,15 +1186,15 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
     if (_storiesError != null && _collections.isEmpty) {
       return _ErrorState(
-        title: 'Unable to load stories',
+        title: AppL10n.tr('Unable to load stories'),
         onRetry: _loadStories,
       );
     }
 
     if (_collections.isEmpty) {
-      return const _EmptyState(
+      return _EmptyState(
         icon: Icons.auto_stories_outlined,
-        text: 'No stories found.',
+        text: AppL10n.tr('No stories found.'),
       );
     }
 
@@ -1233,15 +1235,15 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
     if (_booksError != null && _books.isEmpty) {
       return _ErrorState(
-        title: 'Unable to load books',
+        title: AppL10n.tr('Unable to load books'),
         onRetry: () => _loadFirstBookPage(force: true),
       );
     }
 
     if (items.isEmpty) {
-      return const _EmptyState(
+      return _EmptyState(
         icon: Icons.menu_book_rounded,
-        text: 'No books found.',
+        text: AppL10n.tr('No books found.'),
       );
     }
 
@@ -1287,15 +1289,15 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
     if (_poemsError != null && _poems.isEmpty) {
       return _ErrorState(
-        title: 'Unable to load poems',
+        title: AppL10n.tr('Unable to load poems'),
         onRetry: () => _fetchRandomPoems(force: true),
       );
     }
 
     if (items.isEmpty) {
-      return const _EmptyState(
+      return _EmptyState(
         icon: Icons.history_edu_rounded,
-        text: 'No poems found.',
+        text: AppL10n.tr('No poems found.'),
       );
     }
 
@@ -1400,7 +1402,7 @@ class _DiscoverSegmentItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(22),
           ),
           child: Text(
-            label,
+            AppL10n.tr(label),
             style: TextStyle(
               fontSize: 14,
               fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
@@ -1432,7 +1434,7 @@ class _StoryCollectionSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          collection.name.isEmpty ? 'Unknown' : collection.name,
+          collection.name.isEmpty ? AppL10n.tr('Unknown') : collection.name,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: _discoverText(context),
@@ -1477,7 +1479,7 @@ class _StoryCollectionSection extends StatelessWidget {
                           child: Text(
                             story.title?.isNotEmpty == true
                                 ? story.title!
-                                : 'Story',
+                                : AppL10n.tr('Story'),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: Theme.of(context)

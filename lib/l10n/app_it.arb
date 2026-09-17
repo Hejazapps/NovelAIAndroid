@@ -1463,5 +1463,15 @@
   "Easy QR Creator: QR Code Maker": "Creatore QR facile: QR Code Maker",
   "Generate stunning QR & barcodes — and keep everything organized in one place.": "Crea splendidi codici QR e a barre e mantieni tutto organizzato in un unico posto.",
   "Newest First": "Più recenti prima",
-  "Oldest First": "Più vecchi prima"
+  "Oldest First": "Più vecchi prima",
+  "Search books or authors": "Cerca libri o autori",
+  "Search poems or authors": "Cerca poesie o autori",
+  "minutes": "minuti",
+  "Estimated length: approximately": "Lunghezza stimata: circa",
+  "Please enter a title.": "Inserisci un titolo.",
+  "Give your speech a clear title": "Dai al tuo discorso un titolo chiaro",
+  "Enter the speaker’s name or position": "Inserisci il nome o il ruolo dell’oratore",
+  "Example: Students, colleagues, invited guests...": "Esempio: studenti, colleghi, ospiti invitati...",
+  "Describe the central idea you want to communicate": "Descrivi l’idea centrale che vuoi comunicare",
+  "Describe what listeners should think, feel, or do afterward": "Descrivi cosa dovrebbero pensare, provare o fare gli ascoltatori dopo"
 }

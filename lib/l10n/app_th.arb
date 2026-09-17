@@ -1463,5 +1463,15 @@
   "Easy QR Creator: QR Code Maker": "เครื่องมือสร้าง QR แบบง่าย: QR Code Maker",
   "Generate stunning QR & barcodes — and keep everything organized in one place.": "สร้าง QR และบาร์โค้ดที่สวยงาม พร้อมจัดทุกอย่างให้เป็นระเบียบในที่เดียว",
   "Newest First": "ใหม่ล่าสุดก่อน",
-  "Oldest First": "เก่าที่สุดก่อน"
+  "Oldest First": "เก่าที่สุดก่อน",
+  "Search books or authors": "ค้นหาหนังสือหรือผู้แต่ง",
+  "Search poems or authors": "ค้นหาบทกวีหรือผู้แต่ง",
+  "minutes": "นาที",
+  "Estimated length: approximately": "ความยาวโดยประมาณ: ประมาณ",
+  "Please enter a title.": "โปรดป้อนชื่อเรื่อง",
+  "Give your speech a clear title": "ตั้งชื่อสุนทรพจน์ให้ชัดเจน",
+  "Enter the speaker’s name or position": "ป้อนชื่อหรือตำแหน่งของผู้พูด",
+  "Example: Students, colleagues, invited guests...": "ตัวอย่าง: นักเรียน เพื่อนร่วมงาน แขกรับเชิญ...",
+  "Describe the central idea you want to communicate": "อธิบายแนวคิดหลักที่คุณต้องการสื่อ",
+  "Describe what listeners should think, feel, or do afterward": "อธิบายว่าคุณต้องการให้ผู้ฟังคิด รู้สึก หรือทำอะไรหลังจากฟัง"
 }

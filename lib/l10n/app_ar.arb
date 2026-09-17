@@ -1463,5 +1463,15 @@
   "Easy QR Creator: QR Code Maker": "منشئ QR السهل: QR Code Maker",
   "Generate stunning QR & barcodes — and keep everything organized in one place.": "أنشئ رموز QR وباركود رائعة واحتفظ بكل شيء منظماً في مكان واحد.",
   "Newest First": "الأحدث أولاً",
-  "Oldest First": "الأقدم أولاً"
+  "Oldest First": "الأقدم أولاً",
+  "Search books or authors": "ابحث عن الكتب أو المؤلفين",
+  "Search poems or authors": "ابحث عن القصائد أو الشعراء",
+  "minutes": "دقائق",
+  "Estimated length: approximately": "الطول التقديري: حوالي",
+  "Please enter a title.": "يرجى إدخال عنوان.",
+  "Give your speech a clear title": "أعطِ خطابك عنوانًا واضحًا",
+  "Enter the speaker’s name or position": "أدخل اسم المتحدث أو منصبه",
+  "Example: Students, colleagues, invited guests...": "مثال: الطلاب، الزملاء، الضيوف المدعوون...",
+  "Describe the central idea you want to communicate": "صف الفكرة الأساسية التي تريد إيصالها",
+  "Describe what listeners should think, feel, or do afterward": "صف ما ينبغي أن يفكر فيه المستمعون أو يشعروا به أو يفعلوه بعد ذلك"
 }

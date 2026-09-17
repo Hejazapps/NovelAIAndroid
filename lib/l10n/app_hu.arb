@@ -1463,5 +1463,15 @@
   "Easy QR Creator: QR Code Maker": "Egyszerű QR-készítő: QR Code Maker",
   "Generate stunning QR & barcodes — and keep everything organized in one place.": "Készíts látványos QR- és vonalkódokat, és tarts mindent egy helyen rendszerezve.",
   "Newest First": "Legújabb elöl",
-  "Oldest First": "Legrégebbi elöl"
+  "Oldest First": "Legrégebbi elöl",
+  "Search books or authors": "Könyvek vagy szerzők keresése",
+  "Search poems or authors": "Versek vagy szerzők keresése",
+  "minutes": "perc",
+  "Estimated length: approximately": "Becsült hossz: körülbelül",
+  "Please enter a title.": "Adj meg egy címet.",
+  "Give your speech a clear title": "Adj egyértelmű címet a beszédednek",
+  "Enter the speaker’s name or position": "Add meg az előadó nevét vagy beosztását",
+  "Example: Students, colleagues, invited guests...": "Példa: diákok, kollégák, meghívott vendégek...",
+  "Describe the central idea you want to communicate": "Írd le a központi gondolatot, amelyet közvetíteni szeretnél",
+  "Describe what listeners should think, feel, or do afterward": "Írd le, mit gondoljanak, érezzenek vagy tegyenek a hallgatók utána"
 }

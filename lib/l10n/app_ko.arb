@@ -1463,5 +1463,15 @@
   "Easy QR Creator: QR Code Maker": "간편 QR 생성기: QR Code Maker",
   "Generate stunning QR & barcodes — and keep everything organized in one place.": "멋진 QR 코드와 바코드를 만들고 모든 것을 한곳에서 정리하세요.",
   "Newest First": "최신순",
-  "Oldest First": "오래된순"
+  "Oldest First": "오래된순",
+  "Search books or authors": "책 또는 저자 검색",
+  "Search poems or authors": "시 또는 작가 검색",
+  "minutes": "분",
+  "Estimated length: approximately": "예상 길이: 약",
+  "Please enter a title.": "제목을 입력해 주세요.",
+  "Give your speech a clear title": "연설에 명확한 제목을 입력하세요",
+  "Enter the speaker’s name or position": "연설자의 이름 또는 직책을 입력하세요",
+  "Example: Students, colleagues, invited guests...": "예: 학생, 동료, 초대 손님...",
+  "Describe the central idea you want to communicate": "전달하고 싶은 핵심 아이디어를 설명하세요",
+  "Describe what listeners should think, feel, or do afterward": "청중이 들은 후 무엇을 생각하고 느끼거나 행동하길 원하는지 설명하세요"
 }

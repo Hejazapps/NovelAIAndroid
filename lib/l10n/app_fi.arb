@@ -1463,5 +1463,15 @@
   "Easy QR Creator: QR Code Maker": "Helppo QR-luoja: QR Code Maker",
   "Generate stunning QR & barcodes — and keep everything organized in one place.": "Luo näyttäviä QR- ja viivakoodeja ja pidä kaikki järjestyksessä yhdessä paikassa.",
   "Newest First": "Uusimmat ensin",
-  "Oldest First": "Vanhimmat ensin"
+  "Oldest First": "Vanhimmat ensin",
+  "Search books or authors": "Hae kirjoja tai kirjailijoita",
+  "Search poems or authors": "Hae runoja tai kirjoittajia",
+  "minutes": "minuuttia",
+  "Estimated length: approximately": "Arvioitu pituus: noin",
+  "Please enter a title.": "Anna otsikko.",
+  "Give your speech a clear title": "Anna puheellesi selkeä otsikko",
+  "Enter the speaker’s name or position": "Anna puhujan nimi tai asema",
+  "Example: Students, colleagues, invited guests...": "Esimerkki: opiskelijat, kollegat, kutsuvieraat...",
+  "Describe the central idea you want to communicate": "Kuvaile keskeinen ajatus, jonka haluat välittää",
+  "Describe what listeners should think, feel, or do afterward": "Kuvaile, mitä kuulijoiden tulisi ajatella, tuntea tai tehdä jälkeenpäin"
 }

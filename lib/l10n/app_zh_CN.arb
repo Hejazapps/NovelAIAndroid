@@ -1463,5 +1463,15 @@
   "Easy QR Creator: QR Code Maker": "简易 QR 生成器：QR Code Maker",
   "Generate stunning QR & barcodes — and keep everything organized in one place.": "创建精美的 QR 码和条形码，并在一个地方整理所有内容。",
   "Newest First": "最新优先",
-  "Oldest First": "最旧优先"
+  "Oldest First": "最旧优先",
+  "Search books or authors": "搜索书籍或作者",
+  "Search poems or authors": "搜索诗歌或作者",
+  "minutes": "分钟",
+  "Estimated length: approximately": "预计长度：约",
+  "Please enter a title.": "请输入标题。",
+  "Give your speech a clear title": "为演讲填写一个清晰的标题",
+  "Enter the speaker’s name or position": "输入演讲者的姓名或职位",
+  "Example: Students, colleagues, invited guests...": "例如：学生、同事、受邀嘉宾……",
+  "Describe the central idea you want to communicate": "描述你想传达的核心思想",
+  "Describe what listeners should think, feel, or do afterward": "描述你希望听众在听完后思考、感受或采取什么行动"
 }
