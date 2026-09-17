@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'save_vc.dart';
 import '../services/easy_seek_api_manager.dart';
 import 'subscription_screen.dart';
+import '../l10n/app_l10n.dart';
 
 class LetterScreen extends StatefulWidget {
   const LetterScreen({super.key});
@@ -400,7 +401,7 @@ class _LetterScreenState extends State<LetterScreen> {
           const SizedBox(width: 4),
           Expanded(
             child: Text(
-              'Create Letter',
+              AppL10n.tr('Create Letter'),
               style: TextStyle(
                 fontSize: 23,
                 fontWeight: FontWeight.w700,
@@ -441,7 +442,7 @@ class _LetterScreenState extends State<LetterScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Message',
+          AppL10n.tr('Message'),
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -469,7 +470,7 @@ class _LetterScreenState extends State<LetterScreen> {
               color: _bodyText(context),
             ),
             decoration: InputDecoration(
-              hintText: 'Write Message',
+              hintText: AppL10n.tr('Write Message'),
               hintStyle: TextStyle(
                 color: _hint(context),
               ),
@@ -491,7 +492,7 @@ class _LetterScreenState extends State<LetterScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          title,
+          AppL10n.tr(title),
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
@@ -515,7 +516,7 @@ class _LetterScreenState extends State<LetterScreen> {
               color: _bodyText(context),
             ),
             decoration: InputDecoration(
-              hintText: hint,
+              hintText: AppL10n.tr(hint),
               hintStyle: TextStyle(
                 fontSize: 14,
                 color: _hint(context),
@@ -579,7 +580,7 @@ class _LetterScreenState extends State<LetterScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      AppL10n.tr(title),
                       style: TextStyle(
                         fontSize: 12,
                         color: _muted(context),
@@ -587,7 +588,7 @@ class _LetterScreenState extends State<LetterScreen> {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      value,
+                      AppL10n.tr(value),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -619,7 +620,7 @@ class _LetterScreenState extends State<LetterScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Length',
+          AppL10n.tr('Length'),
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -664,7 +665,7 @@ class _LetterScreenState extends State<LetterScreen> {
                       borderRadius: BorderRadius.circular(11),
                     ),
                     child: Text(
-                      value,
+                      AppL10n.tr(value),
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: selected
@@ -709,17 +710,17 @@ class _LetterScreenState extends State<LetterScreen> {
               borderRadius: BorderRadius.circular(16),
             ),
             alignment: Alignment.center,
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.auto_awesome_rounded,
                   color: Colors.white,
                   size: 18,
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
-                  'Create',
+                  AppL10n.tr('Create'),
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -1143,11 +1144,11 @@ Produce exactly one polished final version ready to send.
         return AlertDialog(
           backgroundColor: _surface(context),
           title: Text(
-            title,
+            AppL10n.tr(title),
             style: TextStyle(color: _text(context)),
           ),
           content: Text(
-            message,
+            AppL10n.tr(message),
             style: TextStyle(color: _muted(context)),
           ),
           actions: [
@@ -1156,7 +1157,7 @@ Produce exactly one polished final version ready to send.
                 Navigator.pop(context);
               },
               child: Text(
-                'OK',
+                AppL10n.tr('OK'),
                 style: TextStyle(color: _accent(context)),
               ),
             ),
@@ -1209,7 +1210,7 @@ Produce exactly one polished final version ready to send.
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      title,
+                      AppL10n.tr(title),
                       style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
@@ -1225,7 +1226,7 @@ Produce exactly one polished final version ready to send.
                       final value = values[index];
 
                       return ListTile(
-                        title: Text(value, style: TextStyle(color: _bodyText(context))),
+                        title: Text(AppL10n.tr(value), style: TextStyle(color: _bodyText(context))),
                         trailing: value == selectedValue
                             ? Icon(
                           Icons.check_circle_rounded,
@@ -1270,7 +1271,7 @@ Produce exactly one polished final version ready to send.
         return AlertDialog(
           backgroundColor: _surface(context),
           title: Text(
-            title,
+            AppL10n.tr(title),
             style: TextStyle(color: _text(context)),
           ),
           content: TextField(
@@ -1278,7 +1279,7 @@ Produce exactly one polished final version ready to send.
             autofocus: true,
             style: TextStyle(color: _bodyText(context)),
             decoration: InputDecoration(
-              hintText: hint,
+              hintText: AppL10n.tr(hint),
               hintStyle: TextStyle(color: _hint(context)),
               filled: true,
               fillColor: _surfaceAlt(context),
@@ -1298,7 +1299,7 @@ Produce exactly one polished final version ready to send.
                 Navigator.pop(context);
               },
               child: Text(
-                'Cancel',
+                AppL10n.tr('Cancel'),
                 style: TextStyle(color: _muted(context)),
               ),
             ),
@@ -1314,7 +1315,7 @@ Produce exactly one polished final version ready to send.
                 onDone(value);
               },
               child: Text(
-                'Done',
+                AppL10n.tr('Done'),
                 style: TextStyle(color: _accent(context)),
               ),
             ),
