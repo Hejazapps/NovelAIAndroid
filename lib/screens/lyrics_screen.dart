@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'save_vc.dart';
 import '../services/easy_seek_api_manager.dart';
 import 'subscription_screen.dart';
+import '../l10n/app_l10n.dart';
 
 Future<bool> _hasUsedFreeLyricsFeature(String key) async {
   final prefs = await SharedPreferences.getInstance();
@@ -387,7 +388,7 @@ class _LyricsScreenState extends State<LyricsScreen> {
           ),
           Expanded(
             child: Text(
-              'Lyrics',
+              AppL10n.tr('Lyrics'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: _lyricsText(context),
@@ -531,8 +532,8 @@ class _LyricsScreenState extends State<LyricsScreen> {
                             background: Colors.white.withValues(alpha: .14),
                           ),
                           const SizedBox(height: 10),
-                          const Text(
-                            'Create Chorus',
+                          Text(
+                            AppL10n.tr('Create Chorus'),
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -540,8 +541,8 @@ class _LyricsScreenState extends State<LyricsScreen> {
                             ),
                           ),
                           const SizedBox(height: 5),
-                          const Text(
-                            'Write choruses that resonate with listeners and strengthen your song',
+                          Text(
+                            AppL10n.tr('Write choruses that resonate with listeners and strengthen your song'),
                             maxLines: 4,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -586,17 +587,17 @@ class _LyricsScreenState extends State<LyricsScreen> {
                             alignment: Alignment.topLeft,
                             child: SizedBox(
                               width: constraints.maxWidth,
-                              child: const Column(
+                              child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _CardBadge(
+                                  const _CardBadge(
                                     icon: Icons.queue_music_rounded,
                                     background: Color(0xFF63303B),
                                   ),
                                   SizedBox(height: 5),
                                   Text(
-                                    'Create Verse',
+                                    AppL10n.tr('Create Verse'),
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 16,
@@ -605,7 +606,7 @@ class _LyricsScreenState extends State<LyricsScreen> {
                                   ),
                                   SizedBox(height: 4),
                                   Text(
-                                    'Craft meaningful verses to tell the core story of your song.',
+                                    AppL10n.tr('Craft meaningful verses to tell the core story of your song.'),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -647,17 +648,17 @@ class _LyricsScreenState extends State<LyricsScreen> {
                             alignment: Alignment.topLeft,
                             child: SizedBox(
                               width: constraints.maxWidth,
-                              child: const Column(
+                              child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _CardBadge(
+                                  const _CardBadge(
                                     icon: Icons.record_voice_over_rounded,
                                     background: Color(0xFF5C351F),
                                   ),
                                   SizedBox(height: 5),
                                   Text(
-                                    'Rhyming',
+                                    AppL10n.tr('Rhyming'),
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 16,
@@ -666,7 +667,7 @@ class _LyricsScreenState extends State<LyricsScreen> {
                                   ),
                                   SizedBox(height: 4),
                                   Text(
-                                    'Find creative rhyming words and phrases for every line.',
+                                    AppL10n.tr('Find creative rhyming words and phrases for every line.'),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -704,7 +705,7 @@ class _LyricsScreenState extends State<LyricsScreen> {
         Row(
           children: [
             Text(
-              title,
+              AppL10n.tr(title),
               style: TextStyle(
                 color: _lyricsText(context),
                 fontSize: 18,
@@ -715,7 +716,7 @@ class _LyricsScreenState extends State<LyricsScreen> {
             GestureDetector(
               onTap: onSeeAll,
               child: Text(
-                'See All',
+                AppL10n.tr('See All'),
                 style: TextStyle(
                   color: _lyricsText(context),
                   fontSize: 14,
@@ -766,7 +767,7 @@ class _LyricsScreenState extends State<LyricsScreen> {
                           right: 8,
                           bottom: 8,
                           child: Text(
-                            items[index],
+                            AppL10n.tr(items[index]),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -1373,7 +1374,7 @@ class _LyricsFormScaffold extends StatelessWidget {
                   ),
                   Expanded(
                     child: Text(
-                      title,
+                      AppL10n.tr(title),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: _lyricsText(context),
@@ -1385,7 +1386,7 @@ class _LyricsFormScaffold extends StatelessWidget {
                   TextButton(
                     onPressed: onCreate,
                     child: Text(
-                      'Create',
+                      AppL10n.tr('Create'),
                       style: TextStyle(
                         color: _lyricsText(context),
                         fontSize: 15,
@@ -1420,7 +1421,7 @@ class _FormLabel extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 7),
       child: Text(
-        text,
+        AppL10n.tr(text),
         style: TextStyle(
           color: _lyricsText(context),
           fontSize: 15,
@@ -1453,7 +1454,7 @@ class _LyricsTextBox extends StatelessWidget {
       style: TextStyle(color: _lyricsText(context), fontSize: 14),
       cursorColor: const Color(0xFF9146E8),
       decoration: InputDecoration(
-        hintText: hint,
+        hintText: AppL10n.tr(hint),
         hintStyle: TextStyle(
           color: _lyricsHint(context),
           fontSize: 13,
@@ -1496,6 +1497,7 @@ class _LyricsDropdown extends StatelessWidget {
         final selected = await showModalBottomSheet<String>(
           context: context,
           isScrollControlled: true,
+          useSafeArea: false,
           backgroundColor: Colors.transparent,
           builder: (_) => _LyricsSelectorSheet(
             title: hint,
@@ -1518,7 +1520,7 @@ class _LyricsDropdown extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                value ?? hint,
+                AppL10n.tr(value ?? hint),
                 style: TextStyle(
                   color: value == null
                       ? _lyricsHint(context)
@@ -1568,21 +1570,24 @@ class _LyricsSelectorSheetState extends State<_LyricsSelectorSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final query = _query.trim().toLowerCase();
     final filtered = widget.options
-        .where((e) => e.toLowerCase().contains(_query.toLowerCase()))
+        .where((e) =>
+            e.toLowerCase().contains(query) ||
+            AppL10n.tr(e).toLowerCase().contains(query))
         .toList();
 
-    return SafeArea(
-      top: false,
-      child: Container(
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    return Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * .50,
+          maxHeight: MediaQuery.of(context).size.height * .42 + bottomInset,
         ),
         decoration: BoxDecoration(
           color: _lyricsDark(context) ? const Color(0xFF21152F) : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
         ),
-        padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
+        padding: EdgeInsets.fromLTRB(18, 10, 18, 18 + bottomInset),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1596,7 +1601,7 @@ class _LyricsSelectorSheetState extends State<_LyricsSelectorSheet> {
             ),
             const SizedBox(height: 14),
             Text(
-              widget.title,
+              AppL10n.tr(widget.title),
               style: TextStyle(
                 color: _lyricsText(context),
                 fontSize: 18,
@@ -1610,7 +1615,7 @@ class _LyricsSelectorSheetState extends State<_LyricsSelectorSheet> {
                 onChanged: (v) => setState(() => _query = v),
                 style: TextStyle(color: _lyricsText(context)),
                 decoration: InputDecoration(
-                  hintText: 'Search',
+                  hintText: AppL10n.tr('Search'),
                   hintStyle: TextStyle(color: _lyricsHint(context)),
                   prefixIcon: const Icon(
                     Icons.search,
@@ -1638,7 +1643,7 @@ class _LyricsSelectorSheetState extends State<_LyricsSelectorSheet> {
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 4),
                     title: Text(
-                      item,
+                      AppL10n.tr(item),
                       style: TextStyle(color: _lyricsText(context)),
                     ),
                     trailing: selected
@@ -1654,8 +1659,7 @@ class _LyricsSelectorSheetState extends State<_LyricsSelectorSheet> {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -1680,21 +1684,13 @@ class _SeeAllLyricsPage extends StatelessWidget {
         child: Column(
           children: [
             SizedBox(
-              height: 72,
-              child: Stack(
-                alignment: Alignment.center,
+              height: 64,
+              child: Row(
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: _lyricsText(context),
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Positioned(
-                    left: 10,
+                  SizedBox(
+                    width: 52,
                     child: IconButton(
+                      padding: EdgeInsets.zero,
                       onPressed: () => Navigator.pop(context),
                       icon: Icon(
                         Icons.arrow_back_ios_new_rounded,
@@ -1703,6 +1699,20 @@ class _SeeAllLyricsPage extends StatelessWidget {
                       ),
                     ),
                   ),
+                  Expanded(
+                    child: Text(
+                      AppL10n.tr(title),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: _lyricsText(context),
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 52),
                 ],
               ),
             ),
@@ -1721,12 +1731,45 @@ class _SeeAllLyricsPage extends StatelessWidget {
                   return GestureDetector(
                     onTap: () => onSelected(items[index]),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Image.asset(
-                        'assets/Lyrics/$imagePrefix$index.png',
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            Container(color: const Color(0xFF2A2138)),
+                      borderRadius: BorderRadius.circular(6),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Image.asset(
+                            'assets/Lyrics/$imagePrefix$index.png',
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                Container(color: const Color(0xFF2A2138)),
+                          ),
+                          Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.fromLTRB(7, 14, 7, 6),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.black.withValues(alpha: .72),
+                                  ],
+                                ),
+                              ),
+                              child: Text(
+                                AppL10n.tr(items[index]),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   );
@@ -1743,7 +1786,7 @@ class _SeeAllLyricsPage extends StatelessWidget {
 void _showMessage(BuildContext context, String message) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text(message),
+      content: Text(AppL10n.tr(message)),
       backgroundColor:
           _lyricsDark(context) ? const Color(0xFF2A2138) : const Color(0xFF303030),
     ),
