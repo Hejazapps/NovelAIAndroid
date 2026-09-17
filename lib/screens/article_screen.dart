@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'save_vc.dart';
 import '../services/easy_seek_api_manager.dart';
 import 'subscription_screen.dart';
+import '../l10n/app_l10n.dart';
 
 class ArticleScreen extends StatefulWidget {
   const ArticleScreen({super.key});
@@ -511,7 +512,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
 
           Expanded(
             child: Text(
-              'Create Article',
+              AppL10n.tr('Create Article'),
               style: TextStyle(
                 fontSize: 23,
                 fontWeight: FontWeight.w700,
@@ -559,7 +560,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          title,
+          AppL10n.tr(title),
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -570,7 +571,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
         const SizedBox(height: 4),
 
         Text(
-          subtitle,
+          AppL10n.tr(subtitle),
           style: TextStyle(
             fontSize: 12,
             height: 1.4,
@@ -610,7 +611,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
           color: _bodyText(context),
         ),
         decoration: InputDecoration(
-          hintText: hint,
+          hintText: AppL10n.tr(hint),
           hintStyle: TextStyle(
             fontSize: 14,
             height: 1.4,
@@ -651,7 +652,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
           children: [
             Expanded(
               child: Text(
-                value,
+                AppL10n.tr(value),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -681,7 +682,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
           children: [
             Expanded(
               child: Text(
-                'Sections',
+                AppL10n.tr('Sections'),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -704,7 +705,7 @@ class _ArticleScreenState extends State<ArticleScreen> {
         const SizedBox(height: 2),
 
         Text(
-          'Choose how many main sections the article should contain.',
+          AppL10n.tr('Choose how many main sections the article should contain.'),
           style: TextStyle(
             fontSize: 12,
             height: 1.4,
@@ -804,19 +805,19 @@ class _ArticleScreenState extends State<ArticleScreen> {
               borderRadius: BorderRadius.circular(16),
             ),
             alignment: Alignment.center,
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.auto_awesome_rounded,
                   color: Colors.white,
                   size: 18,
                 ),
 
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
 
                 Text(
-                  'Create',
+                  AppL10n.tr('Create'),
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -1148,15 +1149,15 @@ Do not add anything before or after the finished article.
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(title),
-          content: Text(message),
+          title: Text(AppL10n.tr(title)),
+          content: Text(AppL10n.tr(message)),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
               child: Text(
-                'OK',
+                AppL10n.tr('OK'),
                 style: TextStyle(
                   color: _accent(context),
                 ),
@@ -1243,7 +1244,9 @@ class _ArticleSelectorSheetState extends State<_ArticleSelectorSheet> {
     if (search.trim().isEmpty) return widget.values;
     final query = search.trim().toLowerCase();
     return widget.values
-        .where((value) => value.toLowerCase().contains(query))
+        .where((value) =>
+            value.toLowerCase().contains(query) ||
+            AppL10n.tr(value).toLowerCase().contains(query))
         .toList();
   }
 
@@ -1294,7 +1297,7 @@ class _ArticleSelectorSheetState extends State<_ArticleSelectorSheet> {
                 children: [
                   Expanded(
                     child: Text(
-                      widget.title,
+                      AppL10n.tr(widget.title),
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -1322,7 +1325,7 @@ class _ArticleSelectorSheetState extends State<_ArticleSelectorSheet> {
                     controller: _searchController,
                     onChanged: (value) => setState(() => search = value),
                     decoration: InputDecoration(
-                      hintText: 'Search ${widget.title}',
+                      hintText: '${AppL10n.tr('Search')} ${AppL10n.tr(widget.title)}',
                       prefixIcon: const Icon(Icons.search_rounded),
                       suffixIcon: search.isNotEmpty
                           ? IconButton(
@@ -1351,7 +1354,7 @@ class _ArticleSelectorSheetState extends State<_ArticleSelectorSheet> {
                           ),
                           SizedBox(height: 8),
                           Text(
-                            'No results found',
+                            AppL10n.tr('No results found'),
                             style: TextStyle(
                               fontSize: 14,
                               color: _muted(context),
@@ -1383,7 +1386,7 @@ class _ArticleSelectorSheetState extends State<_ArticleSelectorSheet> {
                             contentPadding:
                                 const EdgeInsets.symmetric(horizontal: 20),
                             title: Text(
-                              value,
+                              AppL10n.tr(value),
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: selected

@@ -594,7 +594,7 @@ Do not say “Here is your speech,” “Generated Speech,” “Sure,” or any
         if (subtitle != null) ...[
           const SizedBox(height: 4),
           Text(
-            subtitle,
+            AppL10n.tr(subtitle),
             style: theme.textTheme.bodySmall?.copyWith(
               fontSize: 12,
               height: 1.45,
@@ -704,6 +704,7 @@ Do not say “Here is your speech,” “Generated Speech,” “Sure,” or any
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: false,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
         return _SpeechSelectorSheet(
@@ -772,7 +773,7 @@ Do not say “Here is your speech,” “Generated Speech,” “Sure,” or any
           children: [
             Expanded(
               child: Text(
-                'Speaking Time',
+                AppL10n.tr('Speaking Time'),
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -780,7 +781,7 @@ Do not say “Here is your speech,” “Generated Speech,” “Sure,” or any
               ),
             ),
             Text(
-              '$minutes minutes',
+              '$minutes ${AppL10n.tr('minutes')}',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
@@ -791,7 +792,7 @@ Do not say “Here is your speech,” “Generated Speech,” “Sure,” or any
         ),
         const SizedBox(height: 3),
         Text(
-          'Estimated length: approximately $words words.',
+          '${AppL10n.tr('Estimated length: approximately')} $words ${AppL10n.tr('words')}.',
           style: theme.textTheme.bodySmall?.copyWith(
             fontSize: 12,
             color: theme.colorScheme.onSurfaceVariant,
@@ -867,28 +868,30 @@ class _SpeechSelectorSheetState extends State<_SpeechSelectorSheet> {
   final TextEditingController _searchController = TextEditingController();
   String _search = '';
 
-  bool get _showSearch => widget.items.length > 20;
+  bool get _showSearch => widget.items.length > 10;
 
   List<String> get _filteredItems {
     final query = _search.trim().toLowerCase();
     if (query.isEmpty) return widget.items;
 
     return widget.items
-        .where((item) => item.toLowerCase().contains(query))
+        .where((item) =>
+            item.toLowerCase().contains(query) ||
+            AppL10n.tr(item).toLowerCase().contains(query))
         .toList();
   }
 
   double _sheetHeight(BuildContext context) {
     final screenHeight = MediaQuery.sizeOf(context).height;
-    final maxHeight = screenHeight * 0.50;
+    final maxHeight = screenHeight * 0.42;
 
-    if (_showSearch) {
-      return maxHeight;
-    }
-
-    const fixedContent = 76.0;
+    const handleArea = 35.0;
+    const searchArea = 70.0;
     const rowHeight = 56.0;
-    final naturalHeight = fixedContent + (widget.items.length * rowHeight);
+
+    final naturalHeight = handleArea +
+        (_showSearch ? searchArea : 10.0) +
+        (widget.items.length * rowHeight);
 
     return naturalHeight.clamp(190.0, maxHeight).toDouble();
   }
@@ -916,10 +919,10 @@ class _SpeechSelectorSheetState extends State<_SpeechSelectorSheet> {
     final muted =
         isDark ? const Color(0xFFB9AEC8) : const Color(0xFF777777);
 
-    return SafeArea(
-      top: false,
-      child: Container(
-        height: _sheetHeight(context),
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    return Container(
+        height: _sheetHeight(context) + bottomInset,
         decoration: BoxDecoration(
           color: background,
           borderRadius: const BorderRadius.vertical(
@@ -995,7 +998,7 @@ class _SpeechSelectorSheetState extends State<_SpeechSelectorSheet> {
               child: items.isEmpty
                   ? Center(
                       child: Text(
-                        'No results found',
+                        AppL10n.tr('No results found'),
                         style: TextStyle(
                           fontSize: 14,
                           color: muted,
@@ -1003,9 +1006,7 @@ class _SpeechSelectorSheetState extends State<_SpeechSelectorSheet> {
                       ),
                     )
                   : ListView.separated(
-                      physics: widget.items.length > 4
-                          ? const BouncingScrollPhysics()
-                          : const NeverScrollableScrollPhysics(),
+                      physics: const BouncingScrollPhysics(),
                       padding: EdgeInsets.zero,
                       itemCount: items.length,
                       separatorBuilder: (_, __) => Divider(
@@ -1051,8 +1052,8 @@ class _SpeechSelectorSheetState extends State<_SpeechSelectorSheet> {
             ),
           ],
         ),
-      ),
-    );
+        padding: EdgeInsets.only(bottom: bottomInset),
+      );
   }
 }
 

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'save_vc.dart';
 import '../services/easy_seek_api_manager.dart';
 import 'subscription_screen.dart';
+import '../l10n/app_l10n.dart';
 
 class CreateCharacterScreen extends StatefulWidget {
   const CreateCharacterScreen({super.key});
@@ -174,8 +175,8 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
         backgroundColor:
             isDark ? const Color(0xFF160D26) : const Color(0xFFF8F7FA),
         foregroundColor: theme.colorScheme.onSurface,
-        title: const Text(
-          'Create Character',
+        title: Text(
+          AppL10n.tr('Create Character'),
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
@@ -185,7 +186,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
           TextButton(
             onPressed: _createCharacter,
             child: Text(
-              'Create',
+              AppL10n.tr('Create'),
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -303,7 +304,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
 
   Widget _sectionTitle(BuildContext context, String text) {
     return Text(
-      text,
+      AppL10n.tr(text),
       style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontSize: 17,
             fontWeight: FontWeight.w600,
@@ -336,6 +337,8 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
       decoration: _inputDecoration(context, hint),
     );
   }
+
+  String _displayText(String value) => AppL10n.tr(value);
 
   Widget _dropdown(
     BuildContext context, {
@@ -374,7 +377,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
           children: [
             Expanded(
               child: Text(
-                value,
+                _displayText(value),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -405,6 +408,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: false,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
         return _CharacterSelectorSheet(
@@ -427,7 +431,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return InputDecoration(
-      hintText: hint.isEmpty ? null : hint,
+      hintText: hint.isEmpty ? null : AppL10n.tr(hint),
       hintStyle: TextStyle(
         fontSize: 14,
         color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.72),
@@ -564,7 +568,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
           children: [
             Expanded(
               child: Text(
-                'Story Genre',
+                AppL10n.tr('Story Genre'),
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
@@ -580,7 +584,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child: Text(
-                'View All',
+                AppL10n.tr('View All'),
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -667,7 +671,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                       ),
                       const SizedBox(height: 7),
                       Text(
-                        genre,
+                        _displayText(genre),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
@@ -736,7 +740,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          'Story Genre',
+                          AppL10n.tr('Story Genre'),
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
@@ -833,7 +837,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              genre,
+                              _displayText(genre),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,
@@ -896,7 +900,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
                   borderRadius: BorderRadius.circular(9),
                 ),
                 child: Text(
-                  titles[index],
+                  _displayText(titles[index]),
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: _credibilityIndex == index
@@ -1036,13 +1040,13 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
           backgroundColor:
               isDark ? const Color(0xFF21152F) : Colors.white,
           title: Text(
-            'Alert',
+            AppL10n.tr('Alert'),
             style: TextStyle(
               color: isDark ? Colors.white : const Color(0xFF1B1B1B),
             ),
           ),
           content: Text(
-            message,
+            AppL10n.tr(message),
             style: TextStyle(
               color: isDark
                   ? const Color(0xFFB9AEC8)
@@ -1053,7 +1057,7 @@ class _CreateCharacterScreenState extends State<CreateCharacterScreen> {
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                'OK',
+                AppL10n.tr('OK'),
                 style: TextStyle(
                   color: isDark
                       ? const Color(0xFF9146E8)
@@ -1211,23 +1215,25 @@ class _CharacterSelectorSheetState
     }
 
     return widget.items
-        .where((item) => item.toLowerCase().contains(query))
+        .where((item) =>
+            item.toLowerCase().contains(query) ||
+            AppL10n.tr(item).toLowerCase().contains(query))
         .toList();
   }
 
   double _sheetHeight(BuildContext context) {
-    final maxHeight = MediaQuery.sizeOf(context).height * 0.50;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final maxHeight = screenHeight * 0.42;
 
-    if (_showSearch) {
-      return maxHeight;
-    }
-
-    const topArea = 42.0;
+    const handleArea = 35.0;
+    const searchArea = 70.0;
     const rowHeight = 56.0;
 
-    return (topArea + widget.items.length * rowHeight)
-        .clamp(180.0, maxHeight)
-        .toDouble();
+    final naturalHeight = handleArea +
+        (_showSearch ? searchArea : 10.0) +
+        (widget.items.length * rowHeight);
+
+    return naturalHeight.clamp(190.0, maxHeight).toDouble();
   }
 
   @override
@@ -1253,10 +1259,10 @@ class _CharacterSelectorSheetState
     final muted =
         isDark ? const Color(0xFFB9AEC8) : const Color(0xFF777777);
 
-    return SafeArea(
-      top: false,
-      child: Container(
-        height: _sheetHeight(context),
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    return Container(
+        height: _sheetHeight(context) + bottomInset,
         decoration: BoxDecoration(
           color: background,
           borderRadius: const BorderRadius.vertical(
@@ -1296,7 +1302,7 @@ class _CharacterSelectorSheetState
                       color: theme.colorScheme.onSurface,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Search',
+                      hintText: AppL10n.tr('Search'),
                       hintStyle: TextStyle(color: muted),
                       prefixIcon: Icon(
                         Icons.search_rounded,
@@ -1331,7 +1337,7 @@ class _CharacterSelectorSheetState
                       contentPadding:
                           const EdgeInsets.symmetric(horizontal: 20),
                       title: Text(
-                        item,
+                        AppL10n.tr(item),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -1358,8 +1364,8 @@ class _CharacterSelectorSheetState
             ),
           ],
         ),
-      ),
-    );
+        padding: EdgeInsets.only(bottom: bottomInset),
+      );
   }
 }
 
