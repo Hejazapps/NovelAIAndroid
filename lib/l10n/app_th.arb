@@ -1473,5 +1473,22 @@
   "Enter the speaker’s name or position": "ป้อนชื่อหรือตำแหน่งของผู้พูด",
   "Example: Students, colleagues, invited guests...": "ตัวอย่าง: นักเรียน เพื่อนร่วมงาน แขกรับเชิญ...",
   "Describe the central idea you want to communicate": "อธิบายแนวคิดหลักที่คุณต้องการสื่อ",
-  "Describe what listeners should think, feel, or do afterward": "อธิบายว่าคุณต้องการให้ผู้ฟังคิด รู้สึก หรือทำอะไรหลังจากฟัง"
+  "Describe what listeners should think, feel, or do afterward": "อธิบายว่าคุณต้องการให้ผู้ฟังคิด รู้สึก หรือทำอะไรหลังจากฟัง",
+  "Playing": "Playing",
+  "Share as Text": "Share as Text",
+  "Share the current story text": "Share the current story text",
+  "Share as Image": "Share as Image",
+  "Create a story image and share it": "Create a story image and share it",
+  "Share as PDF": "Share as PDF",
+  "Create a PDF and share it": "Create a PDF and share it",
+  "Create a PNG version of the story": "Create a PNG version of the story",
+  "Create a PDF version of the story": "Create a PDF version of the story",
+  "Story content is not available.": "Story content is not available.",
+  "Please wait for the current translation to complete.": "Please wait for the current translation to complete.",
+  "Preparing": "Preparing",
+  "First use may download the language model.": "First use may download the language model.",
+  "Translation failed": "Translation failed",
+  "Unable to play music": "Unable to play music",
+  "Unable to create image": "Unable to create image",
+  "Unable to create PDF": "Unable to create PDF"
 }

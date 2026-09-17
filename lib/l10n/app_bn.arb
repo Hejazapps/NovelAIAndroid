@@ -1509,5 +1509,22 @@
   "Shy": "লাজুক",
   "Aggressive": "আক্রমণাত্মক",
   "Mythology": "পুরাণ",
-  "Historical Fiction": "ঐতিহাসিক কল্পকাহিনি"
+  "Historical Fiction": "ঐতিহাসিক কল্পকাহিনি",
+  "Playing": "চলছে",
+  "Share as Text": "টেক্সট হিসেবে শেয়ার করুন",
+  "Share the current story text": "বর্তমান গল্পের টেক্সট শেয়ার করুন",
+  "Share as Image": "ছবি হিসেবে শেয়ার করুন",
+  "Create a story image and share it": "গল্পের একটি ছবি তৈরি করে শেয়ার করুন",
+  "Share as PDF": "PDF হিসেবে শেয়ার করুন",
+  "Create a PDF and share it": "একটি PDF তৈরি করে শেয়ার করুন",
+  "Create a PNG version of the story": "গল্পটির একটি PNG সংস্করণ তৈরি করুন",
+  "Create a PDF version of the story": "গল্পটির একটি PDF সংস্করণ তৈরি করুন",
+  "Story content is not available.": "গল্পের বিষয়বস্তু পাওয়া যাচ্ছে না।",
+  "Please wait for the current translation to complete.": "বর্তমান অনুবাদ শেষ হওয়া পর্যন্ত অপেক্ষা করুন।",
+  "Preparing": "প্রস্তুত করা হচ্ছে",
+  "First use may download the language model.": "প্রথমবার ব্যবহারে ভাষার মডেল ডাউনলোড হতে পারে।",
+  "Translation failed": "অনুবাদ ব্যর্থ হয়েছে",
+  "Unable to play music": "মিউজিক চালানো যাচ্ছে না",
+  "Unable to create image": "ছবি তৈরি করা যাচ্ছে না",
+  "Unable to create PDF": "PDF তৈরি করা যাচ্ছে না"
 }

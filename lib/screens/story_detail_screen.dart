@@ -12,6 +12,7 @@ import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/app_l10n.dart';
 import '../services/realtime_db_manager.dart';
 
 class StoryDetailScreen extends StatefulWidget {
@@ -219,12 +220,12 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
 
   String get _storyTitle {
     final title = widget.story.title?.trim() ?? '';
-    return title.isEmpty ? 'Story' : title;
+    return title.isEmpty ? AppL10n.tr('Story') : title;
   }
 
   String get _originalText {
     final text = widget.story.summary?.trim() ?? '';
-    return text.isEmpty ? 'Story content is not available.' : text;
+    return text.isEmpty ? AppL10n.tr('Story content is not available.') : text;
   }
 
   String get _storyPreferenceKey {
@@ -395,7 +396,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
           ),
         ),
         title: Text(
-          'Discover Stories',
+          AppL10n.tr('Discover Stories'),
           style: TextStyle(
             color: _text,
             fontSize: 19,
@@ -404,7 +405,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
         ),
         actions: [
           IconButton(
-            tooltip: 'Share',
+            tooltip: AppL10n.tr('Share'),
             onPressed: _showShareOptions,
             icon: Icon(
               Icons.ios_share_rounded,
@@ -574,13 +575,13 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
             borderRadius: BorderRadius.circular(15),
           ),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.file_download_outlined, size: 24),
             SizedBox(width: 8),
             Text(
-              'Download',
+              AppL10n.tr('Download'),
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
@@ -617,12 +618,12 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
           ),
           _action(
             icon: Icons.format_size_rounded,
-            label: 'Size',
+            label: AppL10n.tr('Size'),
             onTap: _showTextSizeOptions,
           ),
           _action(
             icon: Icons.language_rounded,
-            label: _selectedLanguage,
+            label: AppL10n.tr(_selectedLanguage),
             width: 78,
             onTap: _showLanguageOptions,
           ),
@@ -631,8 +632,8 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                 ? Icons.music_note_rounded
                 : Icons.music_note_outlined,
             label: _isMusicPlaying
-                ? 'Playing'
-                : (_selectedTrack?.name ?? 'Music'),
+                ? AppL10n.tr('Playing')
+                : (_selectedTrack?.name ?? AppL10n.tr('Music')),
             width: 74,
             onTap: _showMusicOptions,
           ),
@@ -743,7 +744,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'Choose Font',
+                      AppL10n.tr('Choose Font'),
                       style: TextStyle(
                         color: _text,
                         fontSize: 21,
@@ -759,7 +760,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                       },
                       style: TextStyle(color: _text),
                       decoration: InputDecoration(
-                        hintText: 'Search 48 fonts',
+                        hintText: AppL10n.tr('Search 48 fonts'),
                         hintStyle: TextStyle(color: _muted),
                         prefixIcon: Icon(
                           Icons.search_rounded,
@@ -866,7 +867,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Text Size',
+                      AppL10n.tr('Text Size'),
                       style: TextStyle(
                         color: _text,
                         fontSize: 21,
@@ -948,7 +949,8 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
             final names = _languages.keys
                 .where(
                   (name) =>
-                      name.toLowerCase().contains(query.toLowerCase()),
+                      name.toLowerCase().contains(query.toLowerCase()) ||
+                      AppL10n.tr(name).toLowerCase().contains(query.toLowerCase()),
                 )
                 .toList();
 
@@ -966,7 +968,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'Language',
+                      AppL10n.tr('Language'),
                       style: TextStyle(
                         color: _text,
                         fontSize: 21,
@@ -982,7 +984,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                       },
                       style: TextStyle(color: _text),
                       decoration: InputDecoration(
-                        hintText: 'Search language',
+                        hintText: AppL10n.tr('Search language'),
                         hintStyle: TextStyle(color: _muted),
                         prefixIcon: Icon(
                           Icons.search_rounded,
@@ -1010,7 +1012,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                               color: _accent,
                             ),
                             title: Text(
-                              name,
+                              AppL10n.tr(name),
                               style: TextStyle(color: _text),
                             ),
                             trailing: _selectedLanguage == name
@@ -1231,7 +1233,8 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
             final tracks = _soundItems
                 .where(
                   (item) =>
-                      item.name.toLowerCase().contains(query.toLowerCase()),
+                      item.name.toLowerCase().contains(query.toLowerCase()) ||
+                      AppL10n.tr(item.name).toLowerCase().contains(query.toLowerCase()),
                 )
                 .toList();
 
@@ -1249,7 +1252,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'Story Music',
+                      AppL10n.tr('Story Music'),
                       style: TextStyle(
                         color: _text,
                         fontSize: 21,
@@ -1274,7 +1277,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                _selectedTrack!.name,
+                                AppL10n.tr(_selectedTrack!.name),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -1333,7 +1336,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                       },
                       style: TextStyle(color: _text),
                       decoration: InputDecoration(
-                        hintText: 'Search music',
+                        hintText: AppL10n.tr('Search music'),
                         hintStyle: TextStyle(color: _muted),
                         prefixIcon: Icon(
                           Icons.search_rounded,
@@ -1367,7 +1370,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                               ),
                             ),
                             title: Text(
-                              track.name,
+                              AppL10n.tr(track.name),
                               style: TextStyle(
                                 color: _text,
                                 fontWeight: selected
@@ -1449,7 +1452,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Share',
+                  AppL10n.tr('Share'),
                   style: TextStyle(
                     color: _text,
                     fontSize: 23,
@@ -1458,7 +1461,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                 ),
                 const SizedBox(height: 7),
                 Text(
-                  'Choose how you want to share this story',
+                  AppL10n.tr('Choose how you want to share this story'),
                   style: TextStyle(
                     color: _muted,
                     fontSize: 14,
@@ -1467,8 +1470,8 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                 const SizedBox(height: 20),
                 _shareOption(
                   icon: Icons.text_snippet_outlined,
-                  title: 'Share as Text',
-                  subtitle: 'Share the current story text',
+                  title: AppL10n.tr('Share as Text'),
+                  subtitle: AppL10n.tr('Share the current story text'),
                   onTap: () {
                     Navigator.pop(sheetContext);
                     unawaited(_shareAsText());
@@ -1477,8 +1480,8 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                 const SizedBox(height: 10),
                 _shareOption(
                   icon: Icons.image_outlined,
-                  title: 'Share as Image',
-                  subtitle: 'Create a story image and share it',
+                  title: AppL10n.tr('Share as Image'),
+                  subtitle: AppL10n.tr('Create a story image and share it'),
                   onTap: () {
                     Navigator.pop(sheetContext);
                     unawaited(_shareAsImage());
@@ -1487,8 +1490,8 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                 const SizedBox(height: 10),
                 _shareOption(
                   icon: Icons.picture_as_pdf_outlined,
-                  title: 'Share as PDF',
-                  subtitle: 'Create a PDF and share it',
+                  title: AppL10n.tr('Share as PDF'),
+                  subtitle: AppL10n.tr('Create a PDF and share it'),
                   onTap: () {
                     Navigator.pop(sheetContext);
                     unawaited(_shareAsPdf());
@@ -1598,7 +1601,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Download',
+                  AppL10n.tr('Download'),
                   style: TextStyle(
                     color: _text,
                     fontSize: 23,
@@ -1607,7 +1610,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                 ),
                 const SizedBox(height: 7),
                 Text(
-                  'Choose how to download the text',
+                  AppL10n.tr('Choose how to download the text'),
                   style: TextStyle(
                     color: _muted,
                     fontSize: 14,
@@ -1616,8 +1619,8 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                 const SizedBox(height: 22),
                 _shareOption(
                   icon: Icons.image_outlined,
-                  title: 'Save as Image',
-                  subtitle: 'Create a PNG version of the story',
+                  title: AppL10n.tr('Save as Image'),
+                  subtitle: AppL10n.tr('Create a PNG version of the story'),
                   onTap: () {
                     Navigator.pop(sheetContext);
                     unawaited(_shareAsImage());
@@ -1626,8 +1629,8 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                 const SizedBox(height: 10),
                 _shareOption(
                   icon: Icons.picture_as_pdf_outlined,
-                  title: 'Save as PDF',
-                  subtitle: 'Create a PDF version of the story',
+                  title: AppL10n.tr('Save as PDF'),
+                  subtitle: AppL10n.tr('Create a PDF version of the story'),
                   onTap: () {
                     Navigator.pop(sheetContext);
                     unawaited(_shareAsPdf());

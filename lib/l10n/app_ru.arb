@@ -1473,5 +1473,22 @@
   "Enter the speaker’s name or position": "Введите имя или должность выступающего",
   "Example: Students, colleagues, invited guests...": "Пример: студенты, коллеги, приглашённые гости...",
   "Describe the central idea you want to communicate": "Опишите основную идею, которую хотите донести",
-  "Describe what listeners should think, feel, or do afterward": "Опишите, что слушатели должны подумать, почувствовать или сделать после выступления"
+  "Describe what listeners should think, feel, or do afterward": "Опишите, что слушатели должны подумать, почувствовать или сделать после выступления",
+  "Playing": "Playing",
+  "Share as Text": "Share as Text",
+  "Share the current story text": "Share the current story text",
+  "Share as Image": "Share as Image",
+  "Create a story image and share it": "Create a story image and share it",
+  "Share as PDF": "Share as PDF",
+  "Create a PDF and share it": "Create a PDF and share it",
+  "Create a PNG version of the story": "Create a PNG version of the story",
+  "Create a PDF version of the story": "Create a PDF version of the story",
+  "Story content is not available.": "Story content is not available.",
+  "Please wait for the current translation to complete.": "Please wait for the current translation to complete.",
+  "Preparing": "Preparing",
+  "First use may download the language model.": "First use may download the language model.",
+  "Translation failed": "Translation failed",
+  "Unable to play music": "Unable to play music",
+  "Unable to create image": "Unable to create image",
+  "Unable to create PDF": "Unable to create PDF"
 }

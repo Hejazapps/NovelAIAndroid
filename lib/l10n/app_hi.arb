@@ -1473,5 +1473,22 @@
   "Enter the speaker’s name or position": "वक्ता का नाम या पद दर्ज करें",
   "Example: Students, colleagues, invited guests...": "उदाहरण: छात्र, सहकर्मी, आमंत्रित अतिथि...",
   "Describe the central idea you want to communicate": "उस मुख्य विचार का वर्णन करें जिसे आप व्यक्त करना चाहते हैं",
-  "Describe what listeners should think, feel, or do afterward": "बताएँ कि सुनने के बाद श्रोताओं को क्या सोचना, महसूस करना या करना चाहिए"
+  "Describe what listeners should think, feel, or do afterward": "बताएँ कि सुनने के बाद श्रोताओं को क्या सोचना, महसूस करना या करना चाहिए",
+  "Playing": "Playing",
+  "Share as Text": "Share as Text",
+  "Share the current story text": "Share the current story text",
+  "Share as Image": "Share as Image",
+  "Create a story image and share it": "Create a story image and share it",
+  "Share as PDF": "Share as PDF",
+  "Create a PDF and share it": "Create a PDF and share it",
+  "Create a PNG version of the story": "Create a PNG version of the story",
+  "Create a PDF version of the story": "Create a PDF version of the story",
+  "Story content is not available.": "Story content is not available.",
+  "Please wait for the current translation to complete.": "Please wait for the current translation to complete.",
+  "Preparing": "Preparing",
+  "First use may download the language model.": "First use may download the language model.",
+  "Translation failed": "Translation failed",
+  "Unable to play music": "Unable to play music",
+  "Unable to create image": "Unable to create image",
+  "Unable to create PDF": "Unable to create PDF"
 }

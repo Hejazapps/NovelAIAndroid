@@ -1473,5 +1473,22 @@
   "Enter the speaker’s name or position": "Introduce el nombre o cargo del orador",
   "Example: Students, colleagues, invited guests...": "Ejemplo: estudiantes, colegas, invitados...",
   "Describe the central idea you want to communicate": "Describe la idea central que quieres comunicar",
-  "Describe what listeners should think, feel, or do afterward": "Describe qué deberían pensar, sentir o hacer los oyentes después"
+  "Describe what listeners should think, feel, or do afterward": "Describe qué deberían pensar, sentir o hacer los oyentes después",
+  "Playing": "Playing",
+  "Share as Text": "Share as Text",
+  "Share the current story text": "Share the current story text",
+  "Share as Image": "Share as Image",
+  "Create a story image and share it": "Create a story image and share it",
+  "Share as PDF": "Share as PDF",
+  "Create a PDF and share it": "Create a PDF and share it",
+  "Create a PNG version of the story": "Create a PNG version of the story",
+  "Create a PDF version of the story": "Create a PDF version of the story",
+  "Story content is not available.": "Story content is not available.",
+  "Please wait for the current translation to complete.": "Please wait for the current translation to complete.",
+  "Preparing": "Preparing",
+  "First use may download the language model.": "First use may download the language model.",
+  "Translation failed": "Translation failed",
+  "Unable to play music": "Unable to play music",
+  "Unable to create image": "Unable to create image",
+  "Unable to create PDF": "Unable to create PDF"
 }
