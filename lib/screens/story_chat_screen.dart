@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/easy_seek_api_manager.dart';
-import '../l10n/app_l10n.dart';
 
 class StoryChatConfig {
   const StoryChatConfig({
@@ -260,7 +259,12 @@ class _StoryChatScreenState extends State<StoryChatScreen> {
 
   @override
   void dispose() {
-    if (_streaming) EasySeekApiManager.shared.stopStreaming();
+    if (_streaming) {
+      _cancelled = true;
+      EasySeekApiManager.shared.stopStreaming();
+      _session.updatedAt = DateTime.now();
+      StoryChatStore.saveSession(_session);
+    }
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -342,7 +346,7 @@ class _StoryChatScreenState extends State<StoryChatScreen> {
       final index = _session.messages.indexWhere((e) => e.id == bot.id);
       if (!_cancelled && index >= 0 && _session.messages[index].text.trim().isEmpty) {
         _session.messages[index] = _session.messages[index].copyWith(
-          text: AppL10n.tr('Server unavailable. Please try again later.'),
+          text: 'Server unavailable. Please try again later.',
         );
       }
       setState(() => _streaming = false);
@@ -360,7 +364,7 @@ class _StoryChatScreenState extends State<StoryChatScreen> {
 
   List<TogetherAIMessage> _buildApiMessages() {
     final source = List<StoryChatMessage>.from(_session.messages);
-    if (source.isNotEmpty &&
+    while (source.isNotEmpty &&
         source.last.role == 'assistant' &&
         source.last.text.trim().isEmpty) {
       source.removeLast();
@@ -577,7 +581,18 @@ $tail''';
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () async {
+            // If the user leaves while AI is writing, stop the active stream
+            // and persist whatever has already been generated. The saved
+            // session can then be opened from History and used normally.
+            if (_streaming) {
+              await _stop();
+            } else {
+              _session.updatedAt = DateTime.now();
+              await StoryChatStore.saveSession(_session);
+            }
+            if (mounted) Navigator.pop(context);
+          },
           icon: Icon(Icons.arrow_back_ios_new_rounded, color: _text, size: 20),
         ),
         title: Column(
@@ -589,7 +604,7 @@ $tail''';
               style: TextStyle(color: _text, fontSize: 17, fontWeight: FontWeight.w700),
             ),
             if (_streaming)
-              Text(AppL10n.tr('Writing...'), style: TextStyle(color: _accent, fontSize: 10, fontWeight: FontWeight.w600)),
+              Text('Writing...', style: TextStyle(color: _accent, fontSize: 10, fontWeight: FontWeight.w600)),
           ],
         ),
         centerTitle: true,
@@ -683,9 +698,7 @@ $tail''';
                         style: TextStyle(color: _text, fontSize: 15),
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: _streaming
-                              ? AppL10n.tr('Please wait...')
-                              : AppL10n.tr('Talk to your story...'),
+                          hintText: _streaming ? 'Please wait...' : 'Talk to your story...',
                           hintStyle: TextStyle(color: _muted),
                           contentPadding: const EdgeInsets.symmetric(vertical: 11),
                         ),
